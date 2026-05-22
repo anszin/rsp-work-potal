@@ -1,0 +1,25 @@
+# Gradle
+backend/work-portal-api/.gradle/
+backend/work-portal-api/build/
+backend/work-portal-api/out/
+
+# Gradle wrapper jar (only exclude the jar, keep the scripts)
+!backend/work-portal-api/gradle/wrapper/gradle-wrapper.jar
+
+# Node / Vite
+frontend/work-portal-web/node_modules/
+frontend/work-portal-web/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+*.env
+application-prod.yml
+.claude/
