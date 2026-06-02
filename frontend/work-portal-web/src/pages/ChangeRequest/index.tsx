@@ -73,7 +73,7 @@ export default function ChangeRequestPage() {
     onSuccess: async (created) => {
       if (pendingFile) {
         try { await uploadAttachment(created.id, pendingFile) }
-        catch { alert('변경 요청은 저장됐으나 파일 첨부에 실패했습니다.') }
+        catch (err: any) { alert(`파일 첨부 실패 (${err?.response?.status ?? err?.message ?? '네트워크 오류'})`) }
       }
       invalidate(); closeForm()
     }
@@ -83,7 +83,7 @@ export default function ChangeRequestPage() {
     onSuccess: async (updated) => {
       if (pendingFile) {
         try { await uploadAttachment(updated.id, pendingFile) }
-        catch { alert('수정은 저장됐으나 파일 첨부에 실패했습니다.') }
+        catch (err: any) { alert(`파일 첨부 실패 (${err?.response?.status ?? err?.message ?? '네트워크 오류'})`) }
       }
       invalidate(); closeForm()
     }
