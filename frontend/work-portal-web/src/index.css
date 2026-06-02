@@ -9,3 +9,7 @@ body {
   color: #1a1a2e;
   background: #f7f8fa;
 }
+
+input, textarea, select, button {
+  font-family: inherit;
+}

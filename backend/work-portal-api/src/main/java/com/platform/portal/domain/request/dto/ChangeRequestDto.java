@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class ChangeRequestDto {
@@ -18,6 +19,7 @@ public class ChangeRequestDto {
         @NotBlank
         private String title;
         private String content;
+        private LocalDate targetDate;
     }
 
     @Getter
@@ -28,6 +30,7 @@ public class ChangeRequestDto {
         @NotBlank
         private String title;
         private String content;
+        private LocalDate targetDate;
     }
 
     @Getter
@@ -47,6 +50,7 @@ public class ChangeRequestDto {
         private final String content;
         private final String requesterUsername;
         private final ChangeRequest.Status status;
+        private final LocalDate targetDate;
         private final LocalDateTime requestedAt;
         private final LocalDateTime approvedAt;
         private final LocalDateTime completedAt;
@@ -61,6 +65,7 @@ public class ChangeRequestDto {
             this.content = cr.getContent();
             this.requesterUsername = cr.getRequester().getUsername();
             this.status = cr.getStatus();
+            this.targetDate = cr.getTargetDate();
             this.requestedAt = cr.getRequestedAt();
             this.approvedAt = cr.getApprovedAt();
             this.completedAt = cr.getCompletedAt();

@@ -60,6 +60,7 @@ public class ChangeRequestService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found")));
         cr.setTitle(req.getTitle());
         cr.setContent(req.getContent());
+        cr.setTargetDate(req.getTargetDate());
         return new ChangeRequestDto.Response(changeRequestRepository.save(cr));
     }
 
@@ -73,6 +74,7 @@ public class ChangeRequestService {
                 .orElseThrow(() -> new IllegalArgumentException("System not found")));
         cr.setTitle(req.getTitle());
         cr.setContent(req.getContent());
+        cr.setTargetDate(req.getTargetDate());
         return new ChangeRequestDto.Response(cr);
     }
 

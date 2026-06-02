@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -41,6 +42,7 @@ public class ChangeRequest {
     @Column(nullable = false)
     private Status status = Status.DRAFT;
 
+    private LocalDate targetDate;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;
     private LocalDateTime completedAt;

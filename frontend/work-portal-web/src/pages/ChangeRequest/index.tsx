@@ -16,7 +16,7 @@ const NEXT_STATUS: Partial<Record<RequestStatus, { label: string; next: RequestS
   APPROVED:  [{ label: '완료', next: 'COMPLETED' }],
 }
 
-const emptyForm: CreateChangeRequest = { systemId: 0, title: '', content: '' }
+const emptyForm: CreateChangeRequest = { systemId: 0, title: '', content: '', targetDate: '' }
 
 export default function ChangeRequestPage() {
   const { user } = useAuth()
@@ -49,7 +49,7 @@ export default function ChangeRequestPage() {
 
   const openEdit = (r: ChangeRequest) => {
     setEditing(r)
-    setForm({ systemId: r.systemId, title: r.title, content: r.content ?? '' })
+    setForm({ systemId: r.systemId, title: r.title, content: r.content ?? '', targetDate: r.targetDate ?? '' })
     setShowForm(true)
   }
 
@@ -81,6 +81,8 @@ export default function ChangeRequestPage() {
             </select>
             <label style={s.label}>제목</label>
             <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="변경 관리 제목" />
+            <label style={s.label}>반영 목표일</label>
+            <input type="date" style={s.input} value={form.targetDate ?? ''} onChange={(e) => setForm({ ...form, targetDate: e.target.value || undefined })} />
             <label style={s.label}>내용</label>
             <textarea style={{ ...s.input, height: 100, resize: 'vertical' }} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="변경 내용을 입력하세요" />
           </div>
@@ -103,13 +105,14 @@ export default function ChangeRequestPage() {
                 <th style={{ ...s.th, width: '30%' }}>제목</th>
                 <th style={s.th}>요청자</th>
                 <th style={s.th}>상태</th>
+                <th style={s.th}>반영 목표일</th>
                 <th style={s.th}>생성일</th>
                 <th style={s.th}>액션</th>
               </tr>
             </thead>
             <tbody>
               {requests.length === 0 && (
-                <tr><td colSpan={7} style={s.empty}>등록된 요청이 없습니다</td></tr>
+                <tr><td colSpan={8} style={s.empty}>등록된 요청이 없습니다</td></tr>
               )}
               {requests.map((r) => (
                 <tr key={r.id} style={s.tr}>
@@ -118,6 +121,7 @@ export default function ChangeRequestPage() {
                   <td style={s.td}>{r.title}</td>
                   <td style={s.td}>{r.requesterUsername}</td>
                   <td style={s.td}><StatusBadge status={r.status} /></td>
+                  <td style={s.td}>{r.targetDate ?? '-'}</td>
                   <td style={s.td}>{r.createdAt?.slice(0, 10)}</td>
                   <td style={s.td}>
                     <div style={s.actions}>

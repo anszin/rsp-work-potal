@@ -11,6 +11,7 @@ export interface ChangeRequest {
   content: string
   requesterUsername: string
   status: RequestStatus
+  targetDate: string | null
   requestedAt: string | null
   approvedAt: string | null
   completedAt: string | null
@@ -21,6 +22,7 @@ export interface CreateChangeRequest {
   systemId: number
   title: string
   content?: string
+  targetDate?: string
 }
 
 export const getChangeRequests = (params?: { systemId?: number; status?: RequestStatus }) =>
