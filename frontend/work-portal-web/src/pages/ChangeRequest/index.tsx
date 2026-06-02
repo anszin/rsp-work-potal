@@ -47,14 +47,20 @@ export default function ChangeRequestPage() {
   const createMut = useMutation({
     mutationFn: createChangeRequest,
     onSuccess: async (created) => {
-      if (pendingFile) await uploadAttachment(created.id, pendingFile)
+      if (pendingFile) {
+        try { await uploadAttachment(created.id, pendingFile) }
+        catch { alert('변경 요청은 저장됐으나 파일 첨부에 실패했습니다.') }
+      }
       invalidate(); closeForm()
     }
   })
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: CreateChangeRequest }) => updateChangeRequest(id, data),
     onSuccess: async (updated) => {
-      if (pendingFile) await uploadAttachment(updated.id, pendingFile)
+      if (pendingFile) {
+        try { await uploadAttachment(updated.id, pendingFile) }
+        catch { alert('수정은 저장됐으나 파일 첨부에 실패했습니다.') }
+      }
       invalidate(); closeForm()
     }
   })
