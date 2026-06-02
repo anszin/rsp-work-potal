@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
-import { inventoryApi } from '../../api/inventory'
 import client from '../../api/client'
 
 interface SystemOption { id: number; name: string }
