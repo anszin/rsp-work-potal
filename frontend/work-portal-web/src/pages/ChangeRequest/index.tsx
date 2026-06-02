@@ -82,8 +82,9 @@ export default function ChangeRequestPage() {
 
   const submit = () => {
     if (!form.title || !form.systemId) return
-    if (editing) updateMut.mutate({ id: editing.id, data: form })
-    else createMut.mutate(form)
+    const data = { ...form, targetDate: form.targetDate || undefined }
+    if (editing) updateMut.mutate({ id: editing.id, data })
+    else createMut.mutate(data)
   }
 
   const isAdmin = user?.role === 'ADMIN'
