@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getChangeRequests, createChangeRequest, updateChangeRequest,
@@ -28,6 +28,30 @@ export default function ChangeRequestPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [rejectModal, setRejectModal] = useState<{ id: number } | null>(null)
   const [rejectReason, setRejectReason] = useState('')
+  const [pasteHighlight, setPasteHighlight] = useState(false)
+
+  useEffect(() => {
+    if (!showForm) return
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith('image/')) {
+          const blob = item.getAsFile()
+          if (!blob) break
+          const ext = item.type.split('/')[1] ?? 'png'
+          const named = new File([blob], `capture_${Date.now()}.${ext}`, { type: item.type })
+          setPendingFile(named)
+          if (fileRef.current) fileRef.current.value = ''
+          setPasteHighlight(true)
+          setTimeout(() => setPasteHighlight(false), 1200)
+          break
+        }
+      }
+    }
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [showForm])
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['change-requests'],
@@ -149,7 +173,32 @@ export default function ChangeRequestPage() {
             <label style={s.label}>링크 첨부</label>
             <input style={s.input} value={form.attachmentLink ?? ''} onChange={(e) => setForm({ ...form, attachmentLink: e.target.value })} placeholder="https://..." />
             <label style={s.label}>파일 첨부</label>
-            <input ref={fileRef} type="file" style={s.input} onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)} />
+            <div>
+              <input ref={fileRef} type="file" style={{ ...s.input, marginBottom: 6 }}
+                onChange={(e) => { setPendingFile(e.target.files?.[0] ?? null) }} />
+              <div
+                style={{
+                  padding: '8px 12px', border: `2px dashed ${pasteHighlight ? '#1976d2' : '#ccc'}`,
+                  borderRadius: 6, fontSize: 12, color: pasteHighlight ? '#1976d2' : '#aaa',
+                  background: pasteHighlight ? '#e3f2fd' : '#fafafa',
+                  transition: 'all 0.3s', userSelect: 'none',
+                }}
+              >
+                {pendingFile?.name.startsWith('capture_')
+                  ? `📋 붙여넣기됨: ${pendingFile.name}`
+                  : 'Ctrl+V 로 캡쳐 이미지 붙여넣기'}
+              </div>
+              {pendingFile && (
+                <div style={{ marginTop: 4, fontSize: 12, color: '#555' }}>
+                  선택된 파일: <strong>{pendingFile.name}</strong>
+                  <button
+                    onClick={() => { setPendingFile(null); if (fileRef.current) fileRef.current.value = '' }}
+                    style={{ marginLeft: 8, fontSize: 11, border: 'none', background: 'none', color: '#e53e3e', cursor: 'pointer' }}>
+                    ✕ 제거
+                  </button>
+                </div>
+              )}
+            </div>
             <label style={s.label}>내용</label>
             <textarea style={{ ...s.input, height: 100, resize: 'vertical' }} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="변경 내용을 입력하세요" />
           </div>
