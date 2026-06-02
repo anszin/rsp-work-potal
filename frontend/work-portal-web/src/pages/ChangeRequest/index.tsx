@@ -66,13 +66,13 @@ export default function ChangeRequestPage() {
   return (
     <div style={s.page}>
       <PageHeader
-        title="변경 요청"
+        title="변경 관리"
         action={<button style={s.btn} onClick={openCreate}>+ 새 요청</button>}
       />
 
       {showForm && (
         <div style={s.formBox}>
-          <h3 style={s.formTitle}>{editing ? '요청 수정' : '새 변경 요청'}</h3>
+          <h3 style={s.formTitle}>{editing ? '요청 수정' : '새 변경 관리'}</h3>
           <div style={s.formGrid}>
             <label style={s.label}>운영시스템</label>
             <select style={s.input} value={form.systemId} onChange={(e) => setForm({ ...form, systemId: Number(e.target.value) })}>
@@ -80,7 +80,7 @@ export default function ChangeRequestPage() {
               {systems.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
             <label style={s.label}>제목</label>
-            <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="변경 요청 제목" />
+            <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="변경 관리 제목" />
             <label style={s.label}>내용</label>
             <textarea style={{ ...s.input, height: 100, resize: 'vertical' }} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="변경 내용을 입력하세요" />
           </div>

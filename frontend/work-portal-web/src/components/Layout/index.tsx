@@ -16,7 +16,7 @@ export default function Layout() {
         <div style={styles.logo}>업무 포탈</div>
         <nav style={styles.nav}>
           <NavItem to="/">대시보드</NavItem>
-          <NavItem to="/requests">변경 요청</NavItem>
+          <NavItem to="/requests">변경 관리</NavItem>
           <NavItem to="/deploys">배포 관리</NavItem>
           <NavItem to="/inventory">인벤토리</NavItem>
           <NavItem to="/reports/meeting">회의록</NavItem>

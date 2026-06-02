@@ -141,7 +141,7 @@ export default function DashboardPage() {
           onClick={() => navigate('/inventory')}
         />
         <StatCard
-          label="미결 변경요청"
+          label="미결 변경관리"
           value={pendingChanges.length + '건'}
           sub={`전체 ${changeRequests.length}건`}
           color="#ff9800"
@@ -240,7 +240,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => navigate('/requests')}
                 style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                변경요청 →
+                변경관리 →
               </button>
               <button onClick={() => navigate('/deploys')}
                 style={{ fontSize: 12, color: '#9c27b0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
