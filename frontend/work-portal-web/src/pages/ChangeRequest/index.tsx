@@ -71,10 +71,12 @@ export default function ChangeRequestPage() {
   const createMut = useMutation({
     mutationFn: createChangeRequest,
     onSuccess: () => { invalidate(); closeForm() },
+    onError: (e: unknown) => alert('저장 실패: ' + (e instanceof Error ? e.message : String(e))),
   })
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: CreateChangeRequest }) => updateChangeRequest(id, data),
     onSuccess: () => { invalidate(); closeForm() },
+    onError: (e: unknown) => alert('저장 실패: ' + (e instanceof Error ? e.message : String(e))),
   })
   const statusMut = useMutation({
     mutationFn: ({ id, status, rejectionReason }: { id: number; status: RequestStatus; rejectionReason?: string }) =>

@@ -80,7 +80,7 @@ public class ChangeRequestService {
                 String stored = fileStorageService.store(fileBytes, req.getAttachmentFilename(), saved.getId());
                 saved.setAttachmentPath(stored);
                 saved.setAttachmentOriginalName(req.getAttachmentFilename());
-            } catch (IOException e) { /* 파일 저장 실패 무시 */ }
+            } catch (IOException e) { throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e); }
         }
         return new ChangeRequestDto.Response(saved);
     }
@@ -106,7 +106,7 @@ public class ChangeRequestService {
                 String stored = fileStorageService.store(fileBytes, req.getAttachmentFilename(), id);
                 cr.setAttachmentPath(stored);
                 cr.setAttachmentOriginalName(req.getAttachmentFilename());
-            } catch (IOException e) { /* 파일 저장 실패 무시 */ }
+            } catch (IOException e) { throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e); }
         }
         return new ChangeRequestDto.Response(cr);
     }
