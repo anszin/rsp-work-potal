@@ -10,6 +10,7 @@ import FinancePage from './pages/Finance'
 import MeetingMinutesPage from './pages/MeetingMinutes'
 import WeeklyReportPage from './pages/WeeklyReport'
 import DailyCheckPage from './pages/DailyCheck'
+import SystemManagementPage from './pages/SystemManagement'
 import Layout from './components/Layout'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="reports/meeting" element={<MeetingMinutesPage />} />
             <Route path="reports/weekly" element={<WeeklyReportPage />} />
             <Route path="reports/daily" element={<DailyCheckPage />} />
+            <Route path="admin/systems" element={<SystemManagementPage />} />
           </Route>
         </Routes>
       </AuthProvider>
