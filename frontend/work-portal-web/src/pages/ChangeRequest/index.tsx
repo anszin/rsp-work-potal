@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getChangeRequests, createChangeRequest, updateChangeRequest,
-  changeRequestStatus, deleteChangeRequest, buildPayload,
+  changeRequestStatus, deleteChangeRequest, buildPayload, downloadAttachment,
   type ChangeRequest, type RequestStatus, type CreateChangeRequest,
 } from '../../api/changeRequests'
 import { getActiveSystems, getManagedSystemIds } from '../../api/systems'
@@ -242,7 +242,11 @@ export default function ChangeRequestPage() {
                   <td style={s.td}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {r.hasAttachment && (
-                        <a href={`/api/change-requests/${r.id}/attachment`} style={{ fontSize: 12, color: '#1976d2' }}>📎 파일</a>
+                        <button
+                          onClick={() => downloadAttachment(r.id, r.attachmentOriginalName ?? '파일')}
+                          style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                          📎 {r.attachmentOriginalName ?? '파일'}
+                        </button>
                       )}
                       {r.attachmentLink && (
                         <a href={r.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: '#7b1fa2' }}>🔗 링크</a>

@@ -71,3 +71,13 @@ export const changeRequestStatus = (id: number, status: RequestStatus, rejection
 
 export const deleteChangeRequest = (id: number) =>
   client.delete(`/change-requests/${id}`)
+
+export const downloadAttachment = async (id: number, filename: string) => {
+  const res = await client.get(`/change-requests/${id}/attachment`, { responseType: 'blob' })
+  const url = URL.createObjectURL(res.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
