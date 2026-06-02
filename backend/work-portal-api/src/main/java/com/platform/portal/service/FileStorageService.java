@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.*;
 
@@ -16,11 +16,11 @@ public class FileStorageService {
     @Value("${app.upload.path:/opt/work-portal/uploads}")
     private String uploadPath;
 
-    public String store(MultipartFile file, Long requestId) throws IOException {
+    public String store(InputStream content, String originalFilename, Long requestId) throws IOException {
         Path dir = Paths.get(uploadPath);
         Files.createDirectories(dir);
-        String filename = requestId + "_" + file.getOriginalFilename();
-        Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+        String filename = requestId + "_" + originalFilename;
+        Files.copy(content, dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
         return filename;
     }
 

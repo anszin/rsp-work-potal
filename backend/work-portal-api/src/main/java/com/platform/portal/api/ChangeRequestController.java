@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
@@ -64,11 +64,12 @@ public class ChangeRequestController {
         return ResponseEntity.ok(service.changeStatus(id, req, user.getUsername()));
     }
 
-    @PostMapping("/{id}/attachment")
+    @PostMapping(value = "/{id}/attachment", consumes = "application/octet-stream")
     public ResponseEntity<ChangeRequestDto.Response> uploadAttachment(
             @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(service.uploadAttachment(id, file));
+            @RequestParam("filename") String filename,
+            HttpServletRequest request) throws java.io.IOException {
+        return ResponseEntity.ok(service.uploadAttachment(id, filename, request.getInputStream()));
     }
 
     @GetMapping("/{id}/attachment")

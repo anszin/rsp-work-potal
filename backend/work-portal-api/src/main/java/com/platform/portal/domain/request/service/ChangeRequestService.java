@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import java.io.InputStream;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -133,13 +133,13 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public ChangeRequestDto.Response uploadAttachment(Long id, MultipartFile file) {
+    public ChangeRequestDto.Response uploadAttachment(Long id, String filename, InputStream content) {
         ChangeRequest cr = getOrThrow(id);
         try {
             if (cr.getAttachmentPath() != null) fileStorageService.delete(cr.getAttachmentPath());
-            String stored = fileStorageService.store(file, id);
+            String stored = fileStorageService.store(content, filename, id);
             cr.setAttachmentPath(stored);
-            cr.setAttachmentOriginalName(file.getOriginalFilename());
+            cr.setAttachmentOriginalName(filename);
         } catch (IOException e) {
             throw new RuntimeException("파일 업로드 실패", e);
         }

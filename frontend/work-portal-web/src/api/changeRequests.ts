@@ -35,11 +35,12 @@ export interface CreateChangeRequest {
   attachmentLink?: string
 }
 
-export const uploadAttachment = (id: number, file: File) => {
-  const form = new FormData()
-  form.append('file', file)
-  return client.post<ChangeRequest>(`/change-requests/${id}/attachment`, form)
-}
+export const uploadAttachment = (id: number, file: File) =>
+  client.post<ChangeRequest>(
+    `/change-requests/${id}/attachment?filename=${encodeURIComponent(file.name)}`,
+    file,
+    { headers: { 'Content-Type': 'application/octet-stream' } }
+  ).then((r) => r.data)
 
 export const deleteAttachment = (id: number) =>
   client.delete(`/change-requests/${id}/attachment`)
