@@ -25,6 +25,13 @@ public class ChangeRequestDto {
         private String requesterName;
         private LocalDate targetDate;
         private String attachmentLink;
+        private String attachmentFilename;
+        private String attachmentContent; // base64
+
+        public byte[] decodeAttachment() {
+            if (attachmentContent == null) return null;
+            return Base64.getDecoder().decode(attachmentContent);
+        }
     }
 
     @Getter
@@ -39,6 +46,13 @@ public class ChangeRequestDto {
         private String requesterName;
         private LocalDate targetDate;
         private String attachmentLink;
+        private String attachmentFilename;
+        private String attachmentContent; // base64
+
+        public byte[] decodeAttachment() {
+            if (attachmentContent == null) return null;
+            return Base64.getDecoder().decode(attachmentContent);
+        }
     }
 
     @Getter

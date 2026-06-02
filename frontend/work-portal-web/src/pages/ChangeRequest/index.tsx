@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getChangeRequests, createChangeRequest, updateChangeRequest,
-  changeRequestStatus, deleteChangeRequest, uploadAttachment,
+  changeRequestStatus, deleteChangeRequest, buildPayload,
   type ChangeRequest, type RequestStatus, type CreateChangeRequest,
 } from '../../api/changeRequests'
 import { getActiveSystems, getManagedSystemIds } from '../../api/systems'
@@ -70,23 +70,11 @@ export default function ChangeRequestPage() {
 
   const createMut = useMutation({
     mutationFn: createChangeRequest,
-    onSuccess: async (created) => {
-      if (pendingFile) {
-        try { await uploadAttachment(created.id, pendingFile) }
-        catch (err: any) { alert(`파일 첨부 실패 (${err?.response?.status ?? err?.message ?? '네트워크 오류'})`) }
-      }
-      invalidate(); closeForm()
-    }
+    onSuccess: () => { invalidate(); closeForm() },
   })
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: CreateChangeRequest }) => updateChangeRequest(id, data),
-    onSuccess: async (updated) => {
-      if (pendingFile) {
-        try { await uploadAttachment(updated.id, pendingFile) }
-        catch (err: any) { alert(`파일 첨부 실패 (${err?.response?.status ?? err?.message ?? '네트워크 오류'})`) }
-      }
-      invalidate(); closeForm()
-    }
+    onSuccess: () => { invalidate(); closeForm() },
   })
   const statusMut = useMutation({
     mutationFn: ({ id, status, rejectionReason }: { id: number; status: RequestStatus; rejectionReason?: string }) =>
@@ -110,9 +98,10 @@ export default function ChangeRequestPage() {
 
   const closeForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm); setPendingFile(null); if (fileRef.current) fileRef.current.value = '' }
 
-  const submit = () => {
+  const submit = async () => {
     if (!form.title || !form.systemId) return
-    const data = { ...form, targetDate: form.targetDate || undefined }
+    const base = { ...form, targetDate: form.targetDate || undefined }
+    const data = await buildPayload(base, pendingFile)
     if (editing) updateMut.mutate({ id: editing.id, data })
     else createMut.mutate(data)
   }

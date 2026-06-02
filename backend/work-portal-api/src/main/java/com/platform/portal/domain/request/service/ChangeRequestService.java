@@ -73,7 +73,16 @@ public class ChangeRequestService {
         cr.setRequesterName(req.getRequesterName());
         cr.setTargetDate(req.getTargetDate());
         cr.setAttachmentLink(req.getAttachmentLink());
-        return new ChangeRequestDto.Response(changeRequestRepository.save(cr));
+        ChangeRequest saved = changeRequestRepository.save(cr);
+        byte[] fileBytes = req.decodeAttachment();
+        if (fileBytes != null && req.getAttachmentFilename() != null) {
+            try {
+                String stored = fileStorageService.store(fileBytes, req.getAttachmentFilename(), saved.getId());
+                saved.setAttachmentPath(stored);
+                saved.setAttachmentOriginalName(req.getAttachmentFilename());
+            } catch (IOException e) { /* 파일 저장 실패 무시 */ }
+        }
+        return new ChangeRequestDto.Response(saved);
     }
 
     @Transactional
@@ -90,6 +99,15 @@ public class ChangeRequestService {
         cr.setRequesterName(req.getRequesterName());
         cr.setTargetDate(req.getTargetDate());
         cr.setAttachmentLink(req.getAttachmentLink());
+        byte[] fileBytes = req.decodeAttachment();
+        if (fileBytes != null && req.getAttachmentFilename() != null) {
+            try {
+                if (cr.getAttachmentPath() != null) fileStorageService.delete(cr.getAttachmentPath());
+                String stored = fileStorageService.store(fileBytes, req.getAttachmentFilename(), id);
+                cr.setAttachmentPath(stored);
+                cr.setAttachmentOriginalName(req.getAttachmentFilename());
+            } catch (IOException e) { /* 파일 저장 실패 무시 */ }
+        }
         return new ChangeRequestDto.Response(cr);
     }
 

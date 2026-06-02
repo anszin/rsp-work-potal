@@ -33,21 +33,23 @@ export interface CreateChangeRequest {
   requesterName?: string
   targetDate?: string
   attachmentLink?: string
+  attachmentFilename?: string
+  attachmentContent?: string // base64
 }
 
-export const uploadAttachment = (id: number, file: File): Promise<ChangeRequest> =>
+const readFileAsBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => {
-      const base64 = (reader.result as string).split(',')[1]
-      client.post<ChangeRequest>(`/change-requests/${id}/attachment`, {
-        filename: file.name,
-        content: base64,
-      }).then((r) => resolve(r.data)).catch(reject)
-    }
+    reader.onload = () => resolve((reader.result as string).split(',')[1])
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
+
+export const buildPayload = async (data: CreateChangeRequest, file: File | null): Promise<CreateChangeRequest> => {
+  if (!file) return data
+  const base64 = await readFileAsBase64(file)
+  return { ...data, attachmentFilename: file.name, attachmentContent: base64 }
+}
 
 export const deleteAttachment = (id: number) =>
   client.delete(`/change-requests/${id}/attachment`)
