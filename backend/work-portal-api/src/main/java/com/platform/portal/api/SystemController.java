@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +27,11 @@ public class SystemController {
     @GetMapping("/active")
     public ResponseEntity<List<SystemDto.Response>> listActive() {
         return ResponseEntity.ok(systemService.findActive());
+    }
+
+    @GetMapping("/managed")
+    public ResponseEntity<List<Long>> managedSystemIds(@AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(systemService.findManagedSystemIds(user.getUsername()));
     }
 
     @GetMapping("/{id}")
@@ -49,6 +56,27 @@ public class SystemController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         systemService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/managers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SystemDto.ManagerResponse>> listManagers(@PathVariable Long id) {
+        return ResponseEntity.ok(systemService.findManagers(id));
+    }
+
+    @PostMapping("/{id}/managers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SystemDto.ManagerResponse> addManager(
+            @PathVariable Long id,
+            @Valid @RequestBody SystemDto.AddManagerRequest req) {
+        return ResponseEntity.ok(systemService.addManager(id, req.getUserId()));
+    }
+
+    @DeleteMapping("/{id}/managers/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> removeManager(@PathVariable Long id, @PathVariable Long userId) {
+        systemService.removeManager(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

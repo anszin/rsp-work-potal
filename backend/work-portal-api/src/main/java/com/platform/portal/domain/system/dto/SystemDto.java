@@ -1,7 +1,9 @@
 package com.platform.portal.domain.system.dto;
 
 import com.platform.portal.domain.system.entity.OperationSystem;
+import com.platform.portal.domain.system.entity.SystemManager;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -44,6 +46,28 @@ public class SystemDto {
             this.description = s.getDescription();
             this.active = s.isActive();
             this.createdAt = s.getCreatedAt();
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class AddManagerRequest {
+        @NotNull
+        private Long userId;
+    }
+
+    @Getter
+    public static class ManagerResponse {
+        private final Long id;
+        private final Long userId;
+        private final String username;
+        private final LocalDateTime assignedAt;
+
+        public ManagerResponse(SystemManager sm) {
+            this.id = sm.getId();
+            this.userId = sm.getUser().getId();
+            this.username = sm.getUser().getUsername();
+            this.assignedAt = sm.getAssignedAt();
         }
     }
 }

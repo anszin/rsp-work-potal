@@ -59,8 +59,9 @@ public class ChangeRequestController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ChangeRequestDto.Response> changeStatus(
             @PathVariable Long id,
-            @Valid @RequestBody ChangeRequestDto.StatusRequest req) {
-        return ResponseEntity.ok(service.changeStatus(id, req));
+            @Valid @RequestBody ChangeRequestDto.StatusRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(service.changeStatus(id, req, user.getUsername()));
     }
 
     @PostMapping("/{id}/attachment")

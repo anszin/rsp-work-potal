@@ -5,9 +5,12 @@ import com.platform.portal.domain.request.entity.ChangeRequest;
 import com.platform.portal.domain.request.entity.ChangeRequest.Status;
 import com.platform.portal.domain.request.repository.ChangeRequestRepository;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
+import com.platform.portal.domain.system.repository.SystemManagerRepository;
+import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
 import com.platform.portal.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +30,7 @@ public class ChangeRequestService {
     private final ChangeRequestRepository changeRequestRepository;
     private final OperationSystemRepository systemRepository;
     private final UserRepository userRepository;
+    private final SystemManagerRepository systemManagerRepository;
     private final FileStorageService fileStorageService;
 
     private static final Map<Status, Set<Status>> ALLOWED_TRANSITIONS = Map.of(
@@ -91,7 +95,7 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public ChangeRequestDto.Response changeStatus(Long id, ChangeRequestDto.StatusRequest req) {
+    public ChangeRequestDto.Response changeStatus(Long id, ChangeRequestDto.StatusRequest req, String username) {
         ChangeRequest cr = getOrThrow(id);
         Status current = cr.getStatus();
         Status newStatus = req.getStatus();
@@ -99,6 +103,22 @@ public class ChangeRequestService {
         if (!ALLOWED_TRANSITIONS.getOrDefault(current, Set.of()).contains(newStatus)) {
             throw new IllegalStateException(
                     String.format("%s → %s 전환 불가", current, newStatus));
+        }
+
+        // REQUESTED(제출)는 요청자 본인만 가능, APPROVED/REJECTED/COMPLETED는 ADMIN 또는 시스템 담당자만 가능
+        if (newStatus == Status.REQUESTED) {
+            if (!cr.getRequester().getUsername().equals(username)) {
+                throw new AccessDeniedException("본인의 요청만 제출할 수 있습니다.");
+            }
+        } else {
+            User actor = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+            boolean isAdmin = actor.getRole() == User.Role.ADMIN;
+            boolean isManager = systemManagerRepository.existsBySystemIdAndUserId(
+                    cr.getSystem().getId(), actor.getId());
+            if (!isAdmin && !isManager) {
+                throw new AccessDeniedException("해당 시스템의 담당자 또는 관리자만 처리할 수 있습니다.");
+            }
         }
 
         cr.setStatus(newStatus);

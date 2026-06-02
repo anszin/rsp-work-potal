@@ -2,10 +2,10 @@ import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getChangeRequests, createChangeRequest, updateChangeRequest,
-  changeRequestStatus, deleteChangeRequest, uploadAttachment, deleteAttachment,
+  changeRequestStatus, deleteChangeRequest, uploadAttachment,
   type ChangeRequest, type RequestStatus, type CreateChangeRequest,
 } from '../../api/changeRequests'
-import { getActiveSystems } from '../../api/systems'
+import { getActiveSystems, getManagedSystemIds } from '../../api/systems'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
@@ -36,6 +36,10 @@ export default function ChangeRequestPage() {
   const { data: systems = [] } = useQuery({
     queryKey: ['systems', 'active'],
     queryFn: getActiveSystems,
+  })
+  const { data: managedSystemIds = [] } = useQuery({
+    queryKey: ['systems', 'managed'],
+    queryFn: getManagedSystemIds,
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['change-requests'] })
@@ -83,6 +87,7 @@ export default function ChangeRequestPage() {
   }
 
   const isAdmin = user?.role === 'ADMIN'
+  const canManage = (systemId: number) => isAdmin || managedSystemIds.includes(systemId)
 
   const submitReject = () => {
     if (!rejectReason.trim()) return alert('반려 사유를 입력해주세요.')
@@ -204,8 +209,14 @@ export default function ChangeRequestPage() {
                       {r.status === 'DRAFT' && (
                         <button style={s.btnSm} onClick={() => openEdit(r)}>수정</button>
                       )}
-                      {NEXT_STATUS[r.status]?.map(({ label, next }) => (
-                        (isAdmin || next === 'REQUESTED') && (
+                      {NEXT_STATUS[r.status]?.map(({ label, next }) => {
+                        if (next === 'REQUESTED') return (
+                          <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
+                            onClick={() => statusMut.mutate({ id: r.id, status: next })}>
+                            {label}
+                          </button>
+                        )
+                        if (canManage(r.systemId)) return (
                           <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
                             onClick={() => {
                               if (next === 'REJECTED') { setRejectModal({ id: r.id }); setRejectReason('') }
@@ -214,7 +225,8 @@ export default function ChangeRequestPage() {
                             {label}
                           </button>
                         )
-                      ))}
+                        return null
+                      })}
                       {r.status === 'DRAFT' && (
                         <button style={{ ...s.btnSm, color: '#e53e3e' }}
                           onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
