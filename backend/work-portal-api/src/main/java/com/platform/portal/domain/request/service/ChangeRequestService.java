@@ -6,10 +6,13 @@ import com.platform.portal.domain.request.entity.ChangeRequest.Status;
 import com.platform.portal.domain.request.repository.ChangeRequestRepository;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.domain.user.repository.UserRepository;
+import com.platform.portal.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,7 @@ public class ChangeRequestService {
     private final ChangeRequestRepository changeRequestRepository;
     private final OperationSystemRepository systemRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     private static final Map<Status, Set<Status>> ALLOWED_TRANSITIONS = Map.of(
             Status.DRAFT,     Set.of(Status.REQUESTED),
@@ -60,7 +64,10 @@ public class ChangeRequestService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found")));
         cr.setTitle(req.getTitle());
         cr.setContent(req.getContent());
+        cr.setRequesterDept(req.getRequesterDept());
+        cr.setRequesterName(req.getRequesterName());
         cr.setTargetDate(req.getTargetDate());
+        cr.setAttachmentLink(req.getAttachmentLink());
         return new ChangeRequestDto.Response(changeRequestRepository.save(cr));
     }
 
@@ -74,7 +81,10 @@ public class ChangeRequestService {
                 .orElseThrow(() -> new IllegalArgumentException("System not found")));
         cr.setTitle(req.getTitle());
         cr.setContent(req.getContent());
+        cr.setRequesterDept(req.getRequesterDept());
+        cr.setRequesterName(req.getRequesterName());
         cr.setTargetDate(req.getTargetDate());
+        cr.setAttachmentLink(req.getAttachmentLink());
         return new ChangeRequestDto.Response(cr);
     }
 
@@ -99,11 +109,38 @@ public class ChangeRequestService {
     }
 
     @Transactional
+    public ChangeRequestDto.Response uploadAttachment(Long id, MultipartFile file) {
+        ChangeRequest cr = getOrThrow(id);
+        try {
+            if (cr.getAttachmentPath() != null) fileStorageService.delete(cr.getAttachmentPath());
+            String stored = fileStorageService.store(file, id);
+            cr.setAttachmentPath(stored);
+            cr.setAttachmentOriginalName(file.getOriginalFilename());
+        } catch (IOException e) {
+            throw new RuntimeException("파일 업로드 실패", e);
+        }
+        return new ChangeRequestDto.Response(cr);
+    }
+
+    @Transactional
+    public void deleteAttachment(Long id) {
+        ChangeRequest cr = getOrThrow(id);
+        try {
+            fileStorageService.delete(cr.getAttachmentPath());
+            cr.setAttachmentPath(null);
+            cr.setAttachmentOriginalName(null);
+        } catch (IOException e) {
+            throw new RuntimeException("파일 삭제 실패", e);
+        }
+    }
+
+    @Transactional
     public void delete(Long id) {
         ChangeRequest cr = getOrThrow(id);
         if (cr.getStatus() != Status.DRAFT) {
             throw new IllegalStateException("DRAFT 상태에서만 삭제 가능합니다.");
         }
+        try { fileStorageService.delete(cr.getAttachmentPath()); } catch (IOException ignored) {}
         changeRequestRepository.deleteById(id);
     }
 

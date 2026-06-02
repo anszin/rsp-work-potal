@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getChangeRequests, createChangeRequest, updateChangeRequest,
-  changeRequestStatus, deleteChangeRequest,
+  changeRequestStatus, deleteChangeRequest, uploadAttachment, deleteAttachment,
   type ChangeRequest, type RequestStatus, type CreateChangeRequest,
 } from '../../api/changeRequests'
 import { getActiveSystems } from '../../api/systems'
@@ -16,7 +16,7 @@ const NEXT_STATUS: Partial<Record<RequestStatus, { label: string; next: RequestS
   APPROVED:  [{ label: '완료', next: 'COMPLETED' }],
 }
 
-const emptyForm: CreateChangeRequest = { systemId: 0, title: '', content: '', targetDate: '' }
+const emptyForm: CreateChangeRequest = { systemId: 0, title: '', content: '', requesterDept: '', requesterName: '', targetDate: '', attachmentLink: '' }
 
 export default function ChangeRequestPage() {
   const { user } = useAuth()
@@ -24,6 +24,8 @@ export default function ChangeRequestPage() {
   const [editing, setEditing] = useState<ChangeRequest | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<CreateChangeRequest>(emptyForm)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['change-requests'],
@@ -36,8 +38,20 @@ export default function ChangeRequestPage() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['change-requests'] })
 
-  const createMut = useMutation({ mutationFn: createChangeRequest, onSuccess: () => { invalidate(); closeForm() } })
-  const updateMut = useMutation({ mutationFn: ({ id, data }: { id: number; data: CreateChangeRequest }) => updateChangeRequest(id, data), onSuccess: () => { invalidate(); closeForm() } })
+  const createMut = useMutation({
+    mutationFn: createChangeRequest,
+    onSuccess: async (created) => {
+      if (pendingFile) await uploadAttachment(created.id, pendingFile)
+      invalidate(); closeForm()
+    }
+  })
+  const updateMut = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: CreateChangeRequest }) => updateChangeRequest(id, data),
+    onSuccess: async (updated) => {
+      if (pendingFile) await uploadAttachment(updated.id, pendingFile)
+      invalidate(); closeForm()
+    }
+  })
   const statusMut = useMutation({ mutationFn: ({ id, status }: { id: number; status: RequestStatus }) => changeRequestStatus(id, status), onSuccess: invalidate })
   const deleteMut = useMutation({ mutationFn: deleteChangeRequest, onSuccess: invalidate })
 
@@ -49,11 +63,12 @@ export default function ChangeRequestPage() {
 
   const openEdit = (r: ChangeRequest) => {
     setEditing(r)
-    setForm({ systemId: r.systemId, title: r.title, content: r.content ?? '', targetDate: r.targetDate ?? '' })
+    setForm({ systemId: r.systemId, title: r.title, content: r.content ?? '', requesterDept: r.requesterDept ?? '', requesterName: r.requesterName ?? '', targetDate: r.targetDate ?? '', attachmentLink: r.attachmentLink ?? '' })
+    setPendingFile(null)
     setShowForm(true)
   }
 
-  const closeForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm) }
+  const closeForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm); setPendingFile(null); if (fileRef.current) fileRef.current.value = '' }
 
   const submit = () => {
     if (!form.title || !form.systemId) return
@@ -81,8 +96,16 @@ export default function ChangeRequestPage() {
             </select>
             <label style={s.label}>제목</label>
             <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="변경 관리 제목" />
+            <label style={s.label}>요청부서</label>
+            <input style={s.input} value={form.requesterDept ?? ''} onChange={(e) => setForm({ ...form, requesterDept: e.target.value })} placeholder="요청 부서명" />
+            <label style={s.label}>요청자명</label>
+            <input style={s.input} value={form.requesterName ?? ''} onChange={(e) => setForm({ ...form, requesterName: e.target.value })} placeholder="요청자 이름" />
             <label style={s.label}>반영 목표일</label>
             <input type="date" style={s.input} value={form.targetDate ?? ''} onChange={(e) => setForm({ ...form, targetDate: e.target.value || undefined })} />
+            <label style={s.label}>링크 첨부</label>
+            <input style={s.input} value={form.attachmentLink ?? ''} onChange={(e) => setForm({ ...form, attachmentLink: e.target.value })} placeholder="https://..." />
+            <label style={s.label}>파일 첨부</label>
+            <input ref={fileRef} type="file" style={s.input} onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)} />
             <label style={s.label}>내용</label>
             <textarea style={{ ...s.input, height: 100, resize: 'vertical' }} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="변경 내용을 입력하세요" />
           </div>
@@ -100,28 +123,40 @@ export default function ChangeRequestPage() {
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
-                <th style={s.th}>번호</th>
                 <th style={s.th}>시스템</th>
-                <th style={{ ...s.th, width: '30%' }}>제목</th>
+                <th style={s.th}>요청부서</th>
                 <th style={s.th}>요청자</th>
+                <th style={{ ...s.th, width: '25%' }}>제목</th>
                 <th style={s.th}>상태</th>
                 <th style={s.th}>반영 목표일</th>
+                <th style={s.th}>첨부</th>
                 <th style={s.th}>생성일</th>
                 <th style={s.th}>액션</th>
               </tr>
             </thead>
             <tbody>
               {requests.length === 0 && (
-                <tr><td colSpan={8} style={s.empty}>등록된 요청이 없습니다</td></tr>
+                <tr><td colSpan={9} style={s.empty}>등록된 요청이 없습니다</td></tr>
               )}
               {requests.map((r) => (
                 <tr key={r.id} style={s.tr}>
-                  <td style={s.td}>{r.id}</td>
                   <td style={s.td}><span style={s.sysTag}>{r.systemCode}</span></td>
+                  <td style={s.td}>{r.requesterDept ?? '-'}</td>
+                  <td style={s.td}>{r.requesterName ?? r.requesterUsername}</td>
                   <td style={s.td}>{r.title}</td>
-                  <td style={s.td}>{r.requesterUsername}</td>
                   <td style={s.td}><StatusBadge status={r.status} /></td>
                   <td style={s.td}>{r.targetDate ?? '-'}</td>
+                  <td style={s.td}>
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                      {r.hasAttachment && (
+                        <a href={`/api/change-requests/${r.id}/attachment`} style={{ fontSize: 12, color: '#1976d2' }}>📎 파일</a>
+                      )}
+                      {r.attachmentLink && (
+                        <a href={r.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: '#7b1fa2' }}>🔗 링크</a>
+                      )}
+                      {!r.hasAttachment && !r.attachmentLink && <span style={{ color: '#ccc', fontSize: 12 }}>-</span>}
+                    </div>
+                  </td>
                   <td style={s.td}>{r.createdAt?.slice(0, 10)}</td>
                   <td style={s.td}>
                     <div style={s.actions}>

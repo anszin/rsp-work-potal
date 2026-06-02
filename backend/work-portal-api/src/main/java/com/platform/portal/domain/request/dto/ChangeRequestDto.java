@@ -19,7 +19,10 @@ public class ChangeRequestDto {
         @NotBlank
         private String title;
         private String content;
+        private String requesterDept;
+        private String requesterName;
         private LocalDate targetDate;
+        private String attachmentLink;
     }
 
     @Getter
@@ -30,7 +33,10 @@ public class ChangeRequestDto {
         @NotBlank
         private String title;
         private String content;
+        private String requesterDept;
+        private String requesterName;
         private LocalDate targetDate;
+        private String attachmentLink;
     }
 
     @Getter
@@ -49,8 +55,13 @@ public class ChangeRequestDto {
         private final String title;
         private final String content;
         private final String requesterUsername;
+        private final String requesterDept;
+        private final String requesterName;
         private final ChangeRequest.Status status;
         private final LocalDate targetDate;
+        private final String attachmentLink;
+        private final String attachmentOriginalName;
+        private final boolean hasAttachment;
         private final LocalDateTime requestedAt;
         private final LocalDateTime approvedAt;
         private final LocalDateTime completedAt;
@@ -64,8 +75,13 @@ public class ChangeRequestDto {
             this.title = cr.getTitle();
             this.content = cr.getContent();
             this.requesterUsername = cr.getRequester().getUsername();
+            this.requesterDept = cr.getRequesterDept();
+            this.requesterName = cr.getRequesterName();
             this.status = cr.getStatus();
             this.targetDate = cr.getTargetDate();
+            this.attachmentLink = cr.getAttachmentLink();
+            this.attachmentOriginalName = cr.getAttachmentOriginalName();
+            this.hasAttachment = cr.getAttachmentPath() != null;
             this.requestedAt = cr.getRequestedAt();
             this.approvedAt = cr.getApprovedAt();
             this.completedAt = cr.getCompletedAt();

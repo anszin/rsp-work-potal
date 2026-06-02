@@ -42,7 +42,12 @@ public class ChangeRequest {
     @Column(nullable = false)
     private Status status = Status.DRAFT;
 
+    private String requesterDept;
+    private String requesterName;
     private LocalDate targetDate;
+    private String attachmentLink;
+    private String attachmentPath;
+    private String attachmentOriginalName;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;
     private LocalDateTime completedAt;
