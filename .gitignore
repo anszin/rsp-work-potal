@@ -2,6 +2,7 @@
 backend/work-portal-api/.gradle/
 backend/work-portal-api/build/
 backend/work-portal-api/out/
+backend/work-portal-api/bin/
 
 # Gradle wrapper jar (only exclude the jar, keep the scripts)
 !backend/work-portal-api/gradle/wrapper/gradle-wrapper.jar
