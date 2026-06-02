@@ -28,6 +28,9 @@ public class ChangeRequest {
     @JoinColumn(name = "system_id", nullable = false)
     private OperationSystem system;
 
+    @Column(unique = true, length = 20)
+    private String requestNo;
+
     @Column(nullable = false)
     private String title;
 

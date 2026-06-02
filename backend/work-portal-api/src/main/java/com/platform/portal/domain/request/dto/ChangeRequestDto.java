@@ -49,6 +49,7 @@ public class ChangeRequestDto {
     @Getter
     public static class Response {
         private final Long id;
+        private final String requestNo;
         private final Long systemId;
         private final String systemCode;
         private final String systemName;
@@ -69,6 +70,7 @@ public class ChangeRequestDto {
 
         public Response(ChangeRequest cr) {
             this.id = cr.getId();
+            this.requestNo = cr.getRequestNo();
             this.systemId = cr.getSystem().getId();
             this.systemCode = cr.getSystem().getCode();
             this.systemName = cr.getSystem().getName();

@@ -4,6 +4,7 @@ export type RequestStatus = 'DRAFT' | 'REQUESTED' | 'APPROVED' | 'COMPLETED' | '
 
 export interface ChangeRequest {
   id: number
+  requestNo: string | null
   systemId: number
   systemCode: string
   systemName: string

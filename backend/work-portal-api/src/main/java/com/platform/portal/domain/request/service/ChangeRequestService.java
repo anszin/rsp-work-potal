@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,7 @@ public class ChangeRequestService {
                 .orElseThrow(() -> new IllegalArgumentException("System not found")));
         cr.setRequester(userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found")));
+        cr.setRequestNo(generateRequestNo());
         cr.setTitle(req.getTitle());
         cr.setContent(req.getContent());
         cr.setRequesterDept(req.getRequesterDept());
@@ -142,6 +144,14 @@ public class ChangeRequestService {
         }
         try { fileStorageService.delete(cr.getAttachmentPath()); } catch (IOException ignored) {}
         changeRequestRepository.deleteById(id);
+    }
+
+    private String generateRequestNo() {
+        int year = LocalDate.now().getYear();
+        LocalDateTime start = LocalDate.of(year, 1, 1).atStartOfDay();
+        LocalDateTime end = LocalDate.of(year + 1, 1, 1).atStartOfDay();
+        long count = changeRequestRepository.countByYear(start, end);
+        return String.format("CR-%d-%03d", year, count + 1);
     }
 
     private ChangeRequest getOrThrow(Long id) {

@@ -123,6 +123,7 @@ export default function ChangeRequestPage() {
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
+                <th style={s.th}>요청번호</th>
                 <th style={s.th}>시스템</th>
                 <th style={s.th}>요청부서</th>
                 <th style={s.th}>요청자</th>
@@ -136,10 +137,11 @@ export default function ChangeRequestPage() {
             </thead>
             <tbody>
               {requests.length === 0 && (
-                <tr><td colSpan={9} style={s.empty}>등록된 요청이 없습니다</td></tr>
+                <tr><td colSpan={10} style={s.empty}>등록된 요청이 없습니다</td></tr>
               )}
               {requests.map((r) => (
                 <tr key={r.id} style={s.tr}>
+                  <td style={{ ...s.td, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap' }}>{r.requestNo ?? '-'}</td>
                   <td style={s.td}><span style={s.sysTag}>{r.systemCode}</span></td>
                   <td style={s.td}>{r.requesterDept ?? '-'}</td>
                   <td style={s.td}>{r.requesterName ?? r.requesterUsername}</td>
