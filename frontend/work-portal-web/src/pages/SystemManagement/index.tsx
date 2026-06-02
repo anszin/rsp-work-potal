@@ -35,8 +35,7 @@ export default function SystemManagementPage() {
     if (editing) {
       updateMut.mutate({ id: editing.id, data: { name: form.name, description: form.description || undefined } })
     } else {
-      createSystem({ code: form.code, name: form.name, description: form.description || undefined })
-        .then(() => { invalidate(); reset() })
+      createMut.mutate({ code: form.code, name: form.name, description: form.description || undefined })
     }
   }
 
