@@ -165,6 +165,18 @@ export default function ChangeRequestPage() {
             <input style={s.input} value={form.attachmentLink ?? ''} onChange={(e) => setForm({ ...form, attachmentLink: e.target.value })} placeholder="https://..." />
             <label style={s.label}>파일 첨부</label>
             <div>
+              {editing?.hasAttachment && !pendingFile && (
+                <div style={{ marginBottom: 6, fontSize: 12, color: '#555', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>현재 첨부: <strong>{editing.attachmentOriginalName ?? '파일'}</strong></span>
+                  <button
+                    onClick={() => downloadAttachment(editing.id, editing.attachmentOriginalName ?? '파일')}
+                    style={{ fontSize: 11, border: 'none', background: 'none', color: '#1976d2', cursor: 'pointer', padding: 0 }}>
+                    다운로드
+                  </button>
+                  <span style={{ color: '#aaa' }}>|</span>
+                  <span style={{ color: '#aaa', fontSize: 11 }}>새 파일 선택 시 교체됩니다</span>
+                </div>
+              )}
               <input ref={fileRef} type="file" style={{ ...s.input, marginBottom: 6 }}
                 onChange={(e) => { setPendingFile(e.target.files?.[0] ?? null) }} />
               <div
