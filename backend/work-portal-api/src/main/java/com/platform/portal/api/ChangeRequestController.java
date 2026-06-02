@@ -60,7 +60,7 @@ public class ChangeRequestController {
     public ResponseEntity<ChangeRequestDto.Response> changeStatus(
             @PathVariable Long id,
             @Valid @RequestBody ChangeRequestDto.StatusRequest req) {
-        return ResponseEntity.ok(service.changeStatus(id, req.getStatus()));
+        return ResponseEntity.ok(service.changeStatus(id, req));
     }
 
     @PostMapping("/{id}/attachment")

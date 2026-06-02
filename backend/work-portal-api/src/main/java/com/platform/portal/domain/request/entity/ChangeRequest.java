@@ -51,6 +51,8 @@ public class ChangeRequest {
     private String attachmentLink;
     private String attachmentPath;
     private String attachmentOriginalName;
+    @Column(columnDefinition = "TEXT")
+    private String rejectionReason;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;
     private LocalDateTime completedAt;

@@ -91,9 +91,10 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public ChangeRequestDto.Response changeStatus(Long id, Status newStatus) {
+    public ChangeRequestDto.Response changeStatus(Long id, ChangeRequestDto.StatusRequest req) {
         ChangeRequest cr = getOrThrow(id);
         Status current = cr.getStatus();
+        Status newStatus = req.getStatus();
 
         if (!ALLOWED_TRANSITIONS.getOrDefault(current, Set.of()).contains(newStatus)) {
             throw new IllegalStateException(
@@ -105,6 +106,7 @@ public class ChangeRequestService {
             case REQUESTED -> cr.setRequestedAt(LocalDateTime.now());
             case APPROVED  -> cr.setApprovedAt(LocalDateTime.now());
             case COMPLETED -> cr.setCompletedAt(LocalDateTime.now());
+            case REJECTED  -> cr.setRejectionReason(req.getRejectionReason());
             default -> {}
         }
         return new ChangeRequestDto.Response(cr);

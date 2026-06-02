@@ -26,6 +26,8 @@ export default function ChangeRequestPage() {
   const [form, setForm] = useState<CreateChangeRequest>(emptyForm)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [rejectModal, setRejectModal] = useState<{ id: number } | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['change-requests'],
@@ -52,7 +54,11 @@ export default function ChangeRequestPage() {
       invalidate(); closeForm()
     }
   })
-  const statusMut = useMutation({ mutationFn: ({ id, status }: { id: number; status: RequestStatus }) => changeRequestStatus(id, status), onSuccess: invalidate })
+  const statusMut = useMutation({
+    mutationFn: ({ id, status, rejectionReason }: { id: number; status: RequestStatus; rejectionReason?: string }) =>
+      changeRequestStatus(id, status, rejectionReason),
+    onSuccess: invalidate,
+  })
   const deleteMut = useMutation({ mutationFn: deleteChangeRequest, onSuccess: invalidate })
 
   const openCreate = () => {
@@ -78,8 +84,34 @@ export default function ChangeRequestPage() {
 
   const isAdmin = user?.role === 'ADMIN'
 
+  const submitReject = () => {
+    if (!rejectReason.trim()) return alert('반려 사유를 입력해주세요.')
+    statusMut.mutate({ id: rejectModal!.id, status: 'REJECTED', rejectionReason: rejectReason })
+    setRejectModal(null)
+    setRejectReason('')
+  }
+
   return (
     <div style={s.page}>
+      {rejectModal && (
+        <div style={s.overlay}>
+          <div style={s.modal}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>반려 사유 입력</h3>
+            <textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              placeholder="반려 사유를 입력하세요"
+              rows={4}
+              style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: 6, fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }}
+              autoFocus
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+              <button style={s.btnSecondary} onClick={() => setRejectModal(null)}>취소</button>
+              <button style={{ ...s.btn, background: '#e53e3e' }} onClick={submitReject}>반려 확정</button>
+            </div>
+          </div>
+        </div>
+      )}
       <PageHeader
         title="변경 관리"
         action={<button style={s.btn} onClick={openCreate}>+ 새 요청</button>}
@@ -146,7 +178,14 @@ export default function ChangeRequestPage() {
                   <td style={s.td}>{r.requesterDept ?? '-'}</td>
                   <td style={s.td}>{r.requesterName ?? r.requesterUsername}</td>
                   <td style={s.td}>{r.title}</td>
-                  <td style={s.td}><StatusBadge status={r.status} /></td>
+                  <td style={s.td}>
+                    <StatusBadge status={r.status} />
+                    {r.status === 'REJECTED' && r.rejectionReason && (
+                      <div style={{ fontSize: 11, color: '#e53e3e', marginTop: 2 }} title={r.rejectionReason}>
+                        사유: {r.rejectionReason.length > 20 ? r.rejectionReason.slice(0, 20) + '…' : r.rejectionReason}
+                      </div>
+                    )}
+                  </td>
                   <td style={s.td}>{r.targetDate ?? '-'}</td>
                   <td style={s.td}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -168,7 +207,10 @@ export default function ChangeRequestPage() {
                       {NEXT_STATUS[r.status]?.map(({ label, next }) => (
                         (isAdmin || next === 'REQUESTED') && (
                           <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
-                            onClick={() => statusMut.mutate({ id: r.id, status: next })}>
+                            onClick={() => {
+                              if (next === 'REJECTED') { setRejectModal({ id: r.id }); setRejectReason('') }
+                              else statusMut.mutate({ id: r.id, status: next })
+                            }}>
                             {label}
                           </button>
                         )
@@ -218,4 +260,6 @@ const s: Record<string, React.CSSProperties> = {
   sysTag: { background: '#EBF8FF', color: '#2B6CB0', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   actions: { display: 'flex', alignItems: 'center' },
   empty: { padding: '32px', textAlign: 'center' as const, color: '#aaa', fontSize: 13 },
+  overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  modal: { background: '#fff', borderRadius: 8, padding: 24, width: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
 }
