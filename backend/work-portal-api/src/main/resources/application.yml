@@ -30,6 +30,8 @@ jwt:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  upload:
+    path: ${UPLOAD_PATH:/opt/rsp-work-portal/uploads}
 
 logging:
   level:
