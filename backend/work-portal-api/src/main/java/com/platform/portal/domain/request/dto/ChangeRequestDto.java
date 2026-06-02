@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Base64;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -37,6 +39,19 @@ public class ChangeRequestDto {
         private String requesterName;
         private LocalDate targetDate;
         private String attachmentLink;
+    }
+
+    @Getter
+    @Setter
+    public static class FileUploadRequest {
+        @NotBlank
+        private String filename;
+        @NotBlank
+        private String content; // base64
+
+        public byte[] decode() {
+            return Base64.getDecoder().decode(content);
+        }
     }
 
     @Getter

@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -64,12 +62,11 @@ public class ChangeRequestController {
         return ResponseEntity.ok(service.changeStatus(id, req, user.getUsername()));
     }
 
-    @PostMapping(value = "/{id}/attachment", consumes = "application/octet-stream")
+    @PostMapping("/{id}/attachment")
     public ResponseEntity<ChangeRequestDto.Response> uploadAttachment(
             @PathVariable Long id,
-            @RequestParam("filename") String filename,
-            HttpServletRequest request) throws java.io.IOException {
-        return ResponseEntity.ok(service.uploadAttachment(id, filename, request.getInputStream()));
+            @RequestBody ChangeRequestDto.FileUploadRequest req) {
+        return ResponseEntity.ok(service.uploadAttachment(id, req));
     }
 
     @GetMapping("/{id}/attachment")

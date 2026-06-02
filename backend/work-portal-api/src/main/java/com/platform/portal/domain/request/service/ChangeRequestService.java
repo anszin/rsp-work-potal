@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.io.InputStream;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -133,13 +132,13 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public ChangeRequestDto.Response uploadAttachment(Long id, String filename, InputStream content) {
+    public ChangeRequestDto.Response uploadAttachment(Long id, ChangeRequestDto.FileUploadRequest req) {
         ChangeRequest cr = getOrThrow(id);
         try {
             if (cr.getAttachmentPath() != null) fileStorageService.delete(cr.getAttachmentPath());
-            String stored = fileStorageService.store(content, filename, id);
+            String stored = fileStorageService.store(req.decode(), req.getFilename(), id);
             cr.setAttachmentPath(stored);
-            cr.setAttachmentOriginalName(filename);
+            cr.setAttachmentOriginalName(req.getFilename());
         } catch (IOException e) {
             throw new RuntimeException("파일 업로드 실패", e);
         }

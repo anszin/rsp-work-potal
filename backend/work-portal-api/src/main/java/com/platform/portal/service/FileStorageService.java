@@ -6,7 +6,6 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.*;
 
@@ -16,11 +15,11 @@ public class FileStorageService {
     @Value("${app.upload.path:/opt/work-portal/uploads}")
     private String uploadPath;
 
-    public String store(InputStream content, String originalFilename, Long requestId) throws IOException {
+    public String store(byte[] content, String originalFilename, Long requestId) throws IOException {
         Path dir = Paths.get(uploadPath);
         Files.createDirectories(dir);
         String filename = requestId + "_" + originalFilename;
-        Files.copy(content, dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+        Files.write(dir.resolve(filename), content);
         return filename;
     }
 

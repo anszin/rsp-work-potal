@@ -35,12 +35,19 @@ export interface CreateChangeRequest {
   attachmentLink?: string
 }
 
-export const uploadAttachment = (id: number, file: File) =>
-  client.post<ChangeRequest>(
-    `/change-requests/${id}/attachment?filename=${encodeURIComponent(file.name)}`,
-    file,
-    { headers: { 'Content-Type': 'application/octet-stream' } }
-  ).then((r) => r.data)
+export const uploadAttachment = (id: number, file: File): Promise<ChangeRequest> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1]
+      client.post<ChangeRequest>(`/change-requests/${id}/attachment`, {
+        filename: file.name,
+        content: base64,
+      }).then((r) => resolve(r.data)).catch(reject)
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 
 export const deleteAttachment = (id: number) =>
   client.delete(`/change-requests/${id}/attachment`)
