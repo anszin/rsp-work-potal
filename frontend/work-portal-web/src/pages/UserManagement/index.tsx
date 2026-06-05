@@ -17,6 +17,7 @@ const MENU_LABELS: Record<string, string> = {
   finance: '손익 관리', system_mgmt: '시스템 관리', user_mgmt: '사용자 관리',
 }
 const ROLES: UserRole[] = ['ADMIN', 'MANAGER', 'MEMBER', 'EXTERNAL']
+const CREATABLE_ROLES: UserRole[] = ['MANAGER', 'MEMBER', 'EXTERNAL']
 const MENU_KEYS = Object.keys(MENU_LABELS)
 
 const emptyForm = { username: '', name: '', dept: '', email: '', role: 'MEMBER' as UserRole }
@@ -98,7 +99,8 @@ export default function UserManagementPage() {
     }
   }
 
-  const allowedRoles: UserRole[] = isMember ? ['EXTERNAL'] : user?.role === 'ADMIN' ? ROLES : ['MANAGER', 'MEMBER', 'EXTERNAL']
+  // 편집 시 역할 선택 목록 (ADMIN 제외, MEMBER는 EXTERNAL만)
+  const editableRoles: UserRole[] = isMember ? ['EXTERNAL'] : CREATABLE_ROLES
 
   // 메뉴 권한 편집 초기화
   const initMenuEdits = () => {
@@ -200,10 +202,14 @@ export default function UserManagementPage() {
                 <input style={s.input} value={form.dept} onChange={e => setForm({ ...form, dept: e.target.value })} placeholder="소속 부서" />
                 <label style={s.label}>이메일</label>
                 <input style={s.input} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="이메일 (임시 비밀번호 발송)" />
-                <label style={s.label}>역할</label>
-                <select style={s.input} value={form.role} onChange={e => setForm({ ...form, role: e.target.value as UserRole })}>
-                  {allowedRoles.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
-                </select>
+                {editing && (
+                  <>
+                    <label style={s.label}>역할</label>
+                    <select style={s.input} value={form.role} onChange={e => setForm({ ...form, role: e.target.value as UserRole })}>
+                      {editableRoles.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+                    </select>
+                  </>
+                )}
               </div>
               {(createMut.isPending || updateMut.isPending) && (
                 <div style={s.progressBar}><div style={s.progressFill} /></div>

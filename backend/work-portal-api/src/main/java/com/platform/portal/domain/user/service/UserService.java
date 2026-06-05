@@ -39,9 +39,9 @@ public class UserService {
         if (actor.getRole() == User.Role.MEMBER && req.getRole() != User.Role.EXTERNAL) {
             throw new AccessDeniedException("팀원은 외부 사용자만 추가할 수 있습니다.");
         }
-        // ADMIN 계정은 ADMIN만 생성 가능
-        if (req.getRole() == User.Role.ADMIN && actor.getRole() != User.Role.ADMIN) {
-            throw new AccessDeniedException("관리자 계정은 ADMIN만 생성할 수 있습니다.");
+        // ADMIN 역할은 신규 생성 불가 (admin 계정은 DB에서 직접 관리)
+        if (req.getRole() == User.Role.ADMIN) {
+            throw new AccessDeniedException("관리자 계정은 생성할 수 없습니다.");
         }
         if (userRepository.existsByUsername(req.getUsername())) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다: " + req.getUsername());
