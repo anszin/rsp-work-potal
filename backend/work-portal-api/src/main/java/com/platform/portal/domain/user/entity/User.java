@@ -24,6 +24,10 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
+    private String name;
+
+    private String dept;
+
     @Column(unique = true)
     private String email;
 
@@ -36,6 +40,9 @@ public class User {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    @Column(nullable = false)
+    private boolean mustChangePassword = true;
 
     @CreatedDate
     @Column(updatable = false)

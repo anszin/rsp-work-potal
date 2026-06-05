@@ -1,14 +1,14 @@
 package com.platform.portal.api;
 
-import com.platform.portal.domain.user.entity.User;
-import com.platform.portal.domain.user.repository.UserRepository;
-import lombok.Getter;
+import com.platform.portal.domain.user.dto.UserDto;
+import com.platform.portal.domain.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,26 +17,45 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<List<UserSummary>> list() {
-        List<UserSummary> users = userRepository.findAll().stream()
-                .map(UserSummary::new).toList();
-        return ResponseEntity.ok(users);
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'MEMBER')")
+    public ResponseEntity<List<UserDto.Summary>> list() {
+        return ResponseEntity.ok(userService.findAll());
     }
 
-    @Getter
-    public static class UserSummary {
-        private final Long id;
-        private final String username;
-        private final String role;
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'MEMBER')")
+    public ResponseEntity<UserDto.Summary> create(
+            @Valid @RequestBody UserDto.CreateRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(userService.create(req, user.getUsername()));
+    }
 
-        public UserSummary(User u) {
-            this.id = u.getId();
-            this.username = u.getUsername();
-            this.role = u.getRole().name();
-        }
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UserDto.Summary> update(
+            @PathVariable Long id,
+            @RequestBody UserDto.UpdateRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(userService.update(id, req, user.getUsername()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails user) {
+        userService.delete(id, user.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody UserDto.ChangePasswordRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        userService.changePassword(user.getUsername(), req.getCurrentPassword(), req.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 }

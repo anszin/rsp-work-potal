@@ -33,7 +33,7 @@ public class AuthController {
         );
         User user = userRepository.findByUsername(auth.getName()).orElseThrow();
         String token = tokenProvider.createToken(user.getUsername(), user.getRole().name());
-        return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), user.getRole().name()));
+        return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), user.getRole().name(), user.isMustChangePassword()));
     }
 
     @GetMapping("/me")
@@ -41,8 +41,11 @@ public class AuthController {
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
         return ResponseEntity.ok(Map.of(
                 "username", user.getUsername(),
+                "name", user.getName() != null ? user.getName() : "",
+                "dept", user.getDept() != null ? user.getDept() : "",
                 "email", user.getEmail() != null ? user.getEmail() : "",
-                "role", user.getRole().name()
+                "role", user.getRole().name(),
+                "mustChangePassword", user.isMustChangePassword()
         ));
     }
 }

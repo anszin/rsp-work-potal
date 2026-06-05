@@ -1,17 +1,23 @@
 import { createContext, useState, useEffect, ReactNode } from 'react'
 import { getMe, login as loginApi, LoginRequest } from '../api/auth'
+import { getMenuPermissions } from '../api/users'
 
 interface AuthUser {
   username: string
+  name: string
+  dept: string
   email: string
   role: string
+  mustChangePassword: boolean
 }
 
 interface AuthContextType {
   token: string | null
   user: AuthUser | null
-  login: (data: LoginRequest) => Promise<void>
+  menuPermissions: Record<string, boolean> // menuKey → enabled (for current user's role)
+  login: (data: LoginRequest) => Promise<{ mustChangePassword: boolean }>
   logout: () => void
+  refreshMe: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -19,26 +25,32 @@ export const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [menuPermissions, setMenuPermissions] = useState<Record<string, boolean>>({})
 
-  // axios interceptor의 401 이벤트 수신 → 토큰 초기화
   useEffect(() => {
-    const handle = () => {
-      setToken(null)
-      setUser(null)
-    }
+    const handle = () => { setToken(null); setUser(null); setMenuPermissions({}) }
     window.addEventListener('auth:unauthorized', handle)
     return () => window.removeEventListener('auth:unauthorized', handle)
   }, [])
 
-  // 토큰이 있으면 사용자 정보 로드
+  const loadMenuPerms = async (role: string) => {
+    try {
+      const all = await getMenuPermissions()
+      const map: Record<string, boolean> = {}
+      all.filter(p => p.role === role).forEach(p => { map[p.menuKey] = p.enabled })
+      setMenuPermissions(map)
+    } catch { setMenuPermissions({}) }
+  }
+
+  const refreshMe = async () => {
+    const me = await getMe()
+    setUser({ username: me.username, name: me.name, dept: me.dept, email: me.email, role: me.role, mustChangePassword: me.mustChangePassword })
+    await loadMenuPerms(me.role)
+  }
+
   useEffect(() => {
     if (token) {
-      getMe()
-        .then(setUser)
-        .catch(() => {
-          localStorage.removeItem('token')
-          setToken(null)
-        })
+      refreshMe().catch(() => { localStorage.removeItem('token'); setToken(null) })
     }
   }, [token])
 
@@ -46,17 +58,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await loginApi(data)
     localStorage.setItem('token', res.token)
     setToken(res.token)
-    setUser({ username: res.username, email: '', role: res.role })
+    setUser({ username: res.username, name: '', dept: '', email: '', role: res.role, mustChangePassword: res.mustChangePassword })
+    await loadMenuPerms(res.role)
+    return { mustChangePassword: res.mustChangePassword }
   }
 
   const logout = () => {
     localStorage.removeItem('token')
     setToken(null)
     setUser(null)
+    setMenuPermissions({})
   }
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout }}>
+    <AuthContext.Provider value={{ token, user, menuPermissions, login, logout, refreshMe }}>
       {children}
     </AuthContext.Provider>
   )

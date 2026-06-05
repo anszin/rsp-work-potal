@@ -40,33 +40,33 @@ public class SystemController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<SystemDto.Response> create(@Valid @RequestBody SystemDto.CreateRequest req) {
         return ResponseEntity.ok(systemService.create(req));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<SystemDto.Response> update(@PathVariable Long id,
                                                       @Valid @RequestBody SystemDto.UpdateRequest req) {
         return ResponseEntity.ok(systemService.update(id, req));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         systemService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/managers")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<List<SystemDto.ManagerResponse>> listManagers(@PathVariable Long id) {
         return ResponseEntity.ok(systemService.findManagers(id));
     }
 
     @PostMapping("/{id}/managers")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<SystemDto.ManagerResponse> addManager(
             @PathVariable Long id,
             @Valid @RequestBody SystemDto.AddManagerRequest req) {
@@ -74,7 +74,7 @@ public class SystemController {
     }
 
     @DeleteMapping("/{id}/managers/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> removeManager(@PathVariable Long id, @PathVariable Long userId) {
         systemService.removeManager(id, userId);
         return ResponseEntity.noContent().build();
