@@ -59,7 +59,7 @@ public class UserDto {
             this.email = u.getEmail();
             this.role = u.getRole().name();
             this.active = u.isActive();
-            this.mustChangePassword = u.isMustChangePassword();
+            this.mustChangePassword = Boolean.TRUE.equals(u.getMustChangePassword());
             this.tempPassword = tempPassword;
             this.createdAt = u.getCreatedAt();
         }

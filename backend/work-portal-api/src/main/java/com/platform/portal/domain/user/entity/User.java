@@ -41,8 +41,8 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
-    @Column(nullable = false)
-    private boolean mustChangePassword = false;
+    @Column(columnDefinition = "boolean default false")
+    private Boolean mustChangePassword = false;
 
     @CreatedDate
     @Column(updatable = false)

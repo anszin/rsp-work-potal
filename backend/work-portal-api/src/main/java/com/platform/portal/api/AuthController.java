@@ -33,7 +33,7 @@ public class AuthController {
         );
         User user = userRepository.findByUsername(auth.getName()).orElseThrow();
         String token = tokenProvider.createToken(user.getUsername(), user.getRole().name());
-        return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), user.getRole().name(), user.isMustChangePassword()));
+        return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), user.getRole().name(), Boolean.TRUE.equals(user.getMustChangePassword())));
     }
 
     @GetMapping("/me")
@@ -45,7 +45,7 @@ public class AuthController {
                 "dept", user.getDept() != null ? user.getDept() : "",
                 "email", user.getEmail() != null ? user.getEmail() : "",
                 "role", user.getRole().name(),
-                "mustChangePassword", user.isMustChangePassword()
+                "mustChangePassword", Boolean.TRUE.equals(user.getMustChangePassword())
         ));
     }
 }
