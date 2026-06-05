@@ -66,9 +66,16 @@ export default function UserManagementPage() {
     },
     onError: (e: unknown) => alert('초기화 실패: ' + apiError(e)),
   })
+  const [menuSaved, setMenuSaved] = useState(false)
   const menuMut = useMutation({
     mutationFn: (data: MenuPermission[]) => updateMenuPermissions(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['menu-permissions'] }); setMenuDirty(false) },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['menu-permissions'] })
+      setMenuDirty(false)
+      setMenuSaved(true)
+      setTimeout(() => setMenuSaved(false), 2500)
+    },
+    onError: (e: unknown) => alert('저장 실패: ' + apiError(e)),
   })
 
   const openCreate = () => {
@@ -142,9 +149,15 @@ export default function UserManagementPage() {
 
       {tab === 'menus' && isAdminOrManager ? (
         <div style={s.card}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ margin: 0, fontSize: 15 }}>역할별 메뉴 접근 권한</h3>
-            <button style={s.btn} onClick={saveMenuPerms} disabled={!menuDirty}>저장</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {menuSaved && <span style={{ fontSize: 13, color: '#276749' }}>저장되었습니다 ✓</span>}
+              <button style={{ ...s.btn, opacity: (!menuDirty || menuMut.isPending) ? 0.6 : 1 }}
+                onClick={saveMenuPerms} disabled={!menuDirty || menuMut.isPending}>
+                {menuMut.isPending ? '저장 중...' : '저장'}
+              </button>
+            </div>
           </div>
           <table style={s.table}>
             <thead>
