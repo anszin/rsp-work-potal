@@ -92,9 +92,9 @@ const styles: Record<string, React.CSSProperties> = {
   nav: { flex: 1, padding: '12px 0', display: 'flex', flexDirection: 'column', overflowY: 'auto' },
   groupHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '10px 20px', margin: '6px 8px 2px', fontSize: 12, fontWeight: 600,
-    color: '#718096', background: 'transparent', border: 'none', borderRadius: 4,
-    cursor: 'pointer', letterSpacing: '0.05em', textTransform: 'uppercase' as const,
+    padding: '10px 20px', margin: '2px 8px', fontSize: 14, fontWeight: 400,
+    color: '#a0aec0', background: 'transparent', border: 'none', borderRadius: 4,
+    cursor: 'pointer',
   },
   userSection: { padding: '16px 20px', borderTop: '1px solid #2d3748', display: 'flex', flexDirection: 'column', gap: 4 },
   logoutBtn: { background: 'transparent', border: '1px solid #4a5568', color: '#a0aec0', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: 13, marginTop: 8 },
