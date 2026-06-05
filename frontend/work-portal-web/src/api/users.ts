@@ -43,6 +43,9 @@ export const updateUser = (id: number, data: UpdateUserRequest) =>
 export const deleteUser = (id: number) =>
   client.delete(`/users/${id}`)
 
+export const resetPassword = (id: number) =>
+  client.post<UserSummary>(`/users/${id}/reset-password`).then((r) => r.data)
+
 export interface MenuPermission {
   role: string
   menuKey: string

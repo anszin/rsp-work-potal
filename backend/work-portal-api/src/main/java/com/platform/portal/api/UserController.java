@@ -26,7 +26,6 @@ public class UserController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'MEMBER')")
     public ResponseEntity<UserDto.Summary> create(
             @Valid @RequestBody UserDto.CreateRequest req,
             @AuthenticationPrincipal UserDetails user) {
@@ -49,6 +48,14 @@ public class UserController {
             @AuthenticationPrincipal UserDetails user) {
         userService.delete(id, user.getUsername());
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UserDto.Summary> resetPassword(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(userService.resetPassword(id, user.getUsername()));
     }
 
     @PostMapping("/change-password")

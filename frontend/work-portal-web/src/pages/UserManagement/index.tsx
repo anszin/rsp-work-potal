@@ -1,8 +1,14 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUsers, createUser, updateUser, deleteUser, getMenuPermissions, updateMenuPermissions, type UserSummary, type UserRole, type MenuPermission } from '../../api/users'
+import axios from 'axios'
+import { getUsers, createUser, updateUser, deleteUser, resetPassword, getMenuPermissions, updateMenuPermissions, type UserSummary, type UserRole, type MenuPermission } from '../../api/users'
 import { useAuth } from '../../context/useAuth'
 import PageHeader from '../../components/PageHeader'
+
+function apiError(e: unknown): string {
+  if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
+  return e instanceof Error ? e.message : String(e)
+}
 
 const ROLE_LABELS: Record<string, string> = { ADMIN: '관리자', MANAGER: '매니저', MEMBER: '팀원', EXTERNAL: '외부팀원' }
 const MENU_LABELS: Record<string, string> = {
@@ -42,16 +48,23 @@ export default function UserManagementPage() {
       setForm(emptyForm)
       if (data.tempPassword) setCreatedInfo({ username: data.username, tempPassword: data.tempPassword })
     },
-    onError: (e: unknown) => alert('생성 실패: ' + (e instanceof Error ? e.message : String(e))),
+    onError: (e: unknown) => alert('생성 실패: ' + apiError(e)),
   })
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Parameters<typeof updateUser>[1] }) => updateUser(id, data),
     onSuccess: () => { invalidate(); setShowForm(false); setEditing(null) },
-    onError: (e: unknown) => alert('수정 실패: ' + (e instanceof Error ? e.message : String(e))),
+    onError: (e: unknown) => alert('수정 실패: ' + apiError(e)),
   })
   const deleteMut = useMutation({
     mutationFn: deleteUser,
     onSuccess: invalidate,
+  })
+  const resetMut = useMutation({
+    mutationFn: resetPassword,
+    onSuccess: (data) => {
+      if (data.tempPassword) setCreatedInfo({ username: data.username, tempPassword: data.tempPassword })
+    },
+    onError: (e: unknown) => alert('초기화 실패: ' + apiError(e)),
   })
   const menuMut = useMutation({
     mutationFn: (data: MenuPermission[]) => updateMenuPermissions(data),
@@ -179,9 +192,16 @@ export default function UserManagementPage() {
                   {allowedRoles.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                 </select>
               </div>
+              {(createMut.isPending || updateMut.isPending) && (
+                <div style={s.progressBar}><div style={s.progressFill} /></div>
+              )}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
-                <button style={s.btnSecondary} onClick={() => { setShowForm(false); setEditing(null) }}>취소</button>
-                <button style={s.btn} onClick={submit}>저장</button>
+                <button style={s.btnSecondary} onClick={() => { setShowForm(false); setEditing(null) }}
+                  disabled={createMut.isPending || updateMut.isPending}>취소</button>
+                <button style={{ ...s.btn, opacity: (createMut.isPending || updateMut.isPending) ? 0.6 : 1 }}
+                  onClick={submit} disabled={createMut.isPending || updateMut.isPending}>
+                  {createMut.isPending || updateMut.isPending ? '처리 중...' : '저장'}
+                </button>
               </div>
             </div>
           )}
@@ -219,6 +239,10 @@ export default function UserManagementPage() {
                     {isAdminOrManager && (
                       <td style={s.td}>
                         <button style={s.btnSm} onClick={() => openEdit(u)}>수정</button>
+                        <button style={{ ...s.btnSm, color: '#d97706' }}
+                          onClick={() => { if (confirm(`${u.username} 비밀번호를 초기화하시겠습니까?`)) resetMut.mutate(u.id) }}>
+                          비번초기화
+                        </button>
                         <button style={{ ...s.btnSm, color: '#e53e3e' }}
                           onClick={() => { if (confirm(`${u.username} 계정을 삭제하시겠습니까?`)) deleteMut.mutate(u.id) }}>
                           삭제
@@ -259,6 +283,8 @@ const s: Record<string, React.CSSProperties> = {
   td: { padding: '10px 14px', fontSize: 13 },
   roleTag: { padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   empty: { padding: 32, textAlign: 'center' as const, color: '#aaa', fontSize: 13 },
+  progressBar: { height: 3, background: '#e2e8f0', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
+  progressFill: { height: '100%', background: '#1a1a2e', borderRadius: 2, animation: 'progress 1.2s ease-in-out infinite', width: '40%' },
   overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', borderRadius: 8, padding: 24, width: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
   infoBox: { background: '#f7f8fa', border: '1px solid #e2e8f0', borderRadius: 6, padding: '12px 16px', fontSize: 14, display: 'flex', flexDirection: 'column' as const, gap: 6 },

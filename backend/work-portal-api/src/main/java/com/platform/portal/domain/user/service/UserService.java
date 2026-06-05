@@ -31,11 +31,15 @@ public class UserService {
     @Transactional
     public UserDto.Summary create(UserDto.CreateRequest req, String actorUsername) {
         User actor = userRepository.findByUsername(actorUsername).orElseThrow();
+        // EXTERNAL 사용자는 계정 생성 불가
+        if (actor.getRole() == User.Role.EXTERNAL) {
+            throw new AccessDeniedException("사용자 생성 권한이 없습니다.");
+        }
         // MEMBER는 EXTERNAL만 생성 가능
         if (actor.getRole() == User.Role.MEMBER && req.getRole() != User.Role.EXTERNAL) {
             throw new AccessDeniedException("팀원은 외부 사용자만 추가할 수 있습니다.");
         }
-        // ADMIN만 ADMIN 생성 가능
+        // ADMIN 계정은 ADMIN만 생성 가능
         if (req.getRole() == User.Role.ADMIN && actor.getRole() != User.Role.ADMIN) {
             throw new AccessDeniedException("관리자 계정은 ADMIN만 생성할 수 있습니다.");
         }
@@ -88,6 +92,24 @@ public class UserService {
         if (actor.getRole() == User.Role.MEMBER) throw new AccessDeniedException("권한이 없습니다.");
         if (actor.getId().equals(id)) throw new IllegalArgumentException("본인 계정은 삭제할 수 없습니다.");
         userRepository.deleteById(id);
+    }
+
+    @Transactional
+    public UserDto.Summary resetPassword(Long id, String actorUsername) {
+        User actor = userRepository.findByUsername(actorUsername).orElseThrow();
+        if (actor.getRole() == User.Role.MEMBER || actor.getRole() == User.Role.EXTERNAL) {
+            throw new AccessDeniedException("비밀번호 초기화 권한이 없습니다.");
+        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+        String tempPassword = generatePassword();
+        user.setPassword(passwordEncoder.encode(tempPassword));
+        user.setMustChangePassword(true);
+        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+            try { mailService.sendInitialCredentials(user.getEmail(), user.getUsername(), tempPassword); }
+            catch (Exception ignored) {}
+        }
+        return new UserDto.Summary(user, tempPassword);
     }
 
     @Transactional
