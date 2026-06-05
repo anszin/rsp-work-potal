@@ -42,7 +42,7 @@ public class User {
     private boolean active = true;
 
     @Column(nullable = false)
-    private boolean mustChangePassword = true;
+    private boolean mustChangePassword = false;
 
     @CreatedDate
     @Column(updatable = false)
