@@ -19,15 +19,6 @@ spring:
     open-in-view: false
   jackson:
     time-zone: Asia/Seoul
-
-server:
-  port: ${SERVER_PORT:8080}
-
-jwt:
-  secret: ${JWT_SECRET:work-portal-jwt-secret-key-must-be-at-least-32-characters-long}
-  expiration: 86400000
-
-spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -36,6 +27,13 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+jwt:
+  secret: ${JWT_SECRET:work-portal-jwt-secret-key-must-be-at-least-32-characters-long}
+  expiration: 86400000
 
 app:
   cors:
