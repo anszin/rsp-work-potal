@@ -130,11 +130,11 @@ public class ChangeRequestService {
         } else {
             User actor = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-            boolean isAdmin = actor.getRole() == User.Role.ADMIN;
-            boolean isManager = systemManagerRepository.existsBySystemIdAndUserId(
-                    cr.getSystem().getId(), actor.getId());
-            if (!isAdmin && !isManager) {
-                throw new AccessDeniedException("해당 시스템의 담당자 또는 관리자만 처리할 수 있습니다.");
+            boolean isAdminOrManager = actor.getRole() == User.Role.ADMIN || actor.getRole() == User.Role.MANAGER;
+            boolean isMemberWithAccess = actor.getRole() == User.Role.MEMBER &&
+                    systemManagerRepository.existsBySystemIdAndUserId(cr.getSystem().getId(), actor.getId());
+            if (!isAdminOrManager && !isMemberWithAccess) {
+                throw new AccessDeniedException("처리 권한이 없습니다.");
             }
         }
 

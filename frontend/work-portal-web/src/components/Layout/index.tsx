@@ -23,7 +23,7 @@ export default function Layout() {
           <NavItem to="/reports/weekly">주간보고</NavItem>
           <NavItem to="/reports/daily">일일점검</NavItem>
           <NavItem to="/finance">손익 관리</NavItem>
-          {user?.role === 'ADMIN' && <NavItem to="/admin/systems">시스템 관리</NavItem>}
+          {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <NavItem to="/admin/systems">시스템 관리</NavItem>}
         </nav>
         <div style={styles.userSection}>
           <span style={styles.username}>{user?.username}</span>

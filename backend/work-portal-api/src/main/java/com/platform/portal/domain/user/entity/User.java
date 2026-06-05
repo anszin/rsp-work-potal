@@ -42,6 +42,6 @@ public class User {
     private LocalDateTime createdAt;
 
     public enum Role {
-        ADMIN, MEMBER
+        ADMIN, MANAGER, MEMBER, EXTERNAL
     }
 }

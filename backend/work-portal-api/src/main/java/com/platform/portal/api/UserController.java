@@ -20,7 +20,7 @@ public class UserController {
     private final UserRepository userRepository;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<List<UserSummary>> list() {
         List<UserSummary> users = userRepository.findAll().stream()
                 .map(UserSummary::new).toList();

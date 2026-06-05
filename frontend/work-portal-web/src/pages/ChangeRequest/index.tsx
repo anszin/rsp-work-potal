@@ -108,8 +108,8 @@ export default function ChangeRequestPage() {
     else createMut.mutate(data)
   }
 
-  const isAdmin = user?.role === 'ADMIN'
-  const canManage = (systemId: number) => isAdmin || managedSystemIds.includes(systemId)
+  const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER'
+  const canManage = (systemId: number) => isAdminOrManager || managedSystemIds.includes(systemId)
 
   const submitReject = () => {
     if (!rejectReason.trim()) return alert('반려 사유를 입력해주세요.')

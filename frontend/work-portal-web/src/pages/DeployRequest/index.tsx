@@ -68,7 +68,7 @@ export default function DeployRequestPage() {
     else createMut.mutate(form)
   }
 
-  const isAdmin = user?.role === 'ADMIN'
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER'
 
   return (
     <div style={s.page}>
