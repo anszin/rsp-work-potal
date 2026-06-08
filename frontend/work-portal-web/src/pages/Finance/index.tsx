@@ -79,21 +79,21 @@ export default function FinancePage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h2 style={{ margin: 0 }}>손익 관리</h2>
         <select value={selectedYear} onChange={e => setSelectedYear(+e.target.value)}
-          style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #ccc', fontSize: 14 }}>
+          style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14 }}>
           {years.map(y => <option key={y} value={y}>{y}년</option>)}
         </select>
       </div>
 
       {/* 월별 요약 바 */}
-      <div style={{ background: '#fff', borderRadius: 8, padding: 16, marginBottom: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowX: 'auto' }}>
+      <div style={{ background: 'var(--c-card)', borderRadius: 8, padding: 16, marginBottom: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowX: 'auto' }}>
         <div style={{ display: 'flex', gap: 4, minWidth: 700 }}>
           {summary.map(s => (
             <button key={s.month}
               onClick={() => setSelectedMonth(s.month)}
               style={{
                 flex: 1, padding: '10px 4px', borderRadius: 6, border: '2px solid',
-                borderColor: selectedMonth === s.month ? '#1976d2' : '#e0e0e0',
-                background: selectedMonth === s.month ? '#e3f2fd' : '#fafafa',
+                borderColor: selectedMonth === s.month ? '#1976d2' : 'var(--c-border)',
+                background: selectedMonth === s.month ? '#e3f2fd' : 'var(--c-bg)',
                 cursor: 'pointer', fontSize: 11, textAlign: 'center',
               }}>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>{MONTHS[s.month - 1]}</div>
@@ -115,8 +115,8 @@ export default function FinancePage() {
             { label: '지출', value: currentSummary.expense, color: '#f44336' },
             { label: '손익', value: currentSummary.profit, color: currentSummary.profit >= 0 ? '#4caf50' : '#f44336' },
           ].map(card => (
-            <div key={card.label} style={{ background: '#fff', borderRadius: 8, padding: '16px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-              <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>{selectedYear}년 {selectedMonth}월 {card.label}</div>
+            <div key={card.label} style={{ background: 'var(--c-card)', borderRadius: 8, padding: '16px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+              <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 4 }}>{selectedYear}년 {selectedMonth}월 {card.label}</div>
               <div style={{ fontSize: 22, fontWeight: 700, color: card.color, fontFamily: 'monospace' }}>
                 {fmt(card.value)}원
               </div>
@@ -132,9 +132,9 @@ export default function FinancePage() {
             <button key={i + 1} onClick={() => setSelectedMonth(i + 1)}
               style={{
                 padding: '4px 10px', borderRadius: 6, border: '1px solid',
-                borderColor: selectedMonth === i + 1 ? '#1976d2' : '#ddd',
-                background: selectedMonth === i + 1 ? '#1976d2' : '#fff',
-                color: selectedMonth === i + 1 ? '#fff' : '#333',
+                borderColor: selectedMonth === i + 1 ? '#1976d2' : 'var(--c-border-in)',
+                background: selectedMonth === i + 1 ? '#1976d2' : 'var(--c-card)',
+                color: selectedMonth === i + 1 ? '#fff' : 'var(--c-text)',
                 cursor: 'pointer', fontSize: 12,
               }}>{m}</button>
           ))}
@@ -146,14 +146,14 @@ export default function FinancePage() {
       </div>
 
       {showForm && (
-        <div style={{ background: '#f5f7fa', border: '1px solid #ddd', borderRadius: 8, padding: 20, marginBottom: 20 }}>
+        <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '내역 수정' : '새 내역 추가'}</h3>
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>구분 *</span>
                 <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as FinanceCategory }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }}>
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }}>
                   <option value="REVENUE">매출</option>
                   <option value="EXPENSE">지출</option>
                 </select>
@@ -161,17 +161,17 @@ export default function FinancePage() {
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>항목명 *</span>
                 <input value={form.itemName} onChange={e => setForm(f => ({ ...f, itemName: e.target.value }))}
-                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }} />
+                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>금액 (원) *</span>
                 <input type="number" min={0} value={form.amount || ''} onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))}
-                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }} />
+                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>비고</span>
                 <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }} />
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
@@ -180,7 +180,7 @@ export default function FinancePage() {
                 {editing ? '수정' : '저장'}
               </button>
               <button type="button" onClick={resetForm}
-                style={{ padding: '8px 20px', background: '#fff', border: '1px solid #ccc', borderRadius: 6, cursor: 'pointer' }}>
+                style={{ padding: '8px 20px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer' }}>
                 취소
               </button>
             </div>
@@ -189,19 +189,19 @@ export default function FinancePage() {
       )}
 
       {isLoading ? <p>로딩 중...</p> : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <thead>
-            <tr style={{ background: '#f5f7fa' }}>
+            <tr style={{ background: 'var(--c-thead)' }}>
               {['구분', '항목명', '금액', '비고', '등록일', ''].map(h => (
-                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid #e0e0e0' }}>{h}</th>
+                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid var(--c-border)' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {records.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: '#999' }}>데이터가 없습니다.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>데이터가 없습니다.</td></tr>
             ) : records.map(rec => (
-              <tr key={rec.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+              <tr key={rec.id} style={{ borderBottom: '1px solid var(--c-border-in)' }}>
                 <td style={{ padding: '10px 14px' }}>
                   <span style={{
                     padding: '2px 8px', borderRadius: 4, fontSize: 12,
@@ -214,8 +214,8 @@ export default function FinancePage() {
                   color: rec.category === 'REVENUE' ? '#1565c0' : '#c62828' }}>
                   {rec.category === 'REVENUE' ? '+' : '-'}{fmt(rec.amount)}원
                 </td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: '#666' }}>{rec.note ?? '-'}</td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: '#888' }}>
+                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-sub)' }}>{rec.note ?? '-'}</td>
+                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-muted)' }}>
                   {new Date(rec.createdAt).toLocaleDateString('ko-KR')}
                 </td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>

@@ -180,7 +180,7 @@ export default function ChangeRequestPage() {
               onChange={e => setRejectReason(e.target.value)}
               placeholder="반려 사유를 입력하세요"
               rows={4}
-              style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: 6, fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '8px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, resize: 'vertical', boxSizing: 'border-box', background: 'var(--c-input-bg)', color: 'var(--c-text)' }}
               autoFocus
             />
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
@@ -228,29 +228,29 @@ export default function ChangeRequestPage() {
             <label style={s.label}>파일 첨부</label>
             <div>
               {editing?.hasAttachment && !pendingFile && (
-                <div style={{ marginBottom: 6, fontSize: 12, color: '#555', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ marginBottom: 6, fontSize: 12, color: 'var(--c-text-sub)', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span>현재 첨부: <strong>{editing.attachmentOriginalName ?? '파일'}</strong></span>
                   <button onClick={() => downloadAttachment(editing.id, editing.attachmentOriginalName ?? '파일')}
                     style={{ fontSize: 11, border: 'none', background: 'none', color: '#1976d2', cursor: 'pointer', padding: 0 }}>
                     다운로드
                   </button>
-                  <span style={{ color: '#aaa' }}>|</span>
-                  <span style={{ color: '#aaa', fontSize: 11 }}>새 파일 선택 시 교체됩니다</span>
+                  <span style={{ color: 'var(--c-text-muted)' }}>|</span>
+                  <span style={{ color: 'var(--c-text-muted)', fontSize: 11 }}>새 파일 선택 시 교체됩니다</span>
                 </div>
               )}
               <input ref={fileRef} type="file" style={{ ...s.input, marginBottom: 6 }}
                 onChange={(e) => { setPendingFile(e.target.files?.[0] ?? null) }} />
               <div style={{
-                padding: '8px 12px', border: `2px dashed ${pasteHighlight ? '#1976d2' : '#ccc'}`,
-                borderRadius: 6, fontSize: 12, color: pasteHighlight ? '#1976d2' : '#aaa',
-                background: pasteHighlight ? '#e3f2fd' : '#fafafa', transition: 'all 0.3s', userSelect: 'none',
+                padding: '8px 12px', border: `2px dashed ${pasteHighlight ? '#1976d2' : 'var(--c-border-in)'}`,
+                borderRadius: 6, fontSize: 12, color: pasteHighlight ? '#1976d2' : 'var(--c-text-muted)',
+                background: pasteHighlight ? '#e3f2fd' : 'var(--c-bg)', transition: 'all 0.3s', userSelect: 'none',
               }}>
                 {pendingFile?.name.startsWith('capture_')
                   ? `📋 붙여넣기됨: ${pendingFile.name}`
                   : 'Ctrl+V 로 캡쳐 이미지 붙여넣기'}
               </div>
               {pendingFile && (
-                <div style={{ marginTop: 4, fontSize: 12, color: '#555' }}>
+                <div style={{ marginTop: 4, fontSize: 12, color: 'var(--c-text-sub)' }}>
                   선택된 파일: <strong>{pendingFile.name}</strong>
                   <button onClick={() => { setPendingFile(null); if (fileRef.current) fileRef.current.value = '' }}
                     style={{ marginLeft: 8, fontSize: 11, border: 'none', background: 'none', color: '#e53e3e', cursor: 'pointer' }}>
@@ -287,7 +287,7 @@ export default function ChangeRequestPage() {
 
       {/* 목록 */}
       {isLoading ? (
-        <p style={{ color: '#aaa', padding: 16 }}>로딩 중...</p>
+        <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p>
       ) : (
         <div style={s.tableWrap}>
           <table style={s.table}>
@@ -310,12 +310,12 @@ export default function ChangeRequestPage() {
                 <tr><td colSpan={10} style={s.empty}>등록된 요청이 없습니다</td></tr>
               )}
               {filtered.map((r) => (
-                <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? '#f0f4ff' : undefined }}
+                <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
-                  <td style={{ ...s.td, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap' }}>{r.requestNo ?? '-'}</td>
+                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>{r.requestNo ?? '-'}</td>
                   <td style={s.td}>
                     <span style={s.sysTag}>{r.systemCode}</span>
-                    {r.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{r.subSystemName}</span>}
+                    {r.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{r.subSystemName}</span>}
                   </td>
                   <td style={s.td}>{r.requesterDept ?? '-'}</td>
                   <td style={s.td}>{r.requesterName ?? r.requesterUsername}</td>
@@ -381,9 +381,9 @@ export default function ChangeRequestPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div>
               <span style={s.sysTag}>{detail.systemCode}</span>
-              {detail.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{detail.subSystemName}</span>}
+              {detail.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{detail.subSystemName}</span>}
               <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
-              {detail.requestNo && <span style={{ marginLeft: 8, fontSize: 12, color: '#888' }}>{detail.requestNo}</span>}
+              {detail.requestNo && <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--c-text-muted)' }}>{detail.requestNo}</span>}
             </div>
             <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
           </div>
@@ -433,30 +433,30 @@ function actionStyle(status: RequestStatus): React.CSSProperties {
 const s: Record<string, React.CSSProperties> = {
   page: { padding: '32px 40px' },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
-  btnSecondary: { padding: '8px 16px', background: '#fff', color: '#555', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
-  btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: 24, marginBottom: 16 },
+  btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
+  btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
+  card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
   formTitle: { fontSize: 15, fontWeight: 600, marginBottom: 16 },
   formGrid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center', marginBottom: 16 },
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
-  label: { fontSize: 13, fontWeight: 500, color: '#555' },
-  input: { padding: '8px 10px', border: '1px solid #ddd', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const },
+  label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
+  input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   filterRow: { display: 'flex', gap: 6, marginBottom: 12 },
-  filterBtn: { padding: '5px 12px', background: '#fff', border: '1px solid #ddd', borderRadius: 20, cursor: 'pointer', fontSize: 12, color: '#555', display: 'flex', alignItems: 'center', gap: 4 },
+  filterBtn: { padding: '5px 12px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-sub)', display: 'flex', alignItems: 'center', gap: 4 },
   filterBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
   badge: { background: 'rgba(255,255,255,0.25)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
-  tableWrap: { background: '#fff', borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: 16 },
+  tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
   table: { width: '100%', borderCollapse: 'collapse' as const },
-  thead: { background: '#f7f8fa' },
-  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: '#555', borderBottom: '1px solid #e2e8f0' },
-  tr: { borderBottom: '1px solid #f0f0f0' },
+  thead: { background: 'var(--c-thead)' },
+  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },
+  tr: { borderBottom: '1px solid var(--c-thead)' },
   td: { padding: '10px 14px', fontSize: 13 },
-  sysTag: { background: '#EBF8FF', color: '#2B6CB0', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
+  sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   actions: { display: 'flex', alignItems: 'center' },
-  empty: { padding: '32px', textAlign: 'center' as const, color: '#aaa', fontSize: 13 },
+  empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: 8, padding: 24, width: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--c-card)', borderRadius: 8, padding: 24, width: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
   detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
-  detailLabel: { color: '#888', fontSize: 12, fontWeight: 500 },
-  contentBox: { background: '#f7f8fa', border: '1px solid #e2e8f0', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
+  detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
+  contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
 }

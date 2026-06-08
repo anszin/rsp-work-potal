@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
+import { useTheme } from '../../context/useTheme'
 
 const MENU_ITEMS = [
   { key: 'change_requests', to: '/requests',       label: '변경 관리' },
@@ -19,6 +20,7 @@ const SETTINGS_ITEMS = [
 
 export default function Layout() {
   const { user, menuPermissions, logout } = useAuth()
+  const { theme, toggle } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -26,7 +28,6 @@ export default function Layout() {
   const [settingsOpen, setSettingsOpen] = useState(isInSettings)
 
   const visibleSettings = SETTINGS_ITEMS.filter(({ key }) => menuPermissions[key] !== false)
-
   const handleLogout = () => { logout(); navigate('/login') }
 
   return (
@@ -38,7 +39,6 @@ export default function Layout() {
           {MENU_ITEMS.map(({ key, to, label }) =>
             menuPermissions[key] !== false && <NavItem key={key} to={to}>{label}</NavItem>
           )}
-
           {visibleSettings.length > 0 && (
             <>
               <button style={styles.groupHeader} onClick={() => setSettingsOpen(o => !o)}>
@@ -55,7 +55,12 @@ export default function Layout() {
           <div style={{ fontSize: 13, color: '#fff' }}>{user?.name || user?.username}</div>
           {user?.dept && <div style={{ fontSize: 11, color: '#718096' }}>{user.dept}</div>}
           <div style={{ fontSize: 11, color: '#4a5568' }}>{user?.role}</div>
-          <button style={styles.logoutBtn} onClick={handleLogout}>로그아웃</button>
+          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+            <button style={styles.themeBtn} onClick={toggle} title={theme === 'light' ? '다크 모드' : '라이트 모드'}>
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+            <button style={styles.logoutBtn} onClick={handleLogout}>로그아웃</button>
+          </div>
         </div>
       </aside>
       <main style={styles.main}>
@@ -93,10 +98,10 @@ const styles: Record<string, React.CSSProperties> = {
   groupHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '10px 20px', margin: '2px 8px', fontSize: 14, fontWeight: 400,
-    color: '#a0aec0', background: 'transparent', border: 'none', borderRadius: 4,
-    cursor: 'pointer',
+    color: '#a0aec0', background: 'transparent', border: 'none', borderRadius: 4, cursor: 'pointer',
   },
   userSection: { padding: '16px 20px', borderTop: '1px solid #2d3748', display: 'flex', flexDirection: 'column', gap: 4 },
-  logoutBtn: { background: 'transparent', border: '1px solid #4a5568', color: '#a0aec0', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: 13, marginTop: 8 },
-  main: { flex: 1, marginLeft: 220, minHeight: '100vh', background: '#f7f8fa' },
+  themeBtn: { background: 'transparent', border: '1px solid #4a5568', borderRadius: 4, padding: '5px 8px', cursor: 'pointer', fontSize: 14 },
+  logoutBtn: { flex: 1, background: 'transparent', border: '1px solid #4a5568', color: '#a0aec0', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
+  main: { flex: 1, marginLeft: 220, minHeight: '100vh', background: 'var(--c-bg)', transition: 'background 0.15s' },
 }

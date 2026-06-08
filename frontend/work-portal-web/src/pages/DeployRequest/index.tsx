@@ -243,7 +243,7 @@ export default function DeployRequestPage() {
                       {selectedIssues.map(issue => (
                         <span key={issue.redmineIssueId} style={s.issueBadge}>
                           <span style={{ color: '#1976d2', fontWeight: 600 }}>#{issue.redmineIssueId}</span>
-                          <span style={{ color: '#333', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{issue.redmineIssueTitle}</span>
+                          <span style={{ color: 'var(--c-text)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{issue.redmineIssueTitle}</span>
                           <button type="button" onClick={() => setSelectedIssues(prev => prev.filter(i => i.redmineIssueId !== issue.redmineIssueId))}
                             style={{ border: 'none', background: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
                         </span>
@@ -255,7 +255,7 @@ export default function DeployRequestPage() {
                   </button>
                 </>
               ) : (
-                <div style={{ padding: '8px 10px', border: '1px solid #eee', borderRadius: 6, fontSize: 12, color: '#bbb' }}>
+                <div style={{ padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 12, color: 'var(--c-text-muted)' }}>
                   시스템에 레드마인 프로젝트가 설정되지 않았습니다
                 </div>
               )}
@@ -287,7 +287,7 @@ export default function DeployRequestPage() {
 
       {/* 목록 */}
       {isLoading ? (
-        <p style={{ color: '#aaa', padding: 16 }}>로딩 중...</p>
+        <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p>
       ) : (
         <div style={s.tableWrap}>
           <table style={s.table}>
@@ -310,12 +310,12 @@ export default function DeployRequestPage() {
                 <tr><td colSpan={10} style={s.empty}>등록된 배포 요청이 없습니다</td></tr>
               )}
               {filtered.map((r) => (
-                <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? '#f0f4ff' : undefined }}
+                <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
-                  <td style={{ ...s.td, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap' }}>{r.deployNo ?? '-'}</td>
+                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>{r.deployNo ?? '-'}</td>
                   <td style={s.td}>
                     <span style={s.sysTag}>{r.systemName}</span>
-                    {r.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{r.subSystemName}</span>}
+                    {r.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{r.subSystemName}</span>}
                   </td>
                   <td style={s.td}>{r.title}</td>
                   <td style={s.td}>{r.version ?? '-'}</td>
@@ -358,7 +358,7 @@ export default function DeployRequestPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div>
               <span style={s.sysTag}>{detail.systemName}</span>
-              {detail.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{detail.subSystemName}</span>}
+              {detail.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{detail.subSystemName}</span>}
               <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
             </div>
             <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
@@ -372,7 +372,7 @@ export default function DeployRequestPage() {
                     <a key={i.redmineIssueId}
                       href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
                       target="_blank" rel="noreferrer"
-                      style={{ color: '#1976d2', textDecoration: 'none', fontSize: 12, background: '#EBF8FF', padding: '2px 8px', borderRadius: 4 }}>
+                      style={{ color: '#1976d2', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '2px 8px', borderRadius: 4 }}>
                       #{i.redmineIssueId} {i.redmineIssueTitle}
                     </a>
                   ))}
@@ -407,7 +407,7 @@ export default function DeployRequestPage() {
                     </>
                   )}
                   {detail.redmineSyncStatus === 'SKIPPED' && (
-                    <span style={{ fontSize: 12, color: '#888' }}>미설정 (프로젝트키 또는 버전 없음)</span>
+                    <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>미설정 (프로젝트키 또는 버전 없음)</span>
                   )}
                 </span>
               </>
@@ -456,7 +456,7 @@ export default function DeployRequestPage() {
                 <div style={s.modalEmpty}>일감이 없습니다</div>
               ) : (
                 <>
-                  <div style={{ padding: '6px 20px', fontSize: 12, color: '#888', background: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+                  <div style={{ padding: '6px 20px', fontSize: 12, color: 'var(--c-text-muted)', background: 'var(--c-bg)', borderBottom: '1px solid var(--c-thead)' }}>
                     전체 {pickerTotal}개 중 {pickerIssues.length}개 표시
                   </div>
                   {pickerIssues.map(issue => {
@@ -464,7 +464,7 @@ export default function DeployRequestPage() {
                     return (
                       <div key={issue.id} onClick={() => togglePickerIssue(issue)}
                         style={{ ...s.issueRow, background: checked ? '#f0fdf4' : undefined }}>
-                        <div style={{ ...s.issueCheck, borderColor: checked ? '#38a169' : '#cbd5e0', background: checked ? '#38a169' : '#fff' }}>
+                        <div style={{ ...s.issueCheck, borderColor: checked ? '#38a169' : '#cbd5e0', background: checked ? '#38a169' : 'var(--c-card)' }}>
                           {checked && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -473,10 +473,10 @@ export default function DeployRequestPage() {
                         </div>
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                           {issue.status && (
-                            <span style={{ fontSize: 11, color: '#666', background: '#f0f0f0', padding: '2px 6px', borderRadius: 3 }}>{issue.status}</span>
+                            <span style={{ fontSize: 11, color: 'var(--c-text-sub)', background: 'var(--c-thead)', padding: '2px 6px', borderRadius: 3 }}>{issue.status}</span>
                           )}
                           {issue.assignedTo && (
-                            <span style={{ fontSize: 11, color: '#999' }}>{issue.assignedTo}</span>
+                            <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{issue.assignedTo}</span>
                           )}
                         </div>
                       </div>
@@ -493,7 +493,7 @@ export default function DeployRequestPage() {
               )}
             </div>
             <div style={s.modalFooter}>
-              <span style={{ fontSize: 13, color: '#888' }}>
+              <span style={{ fontSize: 13, color: 'var(--c-text-muted)' }}>
                 {pickerDraft.length > 0 ? `${pickerDraft.length}개 선택됨` : '일감을 선택하세요'}
               </span>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -520,42 +520,42 @@ function actionStyle(status: RequestStatus): React.CSSProperties {
 const s: Record<string, React.CSSProperties> = {
   page: { padding: '32px 40px' },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
-  btnSecondary: { padding: '8px 16px', background: '#fff', color: '#555', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
-  btnOutline: { padding: '6px 14px', background: '#fff', color: '#1976d2', border: '1px dashed #1976d2', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
-  btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: 24, marginBottom: 16 },
+  btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
+  btnOutline: { padding: '6px 14px', background: 'var(--c-card)', color: '#1976d2', border: '1px dashed #1976d2', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
+  btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
+  card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
   formTitle: { fontSize: 15, fontWeight: 600, marginBottom: 16 },
   formGrid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'start', marginBottom: 16 },
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
-  label: { fontSize: 13, fontWeight: 500, color: '#555', paddingTop: 8 },
-  input: { padding: '8px 10px', border: '1px solid #ddd', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const },
+  label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)', paddingTop: 8 },
+  input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   issueBadge: { display: 'flex', alignItems: 'center', gap: 4, background: '#f0fdf4', border: '1px solid #c6f6d5', borderRadius: 4, padding: '3px 8px', fontSize: 12 },
   filterRow: { display: 'flex', gap: 6, marginBottom: 12 },
-  filterBtn: { padding: '5px 12px', background: '#fff', border: '1px solid #ddd', borderRadius: 20, cursor: 'pointer', fontSize: 12, color: '#555', display: 'flex', alignItems: 'center', gap: 4 },
+  filterBtn: { padding: '5px 12px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-sub)', display: 'flex', alignItems: 'center', gap: 4 },
   filterBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
   badge: { background: 'rgba(255,255,255,0.25)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
-  tableWrap: { background: '#fff', borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden', marginBottom: 16 },
+  tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
   table: { width: '100%', borderCollapse: 'collapse' as const },
-  thead: { background: '#f7f8fa' },
-  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: '#555', borderBottom: '1px solid #e2e8f0' },
-  tr: { borderBottom: '1px solid #f0f0f0' },
+  thead: { background: 'var(--c-thead)' },
+  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },
+  tr: { borderBottom: '1px solid var(--c-thead)' },
   td: { padding: '10px 14px', fontSize: 13 },
-  sysTag: { background: '#EBF8FF', color: '#2B6CB0', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
+  sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   actions: { display: 'flex', alignItems: 'center' },
-  empty: { padding: '32px', textAlign: 'center' as const, color: '#aaa', fontSize: 13 },
+  empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
-  detailLabel: { color: '#888', fontSize: 12, fontWeight: 500 },
-  contentBox: { background: '#f7f8fa', border: '1px solid #e2e8f0', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
+  detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
+  contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  modal: { background: '#fff', borderRadius: 12, width: 720, maxWidth: '90vw', maxHeight: '85vh', display: 'flex', flexDirection: 'column' as const, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
-  modalHeader: { padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  modalClose: { border: 'none', background: 'none', fontSize: 18, cursor: 'pointer', color: '#999', lineHeight: 1, padding: 4 },
-  modalFilter: { padding: '12px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', gap: 10, alignItems: 'center' },
-  tabBtn: { padding: '5px 14px', border: '1px solid #ddd', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: '#fff', color: '#555' },
+  modal: { background: 'var(--c-card)', borderRadius: 12, width: 720, maxWidth: '90vw', maxHeight: '85vh', display: 'flex', flexDirection: 'column' as const, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
+  modalHeader: { padding: '16px 20px', borderBottom: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  modalClose: { border: 'none', background: 'none', fontSize: 18, cursor: 'pointer', color: 'var(--c-text-muted)', lineHeight: 1, padding: 4 },
+  modalFilter: { padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', display: 'flex', gap: 10, alignItems: 'center' },
+  tabBtn: { padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: 'var(--c-card)', color: 'var(--c-text-sub)' },
   tabBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
   modalBody: { flex: 1, overflowY: 'auto' as const },
-  modalEmpty: { padding: 32, textAlign: 'center' as const, color: '#aaa', fontSize: 13 },
-  issueRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid #f5f5f5', cursor: 'pointer' },
+  modalEmpty: { padding: 32, textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
+  issueRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', cursor: 'pointer' },
   issueCheck: { width: 18, height: 18, borderRadius: 4, border: '2px solid #cbd5e0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  modalFooter: { padding: '12px 20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  modalFooter: { padding: '12px 20px', borderTop: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
 }

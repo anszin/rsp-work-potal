@@ -61,14 +61,14 @@ export default function ChangePasswordPage() {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  container: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f0f2f5' },
-  card: { background: '#fff', borderRadius: 8, padding: '40px 48px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', width: 400 },
-  title: { textAlign: 'center', marginBottom: 8, fontSize: 20, fontWeight: 600, color: '#1a1a2e' },
-  desc: { textAlign: 'center', marginBottom: 24, fontSize: 13, color: '#888' },
+  container: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--c-bg)' },
+  card: { background: 'var(--c-card)', borderRadius: 8, padding: '40px 48px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', width: 400 },
+  title: { textAlign: 'center', marginBottom: 8, fontSize: 20, fontWeight: 600, color: 'var(--c-text)' },
+  desc: { textAlign: 'center', marginBottom: 24, fontSize: 13, color: 'var(--c-text-muted)' },
   form: { display: 'flex', flexDirection: 'column', gap: 16 },
   field: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 14, fontWeight: 500, color: '#555' },
-  input: { padding: '10px 12px', border: '1px solid #ddd', borderRadius: 6, fontSize: 14 },
+  label: { fontSize: 14, fontWeight: 500, color: 'var(--c-text-sub)' },
+  input: { padding: '10px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 14 },
   error: { color: '#e53e3e', fontSize: 13, margin: 0 },
   button: { padding: '12px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, fontSize: 15, fontWeight: 500, cursor: 'pointer', marginTop: 8 },
 }

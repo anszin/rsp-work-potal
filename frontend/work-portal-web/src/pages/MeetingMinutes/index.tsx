@@ -73,21 +73,21 @@ export default function MeetingMinutesPage() {
         </div>
         {isLoading ? <p>로딩 중...</p> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {items.length === 0 ? <p style={{ color: '#999', fontSize: 13 }}>등록된 회의록이 없습니다.</p>
+            {items.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 회의록이 없습니다.</p>
               : items.map(item => (
                 <div key={item.id}
                   onClick={() => { setSelected(item); setShowForm(false) }}
                   style={{
                     padding: '10px 14px', borderRadius: 8, border: '1px solid',
-                    borderColor: selected?.id === item.id ? '#1976d2' : '#e0e0e0',
-                    background: selected?.id === item.id ? '#e3f2fd' : '#fff',
+                    borderColor: selected?.id === item.id ? '#1976d2' : 'var(--c-border)',
+                    background: selected?.id === item.id ? '#e3f2fd' : 'var(--c-card)',
                     cursor: 'pointer',
                   }}>
                   <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 3 }}>{item.title}</div>
-                  <div style={{ fontSize: 12, color: '#666' }}>
+                  <div style={{ fontSize: 12, color: 'var(--c-text-sub)' }}>
                     {item.meetingDate} · {item.author}
                   </div>
-                  {item.location && <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{item.location}</div>}
+                  {item.location && <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{item.location}</div>}
                 </div>
               ))}
           </div>
@@ -95,7 +95,7 @@ export default function MeetingMinutesPage() {
       </div>
 
       {/* 상세/작성 패널 */}
-      <div style={{ flex: 1, background: '#fff', borderRadius: 8, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowY: 'auto' }}>
+      <div style={{ flex: 1, background: 'var(--c-card)', borderRadius: 8, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowY: 'auto' }}>
         {showForm ? (
           <>
             <h3 style={{ margin: '0 0 20px' }}>{editing ? '회의록 수정' : '새 회의록 작성'}</h3>
@@ -104,32 +104,32 @@ export default function MeetingMinutesPage() {
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>제목 *</span>
                   <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14 }} />
+                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>회의일 *</span>
                   <input type="date" value={form.meetingDate} onChange={e => setForm(f => ({ ...f, meetingDate: e.target.value }))}
-                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14 }} />
+                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>장소</span>
                   <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-                    style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14 }} />
+                    style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>참석자</span>
                   <input value={form.attendees} onChange={e => setForm(f => ({ ...f, attendees: e.target.value }))}
-                    placeholder="홍길동, 김철수, ..." style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14 }} />
+                    placeholder="홍길동, 김철수, ..." style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>회의 내용</span>
                   <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-                    rows={8} style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+                    rows={8} style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>액션 아이템</span>
                   <textarea value={form.actionItems} onChange={e => setForm(f => ({ ...f, actionItems: e.target.value }))}
-                    rows={4} placeholder="- [ ] 담당자 | 내용 | 기한" style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+                    rows={4} placeholder="- [ ] 담당자 | 내용 | 기한" style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
                 </label>
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
@@ -138,7 +138,7 @@ export default function MeetingMinutesPage() {
                   {editing ? '수정' : '저장'}
                 </button>
                 <button type="button" onClick={resetForm}
-                  style={{ padding: '8px 20px', background: '#fff', border: '1px solid #ccc', borderRadius: 6, cursor: 'pointer' }}>
+                  style={{ padding: '8px 20px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer' }}>
                   취소
                 </button>
               </div>
@@ -149,7 +149,7 @@ export default function MeetingMinutesPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <h2 style={{ margin: '0 0 6px' }}>{selected.title}</h2>
-                <div style={{ fontSize: 13, color: '#666' }}>
+                <div style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>
                   {selected.meetingDate}
                   {selected.location && ` · ${selected.location}`}
                   {' · '}{selected.author}
@@ -168,25 +168,25 @@ export default function MeetingMinutesPage() {
             </div>
             {selected.attendees && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>참석자</div>
+                <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 4 }}>참석자</div>
                 <div style={{ fontSize: 14 }}>{selected.attendees}</div>
               </div>
             )}
             {selected.content && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 12, color: '#888', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>회의 내용</div>
-                <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#fafafa', padding: '14px 16px', borderRadius: 6, border: '1px solid #f0f0f0' }}>{selected.content}</div>
+                <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>회의 내용</div>
+                <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: 'var(--c-bg)', padding: '14px 16px', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>{selected.content}</div>
               </div>
             )}
             {selected.actionItems && (
               <div>
-                <div style={{ fontSize: 12, color: '#888', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>액션 아이템</div>
+                <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>액션 아이템</div>
                 <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#fffde7', padding: '14px 16px', borderRadius: 6, border: '1px solid #fff9c4' }}>{selected.actionItems}</div>
               </div>
             )}
           </>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%', color: '#bbb', fontSize: 15 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%', color: 'var(--c-text-muted)', fontSize: 15 }}>
             목록에서 회의록을 선택하거나 새로 작성하세요
           </div>
         )}

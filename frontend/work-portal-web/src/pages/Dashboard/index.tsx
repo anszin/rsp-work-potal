@@ -25,7 +25,7 @@ function StatCard({ label, value, sub, color, onClick }: {
 }) {
   return (
     <div onClick={onClick} style={{
-      background: '#fff', borderRadius: 10, padding: '18px 22px',
+      background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px',
       boxShadow: '0 1px 4px rgba(0,0,0,0.08)', cursor: onClick ? 'pointer' : 'default',
       borderLeft: `4px solid ${color || '#1976d2'}`,
       transition: 'box-shadow 0.15s',
@@ -33,9 +33,9 @@ function StatCard({ label, value, sub, color, onClick }: {
       onMouseEnter={e => onClick && ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)')}
       onMouseLeave={e => onClick && ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)')}
     >
-      <div style={{ fontSize: 12, color: '#888', marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 6 }}>{label}</div>
       <div style={{ fontSize: 24, fontWeight: 700, color: color || '#1976d2', fontFamily: 'monospace' }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 4 }}>{sub}</div>}
     </div>
   )
 }
@@ -54,7 +54,7 @@ function BarChart({ data }: { data: MonthlySummary[] }) {
               <div style={{ flex: 1, height: revH + '%', background: isCurrent ? '#1976d2' : '#90caf9', borderRadius: '2px 2px 0 0', minHeight: d.revenue > 0 ? 2 : 0 }} title={`매출 ${(d.revenue/10000).toLocaleString()}만`} />
               <div style={{ flex: 1, height: expH + '%', background: isCurrent ? '#f44336' : '#ef9a9a', borderRadius: '2px 2px 0 0', minHeight: d.expense > 0 ? 2 : 0 }} title={`지출 ${(d.expense/10000).toLocaleString()}만`} />
             </div>
-            <div style={{ fontSize: 10, color: isCurrent ? '#1976d2' : '#aaa', fontWeight: isCurrent ? 700 : 400 }}>
+            <div style={{ fontSize: 10, color: isCurrent ? '#1976d2' : 'var(--c-text-muted)', fontWeight: isCurrent ? 700 : 400 }}>
               {MONTHS[d.month - 1].replace('월', '')}
             </div>
           </div>
@@ -115,10 +115,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ padding: '28px 36px', background: '#f7f8fa', minHeight: '100vh' }}>
+    <div style={{ padding: '28px 36px', background: 'var(--c-bg)', minHeight: '100vh' }}>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>종합 대시보드</h2>
-        <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: 'var(--c-text-muted)', marginTop: 4 }}>
           안녕하세요, {user?.username}님 · {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
         </div>
       </div>
@@ -159,23 +159,23 @@ export default function DashboardPage() {
       {/* 중단: 차트 + 일일점검 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 14, marginBottom: 20 }}>
         {/* 월별 손익 차트 */}
-        <div style={{ background: '#fff', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>{currentYear}년 월별 손익</div>
-            <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#888' }}>
+            <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--c-text-muted)' }}>
               <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#1976d2', borderRadius: 2, marginRight: 4 }} />매출</span>
               <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#f44336', borderRadius: 2, marginRight: 4 }} />지출</span>
             </div>
           </div>
           <BarChart data={summary} />
-          <div style={{ marginTop: 14, display: 'flex', gap: 20, fontSize: 12, color: '#666', borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
+          <div style={{ marginTop: 14, display: 'flex', gap: 20, fontSize: 12, color: 'var(--c-text-sub)', borderTop: '1px solid var(--c-thead)', paddingTop: 12 }}>
             {['revenue', 'expense', 'profit'].map(key => {
               const total = summary.reduce((s, d) => s + (d as any)[key], 0)
               const labels: Record<string, string> = { revenue: '연간 누적 매출', expense: '연간 누적 지출', profit: '연간 누적 손익' }
               return (
                 <div key={key}>
-                  <span style={{ color: '#aaa' }}>{labels[key]}: </span>
-                  <span style={{ fontWeight: 600, color: key === 'profit' ? (total >= 0 ? '#4caf50' : '#f44336') : '#333' }}>
+                  <span style={{ color: 'var(--c-text-muted)' }}>{labels[key]}: </span>
+                  <span style={{ fontWeight: 600, color: key === 'profit' ? (total >= 0 ? '#4caf50' : '#f44336') : 'var(--c-text)' }}>
                     {(total >= 0 && key === 'profit' ? '+' : '')}{fmt(total)}원
                   </span>
                 </div>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 오늘 일일점검 */}
-        <div style={{ background: '#fff', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>오늘 점검 현황</div>
             <button onClick={() => navigate('/reports/daily')}
@@ -194,7 +194,7 @@ export default function DashboardPage() {
             </button>
           </div>
           {systems.length === 0 ? (
-            <p style={{ color: '#bbb', fontSize: 13 }}>등록된 시스템이 없습니다.</p>
+            <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 시스템이 없습니다.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {systems.map((sys: any) => {
@@ -203,12 +203,12 @@ export default function DashboardPage() {
                   <div key={sys.id} style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     padding: '8px 12px', borderRadius: 6,
-                    background: check ? STATUS_COLOR[check.status] + '11' : '#fafafa',
-                    border: '1px solid ' + (check ? STATUS_COLOR[check.status] + '44' : '#f0f0f0'),
+                    background: check ? STATUS_COLOR[check.status] + '11' : 'var(--c-bg)',
+                    border: '1px solid ' + (check ? STATUS_COLOR[check.status] + '44' : 'var(--c-thead)'),
                   }}>
                     <div>
                       <div style={{ fontWeight: 500, fontSize: 13 }}>{sys.name}</div>
-                      {check?.note && <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{check.note}</div>}
+                      {check?.note && <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{check.note}</div>}
                     </div>
                     {check ? (
                       <span style={{
@@ -216,7 +216,7 @@ export default function DashboardPage() {
                         background: STATUS_COLOR[check.status] + '22', color: STATUS_COLOR[check.status],
                       }}>{STATUS_LABEL[check.status]}</span>
                     ) : (
-                      <span style={{ fontSize: 11, color: '#bbb' }}>미점검</span>
+                      <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>미점검</span>
                     )}
                   </div>
                 )
@@ -234,7 +234,7 @@ export default function DashboardPage() {
       {/* 하단: 최근 요청 + 최근 회의록 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {/* 최근 변경/배포 요청 */}
-        <div style={{ background: '#fff', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>최근 요청</div>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -249,7 +249,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {changeRequests.length === 0 && deployRequests.length === 0 ? (
-            <p style={{ color: '#bbb', fontSize: 13 }}>등록된 요청이 없습니다.</p>
+            <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 요청이 없습니다.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {[
@@ -261,7 +261,7 @@ export default function DashboardPage() {
                 .map(r => (
                   <div key={r._type + r.id} style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '7px 10px', borderRadius: 6, background: '#fafafa', border: '1px solid #f0f0f0',
+                    padding: '7px 10px', borderRadius: 6, background: 'var(--c-bg)', border: '1px solid var(--c-thead)',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
                       <span style={{
@@ -284,7 +284,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 최근 회의록 */}
-        <div style={{ background: '#fff', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>최근 회의록</div>
             <button onClick={() => navigate('/reports/meeting')}
@@ -293,21 +293,21 @@ export default function DashboardPage() {
             </button>
           </div>
           {meetings.length === 0 ? (
-            <p style={{ color: '#bbb', fontSize: 13 }}>등록된 회의록이 없습니다.</p>
+            <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 회의록이 없습니다.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {meetings.slice(0, 5).map((m: any) => (
                 <div key={m.id} onClick={() => navigate('/reports/meeting')}
                   style={{
-                    padding: '10px 12px', borderRadius: 6, background: '#fafafa',
-                    border: '1px solid #f0f0f0', cursor: 'pointer',
+                    padding: '10px 12px', borderRadius: 6, background: 'var(--c-bg)',
+                    border: '1px solid var(--c-thead)', cursor: 'pointer',
                   }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ fontWeight: 500, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{m.title}</div>
-                    <div style={{ fontSize: 11, color: '#aaa', marginLeft: 8, flexShrink: 0 }}>{m.meetingDate}</div>
+                    <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginLeft: 8, flexShrink: 0 }}>{m.meetingDate}</div>
                   </div>
                   {m.attendees && (
-                    <div style={{ fontSize: 11, color: '#888', marginTop: 3 }}>참석: {m.attendees}</div>
+                    <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3 }}>참석: {m.attendees}</div>
                   )}
                 </div>
               ))}
@@ -315,8 +315,8 @@ export default function DashboardPage() {
           )}
 
           {/* 인벤토리 요약 */}
-          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f0f0f0' }}>
-            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10, color: '#555' }}>인벤토리 현황</div>
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--c-thead)' }}>
+            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10, color: 'var(--c-text-sub)' }}>인벤토리 현황</div>
             <div style={{ display: 'flex', gap: 10 }}>
               {[
                 { label: '수주', type: 'CONTRACT', color: '#1565c0', bg: '#e3f2fd' },

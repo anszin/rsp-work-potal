@@ -1,11 +1,11 @@
 import type { RequestStatus } from '../api/changeRequests'
 
 const config: Record<RequestStatus, { label: string; color: string; bg: string }> = {
-  DRAFT:     { label: '초안',   color: '#718096', bg: '#EDF2F7' },
-  REQUESTED: { label: '요청',   color: '#2B6CB0', bg: '#EBF8FF' },
-  APPROVED:  { label: '승인',   color: '#276749', bg: '#F0FFF4' },
-  COMPLETED: { label: '완료',   color: '#285E61', bg: '#E6FFFA' },
-  REJECTED:  { label: '반려',   color: '#9B2C2C', bg: '#FFF5F5' },
+  DRAFT:     { label: '초안',   color: 'var(--c-tag-draft-t)',  bg: 'var(--c-tag-draft-bg)' },
+  REQUESTED: { label: '요청',   color: 'var(--c-tag-sys-t)',    bg: 'var(--c-tag-sys)' },
+  APPROVED:  { label: '승인',   color: 'var(--c-tag-sub-t)',    bg: 'var(--c-tag-sub)' },
+  COMPLETED: { label: '완료',   color: 'var(--c-tag-done-t)',   bg: 'var(--c-tag-done-bg)' },
+  REJECTED:  { label: '반려',   color: 'var(--c-tag-err-t)',    bg: 'var(--c-tag-err-bg)' },
 }
 
 export default function StatusBadge({ status }: { status: RequestStatus }) {

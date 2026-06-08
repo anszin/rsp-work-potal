@@ -131,7 +131,7 @@ export default function SystemManagementPage() {
       </div>
 
       {showForm && (
-        <div style={{ background: '#f5f7fa', border: '1px solid #ddd', borderRadius: 8, padding: 24, marginBottom: 24 }}>
+        <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 24, marginBottom: 24 }}>
           <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>{editing ? '시스템 수정' : '시스템 등록'}</h3>
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -167,22 +167,22 @@ export default function SystemManagementPage() {
       )}
 
       {isLoading ? <p>로딩 중...</p> : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <thead>
-            <tr style={{ background: '#f5f7fa' }}>
+            <tr style={{ background: 'var(--c-thead)' }}>
               {['코드', '시스템명', '설명', '상태', '등록일', ''].map(h => (
-                <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid #e0e0e0' }}>{h}</th>
+                <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid var(--c-border)' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {systems.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: '#999' }}>등록된 시스템이 없습니다.</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>등록된 시스템이 없습니다.</td></tr>
             ) : systems.map(s => (
-              <tr key={s.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+              <tr key={s.id} style={{ borderBottom: '1px solid var(--c-thead)' }}>
                 <td style={{ padding: '10px 16px', fontSize: 13, fontWeight: 600, color: '#1976d2' }}>{s.code}</td>
                 <td style={{ padding: '10px 16px', fontWeight: 500 }}>{s.name}</td>
-                <td style={{ padding: '10px 16px', fontSize: 13, color: '#666' }}>{s.description ?? '-'}</td>
+                <td style={{ padding: '10px 16px', fontSize: 13, color: 'var(--c-text-sub)' }}>{s.description ?? '-'}</td>
                 <td style={{ padding: '10px 16px' }}>
                   <span onClick={() => toggleActive(s)} style={{
                     padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -193,7 +193,7 @@ export default function SystemManagementPage() {
                     {s.active ? '운영중' : '비활성'}
                   </span>
                 </td>
-                <td style={{ padding: '10px 16px', fontSize: 12, color: '#999' }}>
+                <td style={{ padding: '10px 16px', fontSize: 12, color: 'var(--c-text-muted)' }}>
                   {new Date(s.createdAt).toLocaleDateString('ko-KR')}
                 </td>
                 <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
@@ -223,7 +223,7 @@ export default function SystemManagementPage() {
       {/* Sub-system panel */}
       {subPanel && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', borderRadius: 10, padding: 28, width: 560, maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+          <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: 28, width: 560, maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
               <h3 style={{ margin: 0, fontSize: 16 }}>{subPanel.name} 하위시스템 관리</h3>
               <button
@@ -233,10 +233,10 @@ export default function SystemManagementPage() {
                 + 추가
               </button>
             </div>
-            <p style={{ margin: '0 0 16px', fontSize: 13, color: '#888' }}>프론트엔드, 백엔드, API 등 구성 컴포넌트를 관리합니다.</p>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--c-text-muted)' }}>프론트엔드, 백엔드, API 등 구성 컴포넌트를 관리합니다.</p>
 
             {showSubForm && (
-              <form onSubmit={handleSubSubmit} style={{ background: '#f5f7fa', border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}>
+              <form onSubmit={handleSubSubmit} style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 16, marginBottom: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
                   {!editingSub && (
                     <label style={labelStyle}>
@@ -264,22 +264,22 @@ export default function SystemManagementPage() {
             )}
 
             {subSystems.length === 0 ? (
-              <p style={{ color: '#aaa', fontSize: 13 }}>등록된 하위시스템이 없습니다.</p>
+              <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 하위시스템이 없습니다.</p>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: '#f5f7fa' }}>
+                  <tr style={{ background: 'var(--c-thead)' }}>
                     {['코드', '이름', '설명', '상태', ''].map(h => (
-                      <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, fontSize: 12, borderBottom: '1px solid #e0e0e0' }}>{h}</th>
+                      <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, fontSize: 12, borderBottom: '1px solid var(--c-border)' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {subSystems.map(sub => (
-                    <tr key={sub.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                    <tr key={sub.id} style={{ borderBottom: '1px solid var(--c-thead)' }}>
                       <td style={{ padding: '8px 10px', fontWeight: 600, color: '#1976d2', fontSize: 12 }}>{sub.code}</td>
                       <td style={{ padding: '8px 10px' }}>{sub.name}</td>
-                      <td style={{ padding: '8px 10px', color: '#666', fontSize: 12 }}>{sub.description ?? '-'}</td>
+                      <td style={{ padding: '8px 10px', color: 'var(--c-text-sub)', fontSize: 12 }}>{sub.description ?? '-'}</td>
                       <td style={{ padding: '8px 10px' }}>
                         <span onClick={() => toggleSubActive(sub)} style={{
                           padding: '2px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: 'pointer',
@@ -316,18 +316,18 @@ export default function SystemManagementPage() {
       {/* Manager panel */}
       {managerPanel && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', borderRadius: 10, padding: 28, width: 460, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+          <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: 28, width: 460, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
             <h3 style={{ margin: '0 0 4px', fontSize: 16 }}>{managerPanel.name} 담당자 관리</h3>
-            <p style={{ margin: '0 0 20px', fontSize: 13, color: '#888' }}>시스템 담당자는 변경 요청 승인/반려 권한을 갖습니다.</p>
+            <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--c-text-muted)' }}>시스템 담당자는 변경 요청 승인/반려 권한을 갖습니다.</p>
 
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>현재 담당자</div>
               {managers.length === 0 ? (
-                <p style={{ color: '#aaa', fontSize: 13 }}>등록된 담당자가 없습니다.</p>
+                <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 담당자가 없습니다.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {managers.map(m => (
-                    <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: '#f8f8f8', borderRadius: 6, fontSize: 13 }}>
+                    <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, fontSize: 13 }}>
                       <span>{m.username}</span>
                       <button onClick={() => removeManagerMut.mutate({ systemId: managerPanel.id, userId: m.userId })}
                         style={{ padding: '2px 8px', fontSize: 12, border: '1px solid #ef9a9a', borderRadius: 4, background: '#ffebee', color: '#c62828', cursor: 'pointer' }}>
@@ -344,7 +344,7 @@ export default function SystemManagementPage() {
                 <select
                   value={selectedUserId}
                   onChange={e => setSelectedUserId(Number(e.target.value))}
-                  style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: 6, fontSize: 13 }}
+                  style={{ flex: 1, padding: '8px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, background: 'var(--c-input-bg)', color: 'var(--c-text)' }}
                 >
                   <option value={0}>담당자 선택</option>
                   {availableUsers.map(u => (
@@ -372,6 +372,6 @@ export default function SystemManagementPage() {
 }
 
 const btn: React.CSSProperties = { padding: '8px 18px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 }
-const btnSecondary: React.CSSProperties = { padding: '8px 16px', background: '#fff', color: '#555', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', fontSize: 13 }
+const btnSecondary: React.CSSProperties = { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 }
 const labelStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
-const inputStyle: React.CSSProperties = { padding: '8px', borderRadius: 4, border: '1px solid #ccc', fontSize: 13, width: '100%' }
+const inputStyle: React.CSSProperties = { padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 13, width: '100%', background: 'var(--c-input-bg)', color: 'var(--c-text)' }

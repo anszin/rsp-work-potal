@@ -281,30 +281,30 @@ export default function UserManagementPage() {
 
 function roleStyle(role: string): React.CSSProperties {
   if (role === 'ADMIN') return { background: '#fff0f0', color: '#c53030' }
-  if (role === 'MANAGER') return { background: '#ebf8ff', color: '#2b6cb0' }
-  if (role === 'MEMBER') return { background: '#f0fff4', color: '#276749' }
-  return { background: '#fafafa', color: '#888' }
+  if (role === 'MANAGER') return { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }
+  if (role === 'MEMBER') return { background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' }
+  return { background: 'var(--c-bg)', color: 'var(--c-text-muted)' }
 }
 
 const s: Record<string, React.CSSProperties> = {
   page: { padding: '32px 40px' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: 24, marginBottom: 16 },
+  card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
-  btnSecondary: { padding: '8px 16px', background: '#fff', color: '#555', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
-  btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
+  btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
+  btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   grid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center' },
-  label: { fontSize: 13, fontWeight: 500, color: '#555' },
-  input: { padding: '8px 10px', border: '1px solid #ddd', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const },
+  label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
+  input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const },
   table: { width: '100%', borderCollapse: 'collapse' as const },
-  thead: { background: '#f7f8fa' },
-  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: '#555', borderBottom: '1px solid #e2e8f0' },
-  tr: { borderBottom: '1px solid #f0f0f0' },
+  thead: { background: 'var(--c-thead)' },
+  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },
+  tr: { borderBottom: '1px solid var(--c-border-in)' },
   td: { padding: '10px 14px', fontSize: 13 },
   roleTag: { padding: '2px 8px', borderRadius: 4, fontSize: 12 },
-  empty: { padding: 32, textAlign: 'center' as const, color: '#aaa', fontSize: 13 },
-  progressBar: { height: 3, background: '#e2e8f0', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
+  empty: { padding: 32, textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
+  progressBar: { height: 3, background: 'var(--c-border)', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
   progressFill: { height: '100%', background: '#1a1a2e', borderRadius: 2, animation: 'progress 1.2s ease-in-out infinite', width: '40%' },
   overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: 8, padding: 24, width: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
-  infoBox: { background: '#f7f8fa', border: '1px solid #e2e8f0', borderRadius: 6, padding: '12px 16px', fontSize: 14, display: 'flex', flexDirection: 'column' as const, gap: 6 },
+  modal: { background: 'var(--c-card)', borderRadius: 8, padding: 24, width: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
+  infoBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 14, display: 'flex', flexDirection: 'column' as const, gap: 6 },
 }

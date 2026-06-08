@@ -68,8 +68,8 @@ export default function WeeklyReportPage() {
   const Section = ({ label, content, bg }: { label: string; content: string | null; bg: string }) =>
     content ? (
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</div>
-        <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: bg, padding: '14px 16px', borderRadius: 6, border: '1px solid #f0f0f0' }}>{content}</div>
+        <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</div>
+        <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: bg, padding: '14px 16px', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>{content}</div>
       </div>
     ) : null
 
@@ -85,26 +85,26 @@ export default function WeeklyReportPage() {
         </div>
         {isLoading ? <p>로딩 중...</p> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {items.length === 0 ? <p style={{ color: '#999', fontSize: 13 }}>등록된 주간보고가 없습니다.</p>
+            {items.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 주간보고가 없습니다.</p>
               : items.map(item => (
                 <div key={item.id}
                   onClick={() => { setSelected(item); setShowForm(false) }}
                   style={{
                     padding: '10px 14px', borderRadius: 8, border: '1px solid',
-                    borderColor: selected?.id === item.id ? '#1976d2' : '#e0e0e0',
-                    background: selected?.id === item.id ? '#e3f2fd' : '#fff',
+                    borderColor: selected?.id === item.id ? '#1976d2' : 'var(--c-border)',
+                    background: selected?.id === item.id ? '#e3f2fd' : 'var(--c-card)',
                     cursor: 'pointer',
                   }}>
                   <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 3 }}>{item.title}</div>
-                  <div style={{ fontSize: 12, color: '#666' }}>{item.weekStart} ~ {item.weekEnd}</div>
-                  <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{item.author}</div>
+                  <div style={{ fontSize: 12, color: 'var(--c-text-sub)' }}>{item.weekStart} ~ {item.weekEnd}</div>
+                  <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{item.author}</div>
                 </div>
               ))}
           </div>
         )}
       </div>
 
-      <div style={{ flex: 1, background: '#fff', borderRadius: 8, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowY: 'auto' }}>
+      <div style={{ flex: 1, background: 'var(--c-card)', borderRadius: 8, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowY: 'auto' }}>
         {showForm ? (
           <>
             <h3 style={{ margin: '0 0 20px' }}>{editing ? '주간보고 수정' : '새 주간보고 작성'}</h3>
@@ -113,17 +113,17 @@ export default function WeeklyReportPage() {
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>제목 *</span>
                   <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14 }} />
+                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>주간 시작 *</span>
                   <input type="date" value={form.weekStart} onChange={e => setForm(f => ({ ...f, weekStart: e.target.value }))}
-                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14 }} />
+                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>주간 종료 *</span>
                   <input type="date" value={form.weekEnd} onChange={e => setForm(f => ({ ...f, weekEnd: e.target.value }))}
-                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14 }} />
+                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
                 </label>
                 {[
                   { key: 'accomplishments', label: '금주 주요업무' },
@@ -135,7 +135,7 @@ export default function WeeklyReportPage() {
                     <textarea
                       value={(form as any)[key]}
                       onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                      rows={5} style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid #ccc', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+                      rows={5} style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
                   </label>
                 ))}
               </div>
@@ -145,7 +145,7 @@ export default function WeeklyReportPage() {
                   {editing ? '수정' : '저장'}
                 </button>
                 <button type="button" onClick={resetForm}
-                  style={{ padding: '8px 20px', background: '#fff', border: '1px solid #ccc', borderRadius: 6, cursor: 'pointer' }}>
+                  style={{ padding: '8px 20px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer' }}>
                   취소
                 </button>
               </div>
@@ -156,7 +156,7 @@ export default function WeeklyReportPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <h2 style={{ margin: '0 0 6px' }}>{selected.title}</h2>
-                <div style={{ fontSize: 13, color: '#666' }}>{selected.weekStart} ~ {selected.weekEnd} · {selected.author}</div>
+                <div style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>{selected.weekStart} ~ {selected.weekEnd} · {selected.author}</div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => openEdit(selected)}
@@ -174,7 +174,7 @@ export default function WeeklyReportPage() {
             <Section label="이슈/특이사항" content={selected.issues} bg="#fffde7" />
           </>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%', color: '#bbb', fontSize: 15 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%', color: 'var(--c-text-muted)', fontSize: 15 }}>
             목록에서 주간보고를 선택하거나 새로 작성하세요
           </div>
         )}

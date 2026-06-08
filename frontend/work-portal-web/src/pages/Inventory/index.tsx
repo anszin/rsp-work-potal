@@ -80,9 +80,9 @@ export default function InventoryPage() {
             <button key={t}
               onClick={() => setTypeFilter(t)}
               style={{
-                padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd', cursor: 'pointer',
-                background: typeFilter === t ? '#1976d2' : '#fff',
-                color: typeFilter === t ? '#fff' : '#333',
+                padding: '6px 14px', borderRadius: 6, border: '1px solid var(--c-border-in)', cursor: 'pointer',
+                background: typeFilter === t ? '#1976d2' : 'var(--c-card)',
+                color: typeFilter === t ? '#fff' : 'var(--c-text)',
               }}>
               {t === '' ? '전체' : TYPE_LABEL[t]}
             </button>
@@ -96,14 +96,14 @@ export default function InventoryPage() {
       </div>
 
       {showForm && (
-        <div style={{ background: '#f5f7fa', border: '1px solid #ddd', borderRadius: 8, padding: 20, marginBottom: 20 }}>
+        <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '항목 수정' : '새 항목 추가'}</h3>
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>구분 *</span>
                 <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as ItemType }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }}>
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }}>
                   <option value="CONTRACT">수주</option>
                   <option value="PROPOSAL">제안</option>
                 </select>
@@ -111,22 +111,22 @@ export default function InventoryPage() {
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>항목명 *</span>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }} />
+                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>고객사</span>
                 <input value={form.client} onChange={e => setForm(f => ({ ...f, client: e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }} />
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>금액 (원)</span>
                 <input type="number" value={form.amount ?? ''} onChange={e => setForm(f => ({ ...f, amount: e.target.value ? +e.target.value : undefined }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }} />
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>상태</span>
                 <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as ItemStatus }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }}>
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }}>
                   {(Object.keys(STATUS_LABEL) as ItemStatus[]).map(s => (
                     <option key={s} value={s}>{STATUS_LABEL[s]}</option>
                   ))}
@@ -135,17 +135,17 @@ export default function InventoryPage() {
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>시작일</span>
                 <input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }} />
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>종료일</span>
                 <input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc' }} />
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                 <span>비고</span>
                 <textarea value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} rows={2}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid #ccc', resize: 'vertical' }} />
+                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)', resize: 'vertical' }} />
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
@@ -154,7 +154,7 @@ export default function InventoryPage() {
                 {editing ? '수정' : '저장'}
               </button>
               <button type="button" onClick={resetForm}
-                style={{ padding: '8px 20px', background: '#fff', border: '1px solid #ccc', borderRadius: 6, cursor: 'pointer' }}>
+                style={{ padding: '8px 20px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer' }}>
                 취소
               </button>
             </div>
@@ -165,36 +165,36 @@ export default function InventoryPage() {
       {isLoading ? (
         <p>로딩 중...</p>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <thead>
-            <tr style={{ background: '#f5f7fa' }}>
+            <tr style={{ background: 'var(--c-thead)' }}>
               {['구분', '항목명', '고객사', '금액', '상태', '기간', '비고', ''].map(h => (
-                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid #e0e0e0' }}>{h}</th>
+                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid var(--c-border)' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#999' }}>데이터가 없습니다.</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>데이터가 없습니다.</td></tr>
             ) : items.map(item => (
-              <tr key={item.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+              <tr key={item.id} style={{ borderBottom: '1px solid var(--c-border-in)' }}>
                 <td style={{ padding: '10px 14px', fontSize: 13 }}>
                   <span style={{ padding: '2px 8px', borderRadius: 4, background: item.type === 'CONTRACT' ? '#e3f2fd' : '#fff3e0', color: item.type === 'CONTRACT' ? '#1565c0' : '#e65100', fontSize: 12 }}>
                     {TYPE_LABEL[item.type]}
                   </span>
                 </td>
                 <td style={{ padding: '10px 14px', fontWeight: 500 }}>{item.name}</td>
-                <td style={{ padding: '10px 14px', color: '#555' }}>{item.client ?? '-'}</td>
+                <td style={{ padding: '10px 14px', color: 'var(--c-text-sub)' }}>{item.client ?? '-'}</td>
                 <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace' }}>{fmt(item.amount)}</td>
                 <td style={{ padding: '10px 14px' }}>
                   <span style={{ padding: '2px 8px', borderRadius: 4, background: STATUS_COLOR[item.status] + '22', color: STATUS_COLOR[item.status], fontSize: 12 }}>
                     {STATUS_LABEL[item.status]}
                   </span>
                 </td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: '#666' }}>
+                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-sub)' }}>
                   {item.startDate ?? '-'} ~ {item.endDate ?? '-'}
                 </td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: '#666', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.note ?? '-'}</td>
+                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-sub)', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.note ?? '-'}</td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
                   <button onClick={() => openEdit(item)}
                     style={{ marginRight: 6, padding: '4px 10px', fontSize: 12, border: '1px solid #90caf9', borderRadius: 4, background: '#e3f2fd', color: '#1565c0', cursor: 'pointer' }}>
