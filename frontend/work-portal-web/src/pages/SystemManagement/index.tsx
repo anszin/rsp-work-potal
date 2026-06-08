@@ -44,7 +44,7 @@ export default function SystemManagementPage() {
 
   const createMut = useMutation({ mutationFn: createSystem, onSuccess: () => { invalidate(); reset() } })
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { name: string; description?: string; active?: boolean } }) =>
+    mutationFn: ({ id, data }: { id: number; data: { name: string; description?: string; active?: boolean; redmineProjectKey?: string } }) =>
       updateSystem(id, data),
     onSuccess: () => { invalidate(); reset() },
   })
