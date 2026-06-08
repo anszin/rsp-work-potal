@@ -8,7 +8,9 @@ import com.platform.portal.domain.deploy.repository.DeployRequestRepository;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.domain.system.repository.SubSystemRepository;
 import com.platform.portal.domain.user.repository.UserRepository;
+import com.platform.portal.service.RedmineService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,6 +29,7 @@ public class DeployRequestService {
     private final OperationSystemRepository systemRepository;
     private final SubSystemRepository subSystemRepository;
     private final UserRepository userRepository;
+    private final RedmineService redmineService;
 
     private static final Map<Status, Set<Status>> ALLOWED_TRANSITIONS = Map.of(
             Status.DRAFT,     Set.of(Status.REQUESTED),
@@ -112,6 +116,7 @@ public class DeployRequestService {
             case APPROVED -> {
                 dr.setApprover(userRepository.findByUsername(approverUsername).orElse(null));
                 dr.setApprovedAt(LocalDateTime.now());
+                createRedmineVersionIfPossible(dr);
             }
             case COMPLETED -> dr.setDeployedAt(LocalDateTime.now());
             default -> {}
@@ -126,6 +131,23 @@ public class DeployRequestService {
             throw new IllegalStateException("DRAFT 상태에서만 삭제 가능합니다.");
         }
         deployRequestRepository.deleteById(id);
+    }
+
+    private void createRedmineVersionIfPossible(DeployRequest dr) {
+        String projectKey = dr.getSystem().getRedmineProjectKey();
+        String version = dr.getVersion();
+        if (projectKey == null || projectKey.isBlank() || version == null || version.isBlank()) {
+            log.info("Redmine version creation skipped: no projectKey or version field");
+            return;
+        }
+        String versionName = dr.getSubSystem() != null
+                ? dr.getSubSystem().getName() + "_" + version
+                : version;
+        try {
+            redmineService.createVersion(projectKey, versionName, dr.getContent());
+        } catch (Exception e) {
+            log.warn("Redmine version creation failed (non-blocking): {}", e.getMessage());
+        }
     }
 
     private DeployRequest getOrThrow(Long id) {

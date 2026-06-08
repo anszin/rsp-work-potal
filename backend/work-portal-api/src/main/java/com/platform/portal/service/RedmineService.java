@@ -9,10 +9,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -53,6 +59,35 @@ public class RedmineService {
         } catch (Exception e) {
             log.error("Redmine API error: {}", e.getMessage());
             throw new RuntimeException("레드마인 검색 실패: " + e.getMessage(), e);
+        }
+    }
+
+    public void createVersion(String projectKey, String versionName, String description) {
+        if (projectKey == null || projectKey.isBlank() || versionName == null || versionName.isBlank()) {
+            log.warn("Redmine version creation skipped: projectKey or versionName is empty");
+            return;
+        }
+        try {
+            String safeProject = URLEncoder.encode(projectKey, StandardCharsets.UTF_8);
+            java.net.URI uri = java.net.URI.create(
+                    baseUrl + "/projects/" + safeProject + "/versions.json?key=" + apiKey);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> versionBody = new HashMap<>();
+            versionBody.put("name", versionName);
+            if (description != null && !description.isBlank()) {
+                versionBody.put("description", description);
+            }
+            versionBody.put("status", "open");
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(Map.of("version", versionBody), headers);
+            restTemplate.postForObject(uri, entity, String.class);
+            log.info("Redmine version created: {} in project {}", versionName, projectKey);
+        } catch (Exception e) {
+            log.error("Redmine version creation failed: {}", e.getMessage());
+            throw new RuntimeException("레드마인 버전 생성 실패: " + e.getMessage(), e);
         }
     }
 
