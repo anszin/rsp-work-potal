@@ -57,6 +57,7 @@ export default function DeployRequestPage() {
   const [issueResults, setIssueResults] = useState<RedmineIssue[]>([])
   const [issueDropOpen, setIssueDropOpen] = useState(false)
   const [issueSearching, setIssueSearching] = useState(false)
+  const [issueError, setIssueError] = useState<string | null>(null)
   const issueTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const issueBoxRef = useRef<HTMLDivElement>(null)
 
@@ -88,15 +89,20 @@ export default function DeployRequestPage() {
     setIssueQuery(q)
     if (!selectedSystem?.redmineProjectKey) return
     if (issueTimer.current) clearTimeout(issueTimer.current)
-    if (!q.trim()) { setIssueResults([]); setIssueDropOpen(false); return }
+    if (!q.trim()) { setIssueResults([]); setIssueDropOpen(false); setIssueError(null); return }
     setIssueSearching(true)
+    setIssueError(null)
     issueTimer.current = setTimeout(async () => {
       try {
         const results = await searchRedmineIssues(form.systemId, q)
         setIssueResults(results)
         setIssueDropOpen(true)
-      } catch { setIssueResults([]) }
-      finally { setIssueSearching(false) }
+      } catch (e: any) {
+        const msg = e?.response?.data?.error ?? e?.message ?? '검색 오류'
+        setIssueError(msg)
+        setIssueResults([])
+        setIssueDropOpen(true)
+      } finally { setIssueSearching(false) }
     }, 400)
   }
 
@@ -137,7 +143,7 @@ export default function DeployRequestPage() {
     onError: (e) => alert('삭제 실패: ' + apiError(e)),
   })
 
-  const resetIssue = () => { setIssueQuery(''); setIssueResults([]); setIssueDropOpen(false) }
+  const resetIssue = () => { setIssueQuery(''); setIssueResults([]); setIssueDropOpen(false); setIssueError(null) }
 
   const openCreate = () => {
     setEditing(null)
@@ -243,8 +249,8 @@ export default function DeployRequestPage() {
                     </div>
                   )}
                   {issueDropOpen && issueResults.length === 0 && !issueSearching && issueQuery && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '12px', fontSize: 13, color: '#aaa', zIndex: 100 }}>
-                      검색 결과가 없습니다
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '12px', fontSize: 13, zIndex: 100, color: issueError ? '#e53e3e' : '#aaa' }}>
+                      {issueError ? `오류: ${issueError}` : '검색 결과가 없습니다'}
                     </div>
                   )}
                 </>
