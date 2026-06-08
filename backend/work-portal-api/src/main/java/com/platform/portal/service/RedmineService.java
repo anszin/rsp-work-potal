@@ -29,19 +29,17 @@ public class RedmineService {
 
     public List<RedmineIssue> searchIssues(String projectKey, String query) {
         if (projectKey == null || projectKey.isBlank()) return Collections.emptyList();
-        String encodedQuery = URLEncoder.encode(query == null ? "" : query, StandardCharsets.UTF_8);
-        String encodedProject = URLEncoder.encode(projectKey, StandardCharsets.UTF_8);
-        // URI.create() prevents RestTemplate from double-encoding the already-encoded brackets
-        java.net.URI uri = java.net.URI.create(
-                baseUrl + "/issues.json"
-                + "?project_id=" + encodedProject
-                + "&f%5B%5D=subject"
-                + "&op%5Bsubject%5D=~"
-                + "&v%5Bsubject%5D%5B%5D=" + encodedQuery
-                + "&limit=20"
-                + "&key=" + apiKey);
-        log.info("Redmine search: project={}, query={}", projectKey, query);
         try {
+            String safeProject = URLEncoder.encode(projectKey, StandardCharsets.UTF_8);
+            String safeQuery = URLEncoder.encode(query == null ? "" : query, StandardCharsets.UTF_8)
+                    .replace("+", "%20");
+            java.net.URI uri = java.net.URI.create(
+                    baseUrl + "/issues.json"
+                    + "?project_id=" + safeProject
+                    + "&subject=~" + safeQuery
+                    + "&limit=20"
+                    + "&key=" + apiKey);
+            log.info("Redmine URI: {}", uri);
             RedmineIssuesResponse resp = restTemplate.getForObject(uri, RedmineIssuesResponse.class);
             List<RedmineIssue> issues = resp != null && resp.getIssues() != null ? resp.getIssues() : Collections.emptyList();
             log.info("Redmine result count: {}", issues.size());
