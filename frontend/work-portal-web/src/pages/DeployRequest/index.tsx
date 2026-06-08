@@ -18,9 +18,6 @@ const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
 const DEPLOY_SCOPE_LABELS: Record<DeployScope, string> = {
   FULL: '전점', PARTIAL: '일부점',
 }
-const STATUS_LABELS: Record<RequestStatus, string> = {
-  DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
-}
 const NEXT_STATUS: Partial<Record<RequestStatus, { label: string; next: RequestStatus }[]>> = {
   DRAFT:     [{ label: '제출', next: 'REQUESTED' }],
   REQUESTED: [{ label: '승인', next: 'APPROVED' }, { label: '반려', next: 'REJECTED' }],
@@ -420,83 +417,101 @@ export default function DeployRequestPage() {
       {/* 상세 패널 */}
       {detail && (
         <div style={s.card}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          {/* 헤더 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>
-              <span style={s.sysTag}>{detail.systemName}</span>
-              {detail.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{detail.subSystemName}</span>}
-              <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+                <span style={s.sysTag}>{detail.systemName}</span>
+                {detail.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' }}>{detail.subSystemName}</span>}
+                {detail.deployNo && <span style={{ fontSize: 12, color: 'var(--c-text-muted)', fontWeight: 500 }}>{detail.deployNo}</span>}
+                {detail.deployType && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>{DEPLOY_TYPE_LABELS[detail.deployType]}</span>}
+                {detail.deployScope && (
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 10,
+                    background: detail.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
+                    color: detail.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)' }}>
+                    {DEPLOY_SCOPE_LABELS[detail.deployScope]}{detail.deployScope === 'PARTIAL' && detail.deployTarget ? ` (${detail.deployTarget})` : ''}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--c-text)' }}>{detail.title}</div>
             </div>
-            <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <StatusBadge status={detail.status} />
+              <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
+            </div>
           </div>
-          <div style={s.detailGrid}>
-            <span style={s.detailLabel}>레드마인</span>
-            <span style={{ gridColumn: 'span 3' }}>
-              {detail.redmineIssues?.length > 0 ? (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+
+          {/* 타임라인 */}
+          <DeployTimeline detail={detail} />
+
+          {/* 정보 섹션 2열 */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+            <div style={s.infoSection}>
+              <div style={s.infoSectionTitle}>배포 정보</div>
+              <InfoRow label="버전" value={detail.version ?? '-'} />
+              <InfoRow label="배포 유형" value={detail.deployType ? DEPLOY_TYPE_LABELS[detail.deployType] : '-'} />
+              <InfoRow label="배포 범위" value={
+                detail.deployScope ? (
+                  <>{DEPLOY_SCOPE_LABELS[detail.deployScope]}{detail.deployScope === 'PARTIAL' && detail.deployTarget && <span style={{ marginLeft: 6, color: 'var(--c-text-muted)', fontSize: 12 }}>({detail.deployTarget})</span>}</>
+                ) : '-'
+              } />
+              <InfoRow label="예정일시" value={detail.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'} />
+            </div>
+            <div style={s.infoSection}>
+              <div style={s.infoSectionTitle}>담당자 · 일정</div>
+              <InfoRow label="요청자" value={detail.requesterUsername} />
+              <InfoRow label="승인자" value={detail.approverUsername ?? '-'} />
+              <InfoRow label="등록일" value={detail.createdAt?.slice(0, 10)} />
+            </div>
+          </div>
+
+          {/* 첨언 / 반려 사유 */}
+          {(detail.actionComment || detail.rejectionReason) && (
+            <div style={{ marginTop: 14 }}>
+              <div style={s.infoSectionTitle}>{detail.status === 'REJECTED' ? '반려 사유' : '첨언'}</div>
+              <pre style={s.contentBox}>{detail.actionComment || detail.rejectionReason}</pre>
+            </div>
+          )}
+
+          {/* 내용 */}
+          {detail.content && (
+            <div style={{ marginTop: 14 }}>
+              <div style={s.infoSectionTitle}>내용</div>
+              <pre style={s.contentBox}>{detail.content}</pre>
+            </div>
+          )}
+
+          {/* 레드마인 */}
+          {(detail.redmineIssues?.length > 0 || detail.redmineSyncStatus) && (
+            <div style={{ marginTop: 14 }}>
+              <div style={s.infoSectionTitle}>레드마인 일감</div>
+              {detail.redmineIssues?.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: detail.redmineSyncStatus ? 10 : 0 }}>
                   {detail.redmineIssues.map(i => (
                     <a key={i.redmineIssueId}
                       href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
                       target="_blank" rel="noreferrer"
-                      style={{ color: '#1976d2', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '2px 8px', borderRadius: 4 }}>
+                      style={{ color: '#1976d2', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '3px 10px', borderRadius: 4 }}>
                       #{i.redmineIssueId} {i.redmineIssueTitle}
                     </a>
                   ))}
                 </div>
-              ) : '-'}
-            </span>
-            <span style={s.detailLabel}>버전</span><span>{detail.version ?? '-'}</span>
-            <span style={s.detailLabel}>배포 유형</span><span>{detail.deployType ? DEPLOY_TYPE_LABELS[detail.deployType] : '-'}</span>
-            <span style={s.detailLabel}>배포 범위</span>
-            <span>
-              {detail.deployScope ? DEPLOY_SCOPE_LABELS[detail.deployScope] : '-'}
-              {detail.deployScope === 'PARTIAL' && detail.deployTarget && (
-                <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--c-text-muted)' }}>({detail.deployTarget})</span>
               )}
-            </span>
-            <span style={s.detailLabel}>상태</span>
-            <span>
-              {STATUS_LABELS[detail.status]}
-              {(detail.actionComment || detail.rejectionReason) && (
-                <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--c-text-muted)' }}>
-                  — {detail.actionComment || detail.rejectionReason}
-                </span>
-              )}
-            </span>
-            <span style={s.detailLabel}>요청자</span><span>{detail.requesterUsername}</span>
-            <span style={s.detailLabel}>승인자</span><span>{detail.approverUsername ?? '-'}</span>
-            <span style={s.detailLabel}>예정일시</span><span>{detail.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
-            <span style={s.detailLabel}>제출일시</span><span>{detail.requestedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
-            <span style={s.detailLabel}>승인일시</span><span>{detail.approvedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
-            <span style={s.detailLabel}>배포완료</span><span>{detail.deployedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
-            <span style={s.detailLabel}>등록일</span><span>{detail.createdAt?.slice(0, 10)}</span>
-            {detail.redmineSyncStatus && (
-              <>
-                <span style={s.detailLabel}>Redmine</span>
-                <span style={{ gridColumn: 'span 3', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {detail.redmineSyncStatus === 'SYNCED' && (
-                    <span style={{ fontSize: 12, color: '#276749', background: '#F0FFF4', border: '1px solid #C6F6D5', padding: '2px 8px', borderRadius: 4 }}>동기화 완료</span>
-                  )}
+              {detail.redmineSyncStatus && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {detail.redmineSyncStatus === 'SYNCED' && <span style={{ fontSize: 12, color: '#276749', background: '#F0FFF4', border: '1px solid #C6F6D5', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 완료</span>}
                   {detail.redmineSyncStatus === 'FAILED' && (
                     <>
-                      <span style={{ fontSize: 12, color: '#9B2C2C', background: '#FFF5F5', border: '1px solid #FED7D7', padding: '2px 8px', borderRadius: 4 }}>동기화 실패</span>
+                      <span style={{ fontSize: 12, color: '#9B2C2C', background: '#FFF5F5', border: '1px solid #FED7D7', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 실패</span>
                       <button style={{ ...s.btnSm, color: '#C05621', borderColor: '#C05621', marginRight: 0 }}
-                        onClick={() => syncMut.mutate(detail.id)}
-                        disabled={syncMut.isPending}>
+                        onClick={() => syncMut.mutate(detail.id)} disabled={syncMut.isPending}>
                         {syncMut.isPending ? '재시도 중...' : '재시도'}
                       </button>
                     </>
                   )}
-                  {detail.redmineSyncStatus === 'SKIPPED' && (
-                    <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>미설정 (프로젝트키 또는 버전 없음)</span>
-                  )}
-                </span>
-              </>
-            )}
-          </div>
-          {detail.content && (
-            <div style={{ marginTop: 16 }}>
-              <div style={s.detailLabel}>내용</div>
-              <pre style={s.contentBox}>{detail.content}</pre>
+                  {detail.redmineSyncStatus === 'SKIPPED' && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>미설정 (프로젝트키 또는 버전 없음)</span>}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -625,6 +640,8 @@ const s: Record<string, React.CSSProperties> = {
   empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
   detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
+  infoSection: { background: 'var(--c-bg)', borderRadius: 8, padding: '14px 16px' },
+  infoSectionTitle: { fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 10 },
   contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   modal: { background: 'var(--c-card)', borderRadius: 12, width: 720, maxWidth: '90vw', maxHeight: '85vh', display: 'flex', flexDirection: 'column' as const, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
@@ -638,4 +655,59 @@ const s: Record<string, React.CSSProperties> = {
   issueRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', cursor: 'pointer' },
   issueCheck: { width: 18, height: 18, borderRadius: 4, border: '2px solid #cbd5e0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   modalFooter: { padding: '12px 20px', borderTop: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+}
+
+function DeployTimeline({ detail }: { detail: import('../../api/deployRequests').DeployRequest }) {
+  const isRejected = detail.status === 'REJECTED'
+
+  type Step = { label: string; ts: string | null; done: boolean; rejected?: boolean }
+  const steps: Step[] = isRejected
+    ? [
+        { label: '초안',   ts: detail.createdAt,   done: true },
+        { label: '요청',   ts: detail.requestedAt, done: true },
+        { label: '반려',   ts: null,               done: false, rejected: true },
+      ]
+    : [
+        { label: '초안',   ts: detail.createdAt,   done: true },
+        { label: '요청',   ts: detail.requestedAt, done: ['REQUESTED','APPROVED','COMPLETED'].includes(detail.status) },
+        { label: '승인',   ts: detail.approvedAt,  done: ['APPROVED','COMPLETED'].includes(detail.status) },
+        { label: '완료',   ts: detail.deployedAt,  done: detail.status === 'COMPLETED' },
+      ]
+
+  const fmtTs = (ts: string | null) => ts ? ts.slice(0, 10) + '\n' + ts.slice(11, 16) : ''
+
+  return (
+    <div style={{ background: 'var(--c-bg)', borderRadius: 8, padding: '20px 32px', display: 'flex', alignItems: 'flex-start' }}>
+      {steps.map((step, idx) => {
+        const nextStep = steps[idx + 1]
+        const lineColor = nextStep?.rejected ? '#e53e3e' : (nextStep?.done ? '#1a1a2e' : 'var(--c-border)')
+        const circleColor = step.rejected ? '#e53e3e' : step.done ? '#1a1a2e' : 'transparent'
+        const circleBorder = step.done || step.rejected ? 'none' : '2px solid var(--c-border)'
+        const textColor = step.rejected ? '#e53e3e' : step.done ? 'var(--c-text)' : 'var(--c-text-muted)'
+        return (
+          <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', flex: idx < steps.length - 1 ? 1 : 'initial' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 70 }}>
+              <div style={{ width: 30, height: 30, borderRadius: '50%', background: circleColor, border: circleBorder, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: step.done || step.rejected ? '#fff' : 'var(--c-text-muted)', fontWeight: 700, flexShrink: 0 }}>
+                {step.rejected ? '✕' : step.done ? '✓' : idx + 1}
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: textColor, marginTop: 7, whiteSpace: 'nowrap' }}>{step.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3, textAlign: 'center', whiteSpace: 'pre', lineHeight: 1.5 }}>{fmtTs(step.ts)}</div>
+            </div>
+            {idx < steps.length - 1 && (
+              <div style={{ flex: 1, height: 2, background: lineColor, marginTop: 14, marginLeft: -2, marginRight: -2 }} />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', gap: 12, padding: '7px 0', borderBottom: '1px solid var(--c-border-in)', alignItems: 'flex-start' }}>
+      <span style={{ fontSize: 12, color: 'var(--c-text-muted)', fontWeight: 500, minWidth: 60, flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 13, color: 'var(--c-text)' }}>{value}</span>
+    </div>
+  )
 }
