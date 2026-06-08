@@ -27,18 +27,23 @@ public class RedmineService {
 
     private final RestTemplate restTemplate;
 
-    public List<RedmineIssue> searchIssues(String projectKey, String query) {
+    public List<RedmineIssue> searchIssues(String projectKey, String query, String statusId) {
         if (projectKey == null || projectKey.isBlank()) return Collections.emptyList();
         try {
             String safeProject = URLEncoder.encode(projectKey, StandardCharsets.UTF_8);
-            String safeQuery = URLEncoder.encode(query == null ? "" : query, StandardCharsets.UTF_8)
-                    .replace("+", "%20");
-            java.net.URI uri = java.net.URI.create(
-                    baseUrl + "/issues.json"
-                    + "?project_id=" + safeProject
-                    + "&subject=~" + safeQuery
-                    + "&limit=20"
-                    + "&key=" + apiKey);
+            StringBuilder url = new StringBuilder(baseUrl)
+                    .append("/issues.json")
+                    .append("?project_id=").append(safeProject)
+                    .append("&limit=50")
+                    .append("&key=").append(apiKey);
+            if (query != null && !query.isBlank()) {
+                String safeQuery = URLEncoder.encode(query, StandardCharsets.UTF_8).replace("+", "%20");
+                url.append("&subject=~").append(safeQuery);
+            }
+            if (statusId != null && !statusId.isBlank()) {
+                url.append("&status_id=").append(statusId);
+            }
+            java.net.URI uri = java.net.URI.create(url.toString());
             log.info("Redmine URI: {}", uri);
             RedmineIssuesResponse resp = restTemplate.getForObject(uri, RedmineIssuesResponse.class);
             List<RedmineIssue> issues = resp != null && resp.getIssues() != null ? resp.getIssues() : Collections.emptyList();

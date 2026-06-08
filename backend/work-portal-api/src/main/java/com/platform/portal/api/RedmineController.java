@@ -21,11 +21,12 @@ public class RedmineController {
     @GetMapping("/issues")
     public ResponseEntity<List<RedmineIssueResponse>> searchIssues(
             @RequestParam Long systemId,
-            @RequestParam(required = false, defaultValue = "") String q) {
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false, defaultValue = "open") String status) {
         OperationSystem system = systemRepository.findById(systemId)
                 .orElseThrow(() -> new IllegalArgumentException("System not found: " + systemId));
         String projectKey = system.getRedmineProjectKey();
-        List<RedmineService.RedmineIssue> issues = redmineService.searchIssues(projectKey, q);
+        List<RedmineService.RedmineIssue> issues = redmineService.searchIssues(projectKey, q, status);
         List<RedmineIssueResponse> result = issues.stream().map(RedmineIssueResponse::new).toList();
         return ResponseEntity.ok(result);
     }

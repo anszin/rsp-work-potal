@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import {
@@ -15,20 +15,17 @@ import PageHeader from '../../components/PageHeader'
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
   RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치',
 }
-
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
 }
-
 const NEXT_STATUS: Partial<Record<RequestStatus, { label: string; next: RequestStatus; confirm?: string }[]>> = {
   DRAFT:     [{ label: '제출', next: 'REQUESTED' }],
   REQUESTED: [
     { label: '승인', next: 'APPROVED', confirm: '승인하시겠습니까?' },
     { label: '반려', next: 'REJECTED', confirm: '반려하시겠습니까?' },
   ],
-  APPROVED:  [{ label: '완료', next: 'COMPLETED', confirm: '배포 완료로 처리하시겠습니까?' }],
+  APPROVED: [{ label: '완료', next: 'COMPLETED', confirm: '배포 완료로 처리하시겠습니까?' }],
 }
-
 const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '전체', value: 'ALL' },
   { label: '임시저장', value: 'DRAFT' },
@@ -36,6 +33,11 @@ const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '승인', value: 'APPROVED' },
   { label: '완료', value: 'COMPLETED' },
   { label: '반려', value: 'REJECTED' },
+]
+const PICKER_STATUS_TABS = [
+  { label: '진행중', value: 'open' },
+  { label: '완료', value: 'closed' },
+  { label: '전체', value: '*' },
 ]
 
 const emptyForm: CreateDeployRequest = { systemId: 0, subSystemId: null, title: '', version: '', deployType: 'RELEASE', content: '' }
@@ -54,13 +56,14 @@ export default function DeployRequestPage() {
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
   const [form, setForm] = useState<CreateDeployRequest>(emptyForm)
   const [selectedIssues, setSelectedIssues] = useState<RedmineIssueRef[]>([])
-  const [issueQuery, setIssueQuery] = useState('')
-  const [issueResults, setIssueResults] = useState<RedmineIssue[]>([])
-  const [issueDropOpen, setIssueDropOpen] = useState(false)
-  const [issueSearching, setIssueSearching] = useState(false)
-  const [issueError, setIssueError] = useState<string | null>(null)
-  const issueTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const issueBoxRef = useRef<HTMLDivElement>(null)
+
+  // 일감 선택 모달
+  const [showPicker, setShowPicker] = useState(false)
+  const [pickerStatus, setPickerStatus] = useState('open')
+  const [pickerInput, setPickerInput] = useState('')
+  const [pickerQuery, setPickerQuery] = useState('')
+  const [pickerDraft, setPickerDraft] = useState<RedmineIssueRef[]>([])
+  const pickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['deploy-requests'],
@@ -75,53 +78,38 @@ export default function DeployRequestPage() {
     enabled: showForm && form.systemId > 0,
   })
 
-  useEffect(() => {
-    if (!showForm) return
-    const handleClick = (e: MouseEvent) => {
-      if (issueBoxRef.current && !issueBoxRef.current.contains(e.target as Node)) {
-        setIssueDropOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [showForm])
+  const { data: pickerIssues = [], isFetching: pickerFetching, error: pickerError } = useQuery({
+    queryKey: ['redmine-picker', form.systemId, pickerStatus, pickerQuery],
+    queryFn: () => searchRedmineIssues(form.systemId, pickerQuery, pickerStatus),
+    enabled: showPicker && form.systemId > 0 && !!selectedSystem?.redmineProjectKey,
+    staleTime: 30000,
+  })
 
-  const handleIssueSearch = (q: string) => {
-    setIssueQuery(q)
-    if (!selectedSystem?.redmineProjectKey) return
-    if (issueTimer.current) clearTimeout(issueTimer.current)
-    if (!q.trim()) { setIssueResults([]); setIssueDropOpen(false); setIssueError(null); return }
-    setIssueSearching(true)
-    setIssueError(null)
-    issueTimer.current = setTimeout(async () => {
-      try {
-        const results = await searchRedmineIssues(form.systemId, q)
-        setIssueResults(results)
-        setIssueDropOpen(true)
-      } catch (e: any) {
-        const msg = typeof e?.response?.data?.error === 'string'
-          ? e.response.data.error
-          : typeof e?.message === 'string'
-          ? e.message
-          : '검색 오류'
-        setIssueError(msg)
-        setIssueResults([])
-        setIssueDropOpen(true)
-      } finally { setIssueSearching(false) }
-    }, 400)
+  const handlePickerInput = (val: string) => {
+    setPickerInput(val)
+    if (pickerTimer.current) clearTimeout(pickerTimer.current)
+    pickerTimer.current = setTimeout(() => setPickerQuery(val), 400)
   }
 
-  const selectIssue = (issue: RedmineIssue) => {
-    if (!selectedIssues.some(i => i.redmineIssueId === issue.id)) {
-      setSelectedIssues(prev => [...prev, { redmineIssueId: issue.id, redmineIssueTitle: issue.subject }])
-    }
-    setIssueQuery('')
-    setIssueDropOpen(false)
-    setIssueResults([])
+  const togglePickerIssue = (issue: RedmineIssue) => {
+    setPickerDraft(prev =>
+      prev.some(i => i.redmineIssueId === issue.id)
+        ? prev.filter(i => i.redmineIssueId !== issue.id)
+        : [...prev, { redmineIssueId: issue.id, redmineIssueTitle: issue.subject }]
+    )
   }
 
-  const removeIssue = (issueId: number) => {
-    setSelectedIssues(prev => prev.filter(i => i.redmineIssueId !== issueId))
+  const openPicker = () => {
+    setPickerDraft([...selectedIssues])
+    setPickerStatus('open')
+    setPickerInput('')
+    setPickerQuery('')
+    setShowPicker(true)
+  }
+
+  const confirmPicker = () => {
+    setSelectedIssues(pickerDraft)
+    setShowPicker(false)
   }
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['deploy-requests'] })
@@ -147,13 +135,10 @@ export default function DeployRequestPage() {
     onError: (e) => alert('삭제 실패: ' + apiError(e)),
   })
 
-  const resetIssueSearch = () => { setIssueQuery(''); setIssueResults([]); setIssueDropOpen(false); setIssueError(null) }
-
   const openCreate = () => {
     setEditing(null)
     setForm({ ...emptyForm, systemId: systems[0]?.id ?? 0, subSystemId: null })
     setSelectedIssues([])
-    resetIssueSearch()
     setShowForm(true)
     setDetail(null)
   }
@@ -162,12 +147,11 @@ export default function DeployRequestPage() {
     setEditing(r)
     setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', content: r.content ?? '', scheduledAt: r.scheduledAt ?? undefined })
     setSelectedIssues(r.redmineIssues ?? [])
-    resetIssueSearch()
     setShowForm(true)
     setDetail(null)
   }
 
-  const closeForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm); setSelectedIssues([]); resetIssueSearch() }
+  const closeForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm); setSelectedIssues([]) }
 
   const submit = () => {
     if (!form.title || !form.systemId) return
@@ -221,7 +205,7 @@ export default function DeployRequestPage() {
             <label style={s.label}>예정일시</label>
             <input style={s.input} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
             <label style={s.label}>레드마인 일감</label>
-            <div ref={issueBoxRef} style={{ position: 'relative' }}>
+            <div>
               {selectedSystem?.redmineProjectKey ? (
                 <>
                   {selectedIssues.length > 0 && (
@@ -229,45 +213,16 @@ export default function DeployRequestPage() {
                       {selectedIssues.map(issue => (
                         <span key={issue.redmineIssueId} style={s.issueBadge}>
                           <span style={{ color: '#1976d2', fontWeight: 600 }}>#{issue.redmineIssueId}</span>
-                          <span style={{ color: '#333', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{issue.redmineIssueTitle}</span>
-                          <button type="button" onClick={() => removeIssue(issue.redmineIssueId)} style={{ border: 'none', background: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
+                          <span style={{ color: '#333', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{issue.redmineIssueTitle}</span>
+                          <button type="button" onClick={() => setSelectedIssues(prev => prev.filter(i => i.redmineIssueId !== issue.redmineIssueId))}
+                            style={{ border: 'none', background: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
                         </span>
                       ))}
                     </div>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 6, fontSize: 13 }}>
-                    <input
-                      value={issueQuery}
-                      onChange={e => handleIssueSearch(e.target.value)}
-                      placeholder="일감 제목으로 검색 후 선택..."
-                      style={{ flex: 1, border: 'none', outline: 'none', fontSize: 13, background: 'transparent' }}
-                    />
-                    {issueSearching && <span style={{ color: '#aaa', fontSize: 12 }}>검색 중...</span>}
-                  </div>
-                  {issueDropOpen && issueResults.length > 0 && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: 220, overflowY: 'auto' }}>
-                      {issueResults.map(issue => {
-                        const already = selectedIssues.some(i => i.redmineIssueId === issue.id)
-                        return (
-                          <div key={issue.id} onClick={() => !already && selectIssue(issue)}
-                            style={{ padding: '10px 12px', cursor: already ? 'default' : 'pointer', borderBottom: '1px solid #f0f0f0', fontSize: 13, opacity: already ? 0.5 : 1 }}
-                            onMouseEnter={e => { if (!already) e.currentTarget.style.background = '#f5f7fa' }}
-                            onMouseLeave={e => { if (!already) e.currentTarget.style.background = '' }}>
-                            <span style={{ color: '#1976d2', fontWeight: 600, marginRight: 8 }}>#{issue.id}</span>
-                            <span>{issue.subject}</span>
-                            {issue.status && <span style={{ marginLeft: 8, fontSize: 11, color: '#888' }}>[{issue.status}]</span>}
-                            {issue.assignedTo && <span style={{ marginLeft: 4, fontSize: 11, color: '#aaa' }}>· {issue.assignedTo}</span>}
-                            {already && <span style={{ marginLeft: 8, fontSize: 11, color: '#38a169' }}>✓ 선택됨</span>}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                  {issueDropOpen && issueResults.length === 0 && !issueSearching && issueQuery && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '12px', fontSize: 13, zIndex: 100, color: issueError ? '#e53e3e' : '#aaa' }}>
-                      {issueError ? `오류: ${issueError}` : '검색 결과가 없습니다'}
-                    </div>
-                  )}
+                  <button type="button" onClick={openPicker} style={s.btnOutline}>
+                    + 일감 선택
+                  </button>
                 </>
               ) : (
                 <div style={{ padding: '8px 10px', border: '1px solid #eee', borderRadius: 6, fontSize: 12, color: '#bbb' }}>
@@ -280,8 +235,7 @@ export default function DeployRequestPage() {
           </div>
           <div style={s.formActions}>
             <button style={s.btnSecondary} onClick={closeForm}>취소</button>
-            <button style={s.btn} onClick={submit}
-              disabled={createMut.isPending || updateMut.isPending}>
+            <button style={s.btn} onClick={submit} disabled={createMut.isPending || updateMut.isPending}>
               {createMut.isPending || updateMut.isPending ? '저장 중...' : '저장'}
             </button>
           </div>
@@ -335,19 +289,15 @@ export default function DeployRequestPage() {
                   </td>
                   <td style={s.td}>
                     {r.title}
-                    {r.redmineIssues?.length > 0 && (
-                      <span>
-                        {r.redmineIssues.map(i => (
-                          <a key={i.redmineIssueId}
-                            href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
-                            target="_blank" rel="noreferrer"
-                            onClick={e => e.stopPropagation()}
-                            style={{ marginLeft: 4, fontSize: 11, color: '#1976d2', textDecoration: 'none', background: '#EBF8FF', padding: '1px 6px', borderRadius: 3 }}>
-                            #{i.redmineIssueId}
-                          </a>
-                        ))}
-                      </span>
-                    )}
+                    {r.redmineIssues?.length > 0 && r.redmineIssues.map(i => (
+                      <a key={i.redmineIssueId}
+                        href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
+                        target="_blank" rel="noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        style={{ marginLeft: 4, fontSize: 11, color: '#1976d2', textDecoration: 'none', background: '#EBF8FF', padding: '1px 6px', borderRadius: 3 }}>
+                        #{i.redmineIssueId}
+                      </a>
+                    ))}
                   </td>
                   <td style={s.td}>{r.version ?? '-'}</td>
                   <td style={s.td}>{r.deployType ? DEPLOY_TYPE_LABELS[r.deployType] : '-'}</td>
@@ -429,6 +379,81 @@ export default function DeployRequestPage() {
           )}
         </div>
       )}
+
+      {/* 일감 선택 모달 */}
+      {showPicker && (
+        <div style={s.overlay} onClick={() => setShowPicker(false)}>
+          <div style={s.modal} onClick={e => e.stopPropagation()}>
+            <div style={s.modalHeader}>
+              <span style={{ fontWeight: 600, fontSize: 15 }}>레드마인 일감 선택</span>
+              <button onClick={() => setShowPicker(false)} style={s.modalClose}>✕</button>
+            </div>
+            <div style={s.modalFilter}>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {PICKER_STATUS_TABS.map(tab => (
+                  <button key={tab.value}
+                    style={{ ...s.tabBtn, ...(pickerStatus === tab.value ? s.tabBtnActive : {}) }}
+                    onClick={() => setPickerStatus(tab.value)}>
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              <input
+                value={pickerInput}
+                onChange={e => handlePickerInput(e.target.value)}
+                placeholder="제목으로 검색..."
+                style={{ ...s.input, flex: 1, margin: 0 }}
+              />
+            </div>
+            <div style={s.modalBody}>
+              {pickerFetching ? (
+                <div style={s.modalEmpty}>불러오는 중...</div>
+              ) : pickerError ? (
+                <div style={{ ...s.modalEmpty, color: '#e53e3e' }}>
+                  오류: {pickerError instanceof Error ? pickerError.message : '조회 실패'}
+                </div>
+              ) : pickerIssues.length === 0 ? (
+                <div style={s.modalEmpty}>일감이 없습니다</div>
+              ) : (
+                pickerIssues.map(issue => {
+                  const checked = pickerDraft.some(i => i.redmineIssueId === issue.id)
+                  return (
+                    <div key={issue.id} onClick={() => togglePickerIssue(issue)}
+                      style={{ ...s.issueRow, background: checked ? '#f0fdf4' : undefined }}>
+                      <div style={{ ...s.issueCheck, borderColor: checked ? '#38a169' : '#cbd5e0', background: checked ? '#38a169' : '#fff' }}>
+                        {checked && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ color: '#1976d2', fontWeight: 600, marginRight: 8, fontSize: 13 }}>#{issue.id}</span>
+                        <span style={{ fontSize: 13 }}>{issue.subject}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                        {issue.status && (
+                          <span style={{ fontSize: 11, color: '#666', background: '#f0f0f0', padding: '2px 6px', borderRadius: 3 }}>{issue.status}</span>
+                        )}
+                        {issue.assignedTo && (
+                          <span style={{ fontSize: 11, color: '#999' }}>{issue.assignedTo}</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+            <div style={s.modalFooter}>
+              <span style={{ fontSize: 13, color: '#888' }}>
+                {pickerDraft.length > 0 ? `${pickerDraft.length}개 선택됨` : '일감을 선택하세요'}
+              </span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button style={s.btnSecondary} onClick={() => setShowPicker(false)}>취소</button>
+                <button style={s.btn} onClick={confirmPicker}>
+                  선택 완료 {pickerDraft.length > 0 && `(${pickerDraft.length}개)`}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -444,6 +469,7 @@ const s: Record<string, React.CSSProperties> = {
   page: { padding: '32px 40px' },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: '#fff', color: '#555', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
+  btnOutline: { padding: '6px 14px', background: '#fff', color: '#1976d2', border: '1px dashed #1976d2', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid #ddd', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: 24, marginBottom: 16 },
   formTitle: { fontSize: 15, fontWeight: 600, marginBottom: 16 },
@@ -468,4 +494,16 @@ const s: Record<string, React.CSSProperties> = {
   detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
   detailLabel: { color: '#888', fontSize: 12, fontWeight: 500 },
   contentBox: { background: '#f7f8fa', border: '1px solid #e2e8f0', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  modal: { background: '#fff', borderRadius: 12, width: 720, maxWidth: '90vw', maxHeight: '85vh', display: 'flex', flexDirection: 'column' as const, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
+  modalHeader: { padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  modalClose: { border: 'none', background: 'none', fontSize: 18, cursor: 'pointer', color: '#999', lineHeight: 1, padding: 4 },
+  modalFilter: { padding: '12px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', gap: 10, alignItems: 'center' },
+  tabBtn: { padding: '5px 14px', border: '1px solid #ddd', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: '#fff', color: '#555' },
+  tabBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
+  modalBody: { flex: 1, overflowY: 'auto' as const },
+  modalEmpty: { padding: 32, textAlign: 'center' as const, color: '#aaa', fontSize: 13 },
+  issueRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid #f5f5f5', cursor: 'pointer' },
+  issueCheck: { width: 18, height: 18, borderRadius: 4, border: '2px solid #cbd5e0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  modalFooter: { padding: '12px 20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
 }
