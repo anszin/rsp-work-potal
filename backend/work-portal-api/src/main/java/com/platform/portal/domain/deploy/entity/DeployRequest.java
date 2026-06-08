@@ -56,6 +56,8 @@ public class DeployRequest {
     private Status status = Status.DRAFT;
 
     private LocalDateTime scheduledAt;
+    private LocalDateTime requestedAt;
+    private LocalDateTime approvedAt;
     private LocalDateTime deployedAt;
 
     @CreatedDate

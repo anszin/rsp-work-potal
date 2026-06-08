@@ -61,6 +61,8 @@ public class DeployRequestDto {
         private final String approverUsername;
         private final DeployRequest.Status status;
         private final LocalDateTime scheduledAt;
+        private final LocalDateTime requestedAt;
+        private final LocalDateTime approvedAt;
         private final LocalDateTime deployedAt;
         private final LocalDateTime createdAt;
 
@@ -79,6 +81,8 @@ public class DeployRequestDto {
             this.approverUsername = dr.getApprover() != null ? dr.getApprover().getUsername() : null;
             this.status = dr.getStatus();
             this.scheduledAt = dr.getScheduledAt();
+            this.requestedAt = dr.getRequestedAt();
+            this.approvedAt = dr.getApprovedAt();
             this.deployedAt = dr.getDeployedAt();
             this.createdAt = dr.getCreatedAt();
         }

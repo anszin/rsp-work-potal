@@ -268,6 +268,8 @@ export default function DeployRequestPage() {
             <span style={s.detailLabel}>요청자</span><span>{detail.requesterUsername}</span>
             <span style={s.detailLabel}>승인자</span><span>{detail.approverUsername ?? '-'}</span>
             <span style={s.detailLabel}>예정일시</span><span>{detail.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
+            <span style={s.detailLabel}>제출일시</span><span>{detail.requestedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
+            <span style={s.detailLabel}>승인일시</span><span>{detail.approvedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
             <span style={s.detailLabel}>배포완료</span><span>{detail.deployedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
             <span style={s.detailLabel}>등록일</span><span>{detail.createdAt?.slice(0, 10)}</span>
           </div>

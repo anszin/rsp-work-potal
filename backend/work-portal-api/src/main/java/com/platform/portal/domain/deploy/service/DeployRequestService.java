@@ -98,9 +98,10 @@ public class DeployRequestService {
 
         dr.setStatus(newStatus);
         switch (newStatus) {
-            case REQUESTED -> dr.setApprover(null);
+            case REQUESTED -> { dr.setApprover(null); dr.setRequestedAt(LocalDateTime.now()); }
             case APPROVED -> {
                 dr.setApprover(userRepository.findByUsername(approverUsername).orElse(null));
+                dr.setApprovedAt(LocalDateTime.now());
             }
             case COMPLETED -> dr.setDeployedAt(LocalDateTime.now());
             default -> {}

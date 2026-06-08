@@ -18,6 +18,8 @@ export interface DeployRequest {
   approverUsername: string | null
   status: RequestStatus
   scheduledAt: string | null
+  requestedAt: string | null
+  approvedAt: string | null
   deployedAt: string | null
   createdAt: string
 }
