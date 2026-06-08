@@ -5,6 +5,7 @@ export interface System {
   code: string
   name: string
   description: string
+  redmineProjectKey: string | null
   active: boolean
   createdAt: string
 }
@@ -13,12 +14,14 @@ export interface CreateSystemRequest {
   code: string
   name: string
   description?: string
+  redmineProjectKey?: string
 }
 
 export interface UpdateSystemRequest {
   name: string
   description?: string
   active?: boolean
+  redmineProjectKey?: string
 }
 
 export interface SystemManager {

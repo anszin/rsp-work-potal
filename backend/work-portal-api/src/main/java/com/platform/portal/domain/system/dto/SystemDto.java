@@ -20,6 +20,7 @@ public class SystemDto {
         @NotBlank
         private String name;
         private String description;
+        private String redmineProjectKey;
     }
 
     @Getter
@@ -29,6 +30,7 @@ public class SystemDto {
         private String name;
         private String description;
         private Boolean active;
+        private String redmineProjectKey;
     }
 
     @Getter
@@ -37,6 +39,7 @@ public class SystemDto {
         private final String code;
         private final String name;
         private final String description;
+        private final String redmineProjectKey;
         private final boolean active;
         private final LocalDateTime createdAt;
 
@@ -45,6 +48,7 @@ public class SystemDto {
             this.code = s.getCode();
             this.name = s.getName();
             this.description = s.getDescription();
+            this.redmineProjectKey = s.getRedmineProjectKey();
             this.active = s.isActive();
             this.createdAt = s.getCreatedAt();
         }

@@ -55,6 +55,9 @@ public class DeployRequest {
     @Column(nullable = false)
     private Status status = Status.DRAFT;
 
+    private Integer redmineIssueId;
+    private String redmineIssueTitle;
+
     private LocalDateTime scheduledAt;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;

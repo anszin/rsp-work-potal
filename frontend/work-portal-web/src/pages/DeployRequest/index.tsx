@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import {
@@ -7,6 +7,7 @@ import {
   type DeployRequest, type RequestStatus, type DeployType, type CreateDeployRequest,
 } from '../../api/deployRequests'
 import { getActiveSystems, getActiveSubSystems } from '../../api/systems'
+import { searchRedmineIssues, type RedmineIssue } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
@@ -52,20 +53,66 @@ export default function DeployRequestPage() {
   const [detail, setDetail] = useState<DeployRequest | null>(null)
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
   const [form, setForm] = useState<CreateDeployRequest>(emptyForm)
+  const [issueQuery, setIssueQuery] = useState('')
+  const [issueResults, setIssueResults] = useState<RedmineIssue[]>([])
+  const [issueDropOpen, setIssueDropOpen] = useState(false)
+  const [issueSearching, setIssueSearching] = useState(false)
+  const issueTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const issueBoxRef = useRef<HTMLDivElement>(null)
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['deploy-requests'],
     queryFn: () => getDeployRequests(),
   })
-  const { data: systems = [] } = useQuery({
-    queryKey: ['systems', 'active'],
-    queryFn: getActiveSystems,
-  })
+  const { data: systems = [] } = useQuery({ queryKey: ['systems', 'active'], queryFn: getActiveSystems })
+  const selectedSystem = systems.find(s => s.id === form.systemId)
+
   const { data: subSystems = [] } = useQuery({
     queryKey: ['subsystems', 'active', form.systemId],
     queryFn: () => getActiveSubSystems(form.systemId),
     enabled: showForm && form.systemId > 0,
   })
+
+  useEffect(() => {
+    if (!showForm) return
+    const handleClick = (e: MouseEvent) => {
+      if (issueBoxRef.current && !issueBoxRef.current.contains(e.target as Node)) {
+        setIssueDropOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showForm])
+
+  const handleIssueSearch = (q: string) => {
+    setIssueQuery(q)
+    if (!selectedSystem?.redmineProjectKey) return
+    if (issueTimer.current) clearTimeout(issueTimer.current)
+    if (!q.trim()) { setIssueResults([]); setIssueDropOpen(false); return }
+    setIssueSearching(true)
+    issueTimer.current = setTimeout(async () => {
+      try {
+        const results = await searchRedmineIssues(form.systemId, q)
+        setIssueResults(results)
+        setIssueDropOpen(true)
+      } catch { setIssueResults([]) }
+      finally { setIssueSearching(false) }
+    }, 400)
+  }
+
+  const selectIssue = (issue: RedmineIssue) => {
+    setForm(f => ({ ...f, redmineIssueId: issue.id, redmineIssueTitle: issue.subject }))
+    setIssueQuery('')
+    setIssueDropOpen(false)
+    setIssueResults([])
+  }
+
+  const clearIssue = () => {
+    setForm(f => ({ ...f, redmineIssueId: null, redmineIssueTitle: null }))
+    setIssueQuery('')
+    setIssueResults([])
+    setIssueDropOpen(false)
+  }
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['deploy-requests'] })
 
@@ -90,21 +137,25 @@ export default function DeployRequestPage() {
     onError: (e) => alert('삭제 실패: ' + apiError(e)),
   })
 
+  const resetIssue = () => { setIssueQuery(''); setIssueResults([]); setIssueDropOpen(false) }
+
   const openCreate = () => {
     setEditing(null)
     setForm({ ...emptyForm, systemId: systems[0]?.id ?? 0, subSystemId: null })
+    resetIssue()
     setShowForm(true)
     setDetail(null)
   }
 
   const openEdit = (r: DeployRequest) => {
     setEditing(r)
-    setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', content: r.content ?? '', scheduledAt: r.scheduledAt ?? undefined })
+    setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', content: r.content ?? '', scheduledAt: r.scheduledAt ?? undefined, redmineIssueId: r.redmineIssueId, redmineIssueTitle: r.redmineIssueTitle })
+    resetIssue()
     setShowForm(true)
     setDetail(null)
   }
 
-  const closeForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm) }
+  const closeForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm); resetIssue() }
 
   const submit = () => {
     if (!form.title || !form.systemId) return
@@ -157,6 +208,52 @@ export default function DeployRequestPage() {
             </select>
             <label style={s.label}>예정일시</label>
             <input style={s.input} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
+            <label style={s.label}>레드마인 일감</label>
+            <div ref={issueBoxRef} style={{ position: 'relative' }}>
+              {form.redmineIssueId ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 6, background: '#f0fdf4', fontSize: 13 }}>
+                  <span style={{ color: '#1976d2', fontWeight: 600 }}>#{form.redmineIssueId}</span>
+                  <span style={{ flex: 1, color: '#333' }}>{form.redmineIssueTitle}</span>
+                  <button type="button" onClick={clearIssue} style={{ border: 'none', background: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}>✕</button>
+                </div>
+              ) : selectedSystem?.redmineProjectKey ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 6, fontSize: 13 }}>
+                    <input
+                      value={issueQuery}
+                      onChange={e => handleIssueSearch(e.target.value)}
+                      placeholder="일감 제목으로 검색..."
+                      style={{ flex: 1, border: 'none', outline: 'none', fontSize: 13, background: 'transparent' }}
+                    />
+                    {issueSearching && <span style={{ color: '#aaa', fontSize: 12 }}>검색 중...</span>}
+                  </div>
+                  {issueDropOpen && issueResults.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: 220, overflowY: 'auto' }}>
+                      {issueResults.map(issue => (
+                        <div key={issue.id} onClick={() => selectIssue(issue)}
+                          style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0', fontSize: 13 }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#f5f7fa')}
+                          onMouseLeave={e => (e.currentTarget.style.background = '')}>
+                          <span style={{ color: '#1976d2', fontWeight: 600, marginRight: 8 }}>#{issue.id}</span>
+                          <span>{issue.subject}</span>
+                          {issue.status && <span style={{ marginLeft: 8, fontSize: 11, color: '#888' }}>[{issue.status}]</span>}
+                          {issue.assignedTo && <span style={{ marginLeft: 4, fontSize: 11, color: '#aaa' }}>· {issue.assignedTo}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {issueDropOpen && issueResults.length === 0 && !issueSearching && issueQuery && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '12px', fontSize: 13, color: '#aaa', zIndex: 100 }}>
+                      검색 결과가 없습니다
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{ padding: '8px 10px', border: '1px solid #eee', borderRadius: 6, fontSize: 12, color: '#bbb' }}>
+                  시스템에 레드마인 프로젝트가 설정되지 않았습니다
+                </div>
+              )}
+            </div>
             <label style={s.label}>내용</label>
             <textarea style={{ ...s.input, height: 100, resize: 'vertical' }} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="배포 내용 및 변경사항을 입력하세요" />
           </div>
@@ -215,7 +312,16 @@ export default function DeployRequestPage() {
                     <span style={s.sysTag}>{r.systemCode}</span>
                     {r.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{r.subSystemName}</span>}
                   </td>
-                  <td style={s.td}>{r.title}</td>
+                  <td style={s.td}>
+                    {r.title}
+                    {r.redmineIssueId && (
+                      <a href={`http://54.180.246.95:3000/issues/${r.redmineIssueId}`} target="_blank" rel="noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        style={{ marginLeft: 6, fontSize: 11, color: '#1976d2', textDecoration: 'none', background: '#EBF8FF', padding: '1px 6px', borderRadius: 3 }}>
+                        #{r.redmineIssueId}
+                      </a>
+                    )}
+                  </td>
                   <td style={s.td}>{r.version ?? '-'}</td>
                   <td style={s.td}>{r.deployType ? DEPLOY_TYPE_LABELS[r.deployType] : '-'}</td>
                   <td style={s.td}>{r.requesterUsername}</td>
@@ -262,6 +368,15 @@ export default function DeployRequestPage() {
             <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
           </div>
           <div style={s.detailGrid}>
+            <span style={s.detailLabel}>레드마인</span>
+            <span style={{ gridColumn: 'span 3' }}>
+              {detail.redmineIssueId ? (
+                <a href={`http://54.180.246.95:3000/issues/${detail.redmineIssueId}`} target="_blank" rel="noreferrer"
+                  style={{ color: '#1976d2', textDecoration: 'none', fontSize: 13 }}>
+                  #{detail.redmineIssueId} {detail.redmineIssueTitle}
+                </a>
+              ) : '-'}
+            </span>
             <span style={s.detailLabel}>버전</span><span>{detail.version ?? '-'}</span>
             <span style={s.detailLabel}>배포 유형</span><span>{detail.deployType ? DEPLOY_TYPE_LABELS[detail.deployType] : '-'}</span>
             <span style={s.detailLabel}>상태</span><span>{STATUS_LABELS[detail.status]}</span>

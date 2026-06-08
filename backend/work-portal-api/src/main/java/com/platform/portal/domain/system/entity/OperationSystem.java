@@ -29,6 +29,9 @@ public class OperationSystem {
 
     private String description;
 
+    @Column(length = 100)
+    private String redmineProjectKey;
+
     @Column(nullable = false)
     private boolean active = true;
 

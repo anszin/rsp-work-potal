@@ -64,6 +64,8 @@ public class DeployRequestService {
         dr.setDeployType(req.getDeployType());
         dr.setContent(req.getContent());
         dr.setScheduledAt(req.getScheduledAt());
+        dr.setRedmineIssueId(req.getRedmineIssueId());
+        dr.setRedmineIssueTitle(req.getRedmineIssueTitle());
         return new DeployRequestDto.Response(deployRequestRepository.save(dr));
     }
 
@@ -83,6 +85,8 @@ public class DeployRequestService {
         dr.setDeployType(req.getDeployType());
         dr.setContent(req.getContent());
         dr.setScheduledAt(req.getScheduledAt());
+        dr.setRedmineIssueId(req.getRedmineIssueId());
+        dr.setRedmineIssueTitle(req.getRedmineIssueTitle());
         return new DeployRequestDto.Response(dr);
     }
 

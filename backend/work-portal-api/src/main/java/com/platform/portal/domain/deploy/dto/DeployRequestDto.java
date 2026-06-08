@@ -22,6 +22,8 @@ public class DeployRequestDto {
         private DeployRequest.DeployType deployType;
         private String content;
         private LocalDateTime scheduledAt;
+        private Integer redmineIssueId;
+        private String redmineIssueTitle;
     }
 
     @Getter
@@ -36,6 +38,8 @@ public class DeployRequestDto {
         private DeployRequest.DeployType deployType;
         private String content;
         private LocalDateTime scheduledAt;
+        private Integer redmineIssueId;
+        private String redmineIssueTitle;
     }
 
     @Getter
@@ -53,6 +57,8 @@ public class DeployRequestDto {
         private final String systemName;
         private final Long subSystemId;
         private final String subSystemName;
+        private final Integer redmineIssueId;
+        private final String redmineIssueTitle;
         private final String title;
         private final String version;
         private final DeployRequest.DeployType deployType;
@@ -73,6 +79,8 @@ public class DeployRequestDto {
             this.systemName = dr.getSystem().getName();
             this.subSystemId = dr.getSubSystem() != null ? dr.getSubSystem().getId() : null;
             this.subSystemName = dr.getSubSystem() != null ? dr.getSubSystem().getName() : null;
+            this.redmineIssueId = dr.getRedmineIssueId();
+            this.redmineIssueTitle = dr.getRedmineIssueTitle();
             this.title = dr.getTitle();
             this.version = dr.getVersion();
             this.deployType = dr.getDeployType();

@@ -10,6 +10,8 @@ export interface DeployRequest {
   systemName: string
   subSystemId: number | null
   subSystemName: string | null
+  redmineIssueId: number | null
+  redmineIssueTitle: string | null
   title: string
   version: string | null
   deployType: DeployType | null
@@ -32,6 +34,8 @@ export interface CreateDeployRequest {
   deployType?: DeployType
   content?: string
   scheduledAt?: string
+  redmineIssueId?: number | null
+  redmineIssueTitle?: string | null
 }
 
 export const getDeployRequests = (params?: { systemId?: number }) =>

@@ -6,7 +6,7 @@ import {
   getSubSystems, createSubSystem, updateSubSystem, deleteSubSystem, SubSystem,
 } from '../../api/systems'
 
-const emptyForm = () => ({ code: '', name: '', description: '' })
+const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '' })
 const emptySubForm = () => ({ code: '', name: '', description: '' })
 
 export default function SystemManagementPage() {
@@ -80,7 +80,7 @@ export default function SystemManagementPage() {
 
   const openEdit = (s: System) => {
     setEditing(s)
-    setForm({ code: s.code, name: s.name, description: s.description ?? '' })
+    setForm({ code: s.code, name: s.name, description: s.description ?? '', redmineProjectKey: s.redmineProjectKey ?? '' })
     setShowForm(true)
   }
 
@@ -93,9 +93,9 @@ export default function SystemManagementPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: { name: form.name, description: form.description || undefined } })
+      updateMut.mutate({ id: editing.id, data: { name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined } })
     } else {
-      createMut.mutate({ code: form.code, name: form.name, description: form.description || undefined })
+      createMut.mutate({ code: form.code, name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined })
     }
   }
 
@@ -151,6 +151,11 @@ export default function SystemManagementPage() {
                 <span style={{ fontSize: 13 }}>설명</span>
                 <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="시스템 설명" style={inputStyle} />
+              </label>
+              <label style={{ ...labelStyle, gridColumn: '1 / -1' }}>
+                <span style={{ fontSize: 13 }}>레드마인 프로젝트 키</span>
+                <input value={form.redmineProjectKey} onChange={e => setForm(f => ({ ...f, redmineProjectKey: e.target.value }))}
+                  placeholder="예: retail-platform (레드마인 프로젝트 식별자)" style={inputStyle} />
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

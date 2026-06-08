@@ -52,6 +52,7 @@ public class OperationSystemService {
         system.setCode(req.getCode());
         system.setName(req.getName());
         system.setDescription(req.getDescription());
+        system.setRedmineProjectKey(req.getRedmineProjectKey());
         return new SystemDto.Response(systemRepository.save(system));
     }
 
@@ -62,6 +63,7 @@ public class OperationSystemService {
         system.setName(req.getName());
         if (req.getDescription() != null) system.setDescription(req.getDescription());
         if (req.getActive() != null) system.setActive(req.getActive());
+        system.setRedmineProjectKey(req.getRedmineProjectKey());
         return new SystemDto.Response(system);
     }
 
