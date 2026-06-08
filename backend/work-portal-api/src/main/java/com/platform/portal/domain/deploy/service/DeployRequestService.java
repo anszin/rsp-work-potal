@@ -144,7 +144,16 @@ public class DeployRequestService {
                 ? dr.getSubSystem().getName() + "_" + version
                 : version;
         try {
-            redmineService.createVersion(projectKey, versionName, dr.getContent());
+            Integer versionId = redmineService.createVersion(projectKey, versionName, dr.getContent());
+            if (versionId != null) {
+                for (DeployRequestIssue issue : dr.getRedmineIssues()) {
+                    try {
+                        redmineService.updateIssueFixedVersion(issue.getRedmineIssueId(), versionId);
+                    } catch (Exception e) {
+                        log.warn("Failed to set fixed_version on issue #{}: {}", issue.getRedmineIssueId(), e.getMessage());
+                    }
+                }
+            }
         } catch (Exception e) {
             log.warn("Redmine version creation failed (non-blocking): {}", e.getMessage());
         }

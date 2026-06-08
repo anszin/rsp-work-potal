@@ -62,10 +62,10 @@ public class RedmineService {
         }
     }
 
-    public void createVersion(String projectKey, String versionName, String description) {
+    public Integer createVersion(String projectKey, String versionName, String description) {
         if (projectKey == null || projectKey.isBlank() || versionName == null || versionName.isBlank()) {
             log.warn("Redmine version creation skipped: projectKey or versionName is empty");
-            return;
+            return null;
         }
         try {
             String safeProject = URLEncoder.encode(projectKey, StandardCharsets.UTF_8);
@@ -83,11 +83,42 @@ public class RedmineService {
             versionBody.put("status", "open");
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(Map.of("version", versionBody), headers);
-            restTemplate.postForObject(uri, entity, String.class);
-            log.info("Redmine version created: {} in project {}", versionName, projectKey);
+            RedmineVersionResponse resp = restTemplate.postForObject(uri, entity, RedmineVersionResponse.class);
+            Integer versionId = resp != null && resp.getVersion() != null ? resp.getVersion().getId() : null;
+            log.info("Redmine version created: {} (id={}) in project {}", versionName, versionId, projectKey);
+            return versionId;
         } catch (Exception e) {
             log.error("Redmine version creation failed: {}", e.getMessage());
             throw new RuntimeException("레드마인 버전 생성 실패: " + e.getMessage(), e);
+        }
+    }
+
+    public void updateIssueFixedVersion(Integer issueId, Integer versionId) {
+        try {
+            java.net.URI uri = java.net.URI.create(baseUrl + "/issues/" + issueId + ".json?key=" + apiKey);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                    Map.of("issue", Map.of("fixed_version_id", versionId)), headers);
+            restTemplate.put(uri, entity);
+            log.info("Issue #{} fixed_version set to {}", issueId, versionId);
+        } catch (Exception e) {
+            log.error("Failed to update issue #{} fixed_version: {}", issueId, e.getMessage());
+            throw new RuntimeException("레드마인 일감 버전 설정 실패: " + e.getMessage(), e);
+        }
+    }
+
+    @Getter
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class RedmineVersionResponse {
+        @JsonProperty("version")
+        private RedmineVersionDetail version;
+
+        @Getter
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class RedmineVersionDetail {
+            private Integer id;
+            private String name;
         }
     }
 
