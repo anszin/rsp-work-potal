@@ -312,7 +312,7 @@ export default function DeployRequestPage() {
               {filtered.map((r) => (
                 <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? '#f0f4ff' : undefined }}
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
-                  <td style={s.td}>{r.id}</td>
+                  <td style={{ ...s.td, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap' }}>{r.deployNo ?? '-'}</td>
                   <td style={s.td}>
                     <span style={s.sysTag}>{r.systemName}</span>
                     {r.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{r.subSystemName}</span>}

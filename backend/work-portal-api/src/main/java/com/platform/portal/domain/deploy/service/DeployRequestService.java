@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,7 @@ public class DeployRequestService {
         }
         dr.setRequester(userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found")));
+        dr.setDeployNo(generateDeployNo());
         dr.setTitle(req.getTitle());
         dr.setVersion(req.getVersion());
         dr.setDeployType(req.getDeployType());
@@ -171,6 +173,14 @@ public class DeployRequestService {
             log.warn("Redmine sync failed: {}", e.getMessage());
             dr.setRedmineSyncStatus(DeployRequest.RedmineSyncStatus.FAILED);
         }
+    }
+
+    private String generateDeployNo() {
+        int year = LocalDate.now().getYear();
+        LocalDateTime start = LocalDate.of(year, 1, 1).atStartOfDay();
+        LocalDateTime end = LocalDate.of(year + 1, 1, 1).atStartOfDay();
+        long count = deployRequestRepository.countByYear(start, end);
+        return String.format("DR-%d-%03d", year, count + 1);
     }
 
     private DeployRequest getOrThrow(Long id) {

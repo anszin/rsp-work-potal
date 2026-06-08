@@ -66,6 +66,7 @@ public class DeployRequestDto {
     @Getter
     public static class Response {
         private final Long id;
+        private final String deployNo;
         private final Long systemId;
         private final String systemCode;
         private final String systemName;
@@ -88,6 +89,7 @@ public class DeployRequestDto {
 
         public Response(DeployRequest dr) {
             this.id = dr.getId();
+            this.deployNo = dr.getDeployNo();
             this.systemId = dr.getSystem().getId();
             this.systemCode = dr.getSystem().getCode();
             this.systemName = dr.getSystem().getName();

@@ -34,6 +34,9 @@ public class DeployRequest {
     @JoinColumn(name = "sub_system_id")
     private SubSystem subSystem;
 
+    @Column(length = 20, unique = true)
+    private String deployNo;
+
     @Column(nullable = false)
     private String title;
 

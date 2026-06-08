@@ -11,6 +11,7 @@ export interface RedmineIssueRef {
 
 export interface DeployRequest {
   id: number
+  deployNo: string | null
   systemId: number
   systemCode: string
   systemName: string
