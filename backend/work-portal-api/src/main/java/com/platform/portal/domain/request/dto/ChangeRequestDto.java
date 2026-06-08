@@ -76,6 +76,7 @@ public class ChangeRequestDto {
         @NotNull
         private ChangeRequest.Status status;
         private String rejectionReason;
+        private String comment;
     }
 
     @Getter
@@ -93,6 +94,7 @@ public class ChangeRequestDto {
         private final String requesterDept;
         private final String requesterName;
         private final String rejectionReason;
+        private final String actionComment;
         private final ChangeRequest.Status status;
         private final LocalDate targetDate;
         private final String attachmentLink;
@@ -117,6 +119,7 @@ public class ChangeRequestDto {
             this.requesterDept = cr.getRequesterDept();
             this.requesterName = cr.getRequesterName();
             this.rejectionReason = cr.getRejectionReason();
+            this.actionComment = cr.getActionComment();
             this.status = cr.getStatus();
             this.targetDate = cr.getTargetDate();
             this.attachmentLink = cr.getAttachmentLink();

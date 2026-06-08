@@ -61,6 +61,7 @@ public class DeployRequestDto {
     public static class StatusRequest {
         @NotNull
         private DeployRequest.Status status;
+        private String comment;
     }
 
     @Getter
@@ -80,6 +81,8 @@ public class DeployRequestDto {
         private final String requesterUsername;
         private final String approverUsername;
         private final DeployRequest.Status status;
+        private final String rejectionReason;
+        private final String actionComment;
         private final LocalDateTime scheduledAt;
         private final LocalDateTime requestedAt;
         private final LocalDateTime approvedAt;
@@ -105,6 +108,8 @@ public class DeployRequestDto {
             this.requesterUsername = dr.getRequester().getUsername();
             this.approverUsername = dr.getApprover() != null ? dr.getApprover().getUsername() : null;
             this.status = dr.getStatus();
+            this.rejectionReason = dr.getRejectionReason();
+            this.actionComment = dr.getActionComment();
             this.scheduledAt = dr.getScheduledAt();
             this.requestedAt = dr.getRequestedAt();
             this.approvedAt = dr.getApprovedAt();

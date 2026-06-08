@@ -149,11 +149,15 @@ public class ChangeRequestService {
         }
 
         cr.setStatus(newStatus);
+        cr.setActionComment(req.getComment());
         switch (newStatus) {
             case REQUESTED -> cr.setRequestedAt(LocalDateTime.now());
             case APPROVED  -> cr.setApprovedAt(LocalDateTime.now());
             case COMPLETED -> cr.setCompletedAt(LocalDateTime.now());
-            case REJECTED  -> cr.setRejectionReason(req.getRejectionReason());
+            case REJECTED  -> {
+                String reason = req.getRejectionReason() != null ? req.getRejectionReason() : req.getComment();
+                cr.setRejectionReason(reason);
+            }
             default -> {}
         }
         return new ChangeRequestDto.Response(cr);

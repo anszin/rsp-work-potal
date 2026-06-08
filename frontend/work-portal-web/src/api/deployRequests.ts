@@ -25,6 +25,8 @@ export interface DeployRequest {
   requesterUsername: string
   approverUsername: string | null
   status: RequestStatus
+  rejectionReason: string | null
+  actionComment: string | null
   scheduledAt: string | null
   requestedAt: string | null
   approvedAt: string | null
@@ -56,8 +58,8 @@ export const createDeployRequest = (data: CreateDeployRequest) =>
 export const updateDeployRequest = (id: number, data: CreateDeployRequest) =>
   client.put<DeployRequest>(`/deploy-requests/${id}`, data).then((r) => r.data)
 
-export const deployRequestStatus = (id: number, status: RequestStatus) =>
-  client.patch<DeployRequest>(`/deploy-requests/${id}/status`, { status }).then((r) => r.data)
+export const deployRequestStatus = (id: number, status: RequestStatus, comment?: string) =>
+  client.patch<DeployRequest>(`/deploy-requests/${id}/status`, { status, comment }).then((r) => r.data)
 
 export const syncRedmine = (id: number) =>
   client.post<DeployRequest>(`/deploy-requests/${id}/sync-redmine`).then(r => r.data)

@@ -66,6 +66,11 @@ public class DeployRequest {
     @Enumerated(EnumType.STRING)
     private RedmineSyncStatus redmineSyncStatus;
 
+    @Column(columnDefinition = "TEXT")
+    private String rejectionReason;
+    @Column(columnDefinition = "TEXT")
+    private String actionComment;
+
     private LocalDateTime scheduledAt;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;

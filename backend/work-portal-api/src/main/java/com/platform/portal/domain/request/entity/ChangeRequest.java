@@ -58,6 +58,8 @@ public class ChangeRequest {
     private String attachmentOriginalName;
     @Column(columnDefinition = "TEXT")
     private String rejectionReason;
+    @Column(columnDefinition = "TEXT")
+    private String actionComment;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;
     private LocalDateTime completedAt;

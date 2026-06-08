@@ -49,7 +49,7 @@ public class DeployRequestController {
             @PathVariable Long id,
             @Valid @RequestBody DeployRequestDto.StatusRequest req,
             @AuthenticationPrincipal UserDetails user) {
-        return ResponseEntity.ok(service.changeStatus(id, req.getStatus(), user.getUsername()));
+        return ResponseEntity.ok(service.changeStatus(id, req, user.getUsername()));
     }
 
     @PostMapping("/{id}/sync-redmine")

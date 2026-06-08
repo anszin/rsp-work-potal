@@ -18,13 +18,10 @@ const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
 }
-const NEXT_STATUS: Partial<Record<RequestStatus, { label: string; next: RequestStatus; confirm?: string }[]>> = {
+const NEXT_STATUS: Partial<Record<RequestStatus, { label: string; next: RequestStatus }[]>> = {
   DRAFT:     [{ label: '제출', next: 'REQUESTED' }],
-  REQUESTED: [
-    { label: '승인', next: 'APPROVED', confirm: '승인하시겠습니까?' },
-    { label: '반려', next: 'REJECTED', confirm: '반려하시겠습니까?' },
-  ],
-  APPROVED: [{ label: '완료', next: 'COMPLETED', confirm: '배포 완료로 처리하시겠습니까?' }],
+  REQUESTED: [{ label: '승인', next: 'APPROVED' }, { label: '반려', next: 'REJECTED' }],
+  APPROVED:  [{ label: '완료', next: 'COMPLETED' }],
 }
 const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '전체', value: 'ALL' },
@@ -56,6 +53,10 @@ export default function DeployRequestPage() {
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
   const [form, setForm] = useState<CreateDeployRequest>(emptyForm)
   const [selectedIssues, setSelectedIssues] = useState<RedmineIssueRef[]>([])
+
+  // 액션 코멘트 모달
+  const [actionModal, setActionModal] = useState<{ id: number; next: RequestStatus } | null>(null)
+  const [actionComment, setActionComment] = useState('')
 
   // 일감 선택 모달
   const [showPicker, setShowPicker] = useState(false)
@@ -150,7 +151,7 @@ export default function DeployRequestPage() {
     onError: (e) => alert('수정 실패: ' + apiError(e)),
   })
   const statusMut = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: RequestStatus }) => deployRequestStatus(id, status),
+    mutationFn: ({ id, status, comment }: { id: number; status: RequestStatus; comment?: string }) => deployRequestStatus(id, status, comment),
     onSuccess: () => { invalidate(); setDetail(null) },
     onError: (e) => alert('상태 변경 실패: ' + apiError(e)),
   })
@@ -190,9 +191,24 @@ export default function DeployRequestPage() {
     else createMut.mutate(data)
   }
 
-  const handleStatus = (id: number, next: RequestStatus, confirmMsg?: string) => {
-    if (confirmMsg && !confirm(confirmMsg)) return
-    statusMut.mutate({ id, status: next })
+  const ACTION_MODAL_CONFIG: Partial<Record<RequestStatus, { title: string; btnLabel: string; btnColor: string; required: boolean }>> = {
+    APPROVED:  { title: '승인 처리', btnLabel: '승인 확정', btnColor: '#276749', required: false },
+    REJECTED:  { title: '반려 처리', btnLabel: '반려 확정', btnColor: '#e53e3e', required: true },
+    COMPLETED: { title: '완료 처리', btnLabel: '완료 확정', btnColor: '#285E61', required: false },
+  }
+
+  const submitActionModal = () => {
+    const cfg = ACTION_MODAL_CONFIG[actionModal!.next]
+    if (cfg?.required && !actionComment.trim()) return alert('사유를 입력해주세요.')
+    statusMut.mutate({ id: actionModal!.id, status: actionModal!.next, comment: actionComment.trim() || undefined })
+    setActionModal(null)
+    setActionComment('')
+  }
+
+  const handleStatus = (id: number, next: RequestStatus) => {
+    if (next === 'REQUESTED') { statusMut.mutate({ id, status: next }); return }
+    setActionModal({ id, next })
+    setActionComment('')
   }
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER'
@@ -200,6 +216,33 @@ export default function DeployRequestPage() {
 
   return (
     <div style={s.page}>
+      {/* 액션 코멘트 모달 */}
+      {actionModal && (() => {
+        const cfg = ACTION_MODAL_CONFIG[actionModal.next]!
+        return (
+          <div style={s.overlay} onClick={() => setActionModal(null)}>
+            <div style={s.modal} onClick={e => e.stopPropagation()}>
+              <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>{cfg.title}</h3>
+              <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--c-text-muted)' }}>
+                {cfg.required ? '사유를 입력하세요 (필수)' : '첨언을 입력하세요 (선택)'}
+              </p>
+              <textarea
+                value={actionComment}
+                onChange={e => setActionComment(e.target.value)}
+                placeholder={cfg.required ? '사유를 입력하세요' : '첨언 (없으면 비워두세요)'}
+                rows={4}
+                style={{ width: '100%', padding: '8px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, resize: 'vertical', boxSizing: 'border-box', background: 'var(--c-input-bg)', color: 'var(--c-text)' }}
+                autoFocus
+              />
+              <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+                <button style={s.btnSecondary} onClick={() => setActionModal(null)}>취소</button>
+                <button style={{ ...s.btn, background: cfg.btnColor }} onClick={submitActionModal}>{cfg.btnLabel}</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       <PageHeader
         title="배포 관리"
         action={<button style={s.btn} onClick={openCreate}>+ 새 배포 요청</button>}
@@ -329,10 +372,10 @@ export default function DeployRequestPage() {
                       {r.status === 'DRAFT' && (
                         <button style={s.btnSm} onClick={() => openEdit(r)}>수정</button>
                       )}
-                      {NEXT_STATUS[r.status]?.map(({ label, next, confirm: msg }) => (
+                      {NEXT_STATUS[r.status]?.map(({ label, next }) => (
                         (isAdmin || next === 'REQUESTED') && (
                           <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
-                            onClick={() => handleStatus(r.id, next, msg)}>
+                            onClick={() => handleStatus(r.id, next)}>
                             {label}
                           </button>
                         )
@@ -381,7 +424,15 @@ export default function DeployRequestPage() {
             </span>
             <span style={s.detailLabel}>버전</span><span>{detail.version ?? '-'}</span>
             <span style={s.detailLabel}>배포 유형</span><span>{detail.deployType ? DEPLOY_TYPE_LABELS[detail.deployType] : '-'}</span>
-            <span style={s.detailLabel}>상태</span><span>{STATUS_LABELS[detail.status]}</span>
+            <span style={s.detailLabel}>상태</span>
+            <span>
+              {STATUS_LABELS[detail.status]}
+              {(detail.actionComment || detail.rejectionReason) && (
+                <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--c-text-muted)' }}>
+                  — {detail.actionComment || detail.rejectionReason}
+                </span>
+              )}
+            </span>
             <span style={s.detailLabel}>요청자</span><span>{detail.requesterUsername}</span>
             <span style={s.detailLabel}>승인자</span><span>{detail.approverUsername ?? '-'}</span>
             <span style={s.detailLabel}>예정일시</span><span>{detail.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>

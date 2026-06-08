@@ -21,6 +21,7 @@ export interface ChangeRequest {
   attachmentOriginalName: string | null
   hasAttachment: boolean
   rejectionReason: string | null
+  actionComment: string | null
   requestedAt: string | null
   approvedAt: string | null
   completedAt: string | null
@@ -69,8 +70,8 @@ export const createChangeRequest = (data: CreateChangeRequest) =>
 export const updateChangeRequest = (id: number, data: CreateChangeRequest) =>
   client.put<ChangeRequest>(`/change-requests/${id}`, data).then((r) => r.data)
 
-export const changeRequestStatus = (id: number, status: RequestStatus, rejectionReason?: string) =>
-  client.patch<ChangeRequest>(`/change-requests/${id}/status`, { status, rejectionReason }).then((r) => r.data)
+export const changeRequestStatus = (id: number, status: RequestStatus, comment?: string) =>
+  client.patch<ChangeRequest>(`/change-requests/${id}/status`, { status, comment }).then((r) => r.data)
 
 export const deleteChangeRequest = (id: number) =>
   client.delete(`/change-requests/${id}`)

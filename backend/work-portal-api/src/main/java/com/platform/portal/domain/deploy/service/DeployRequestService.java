@@ -104,8 +104,9 @@ public class DeployRequestService {
     }
 
     @Transactional
-    public DeployRequestDto.Response changeStatus(Long id, Status newStatus, String approverUsername) {
+    public DeployRequestDto.Response changeStatus(Long id, DeployRequestDto.StatusRequest req, String approverUsername) {
         DeployRequest dr = getOrThrow(id);
+        Status newStatus = req.getStatus();
         Status current = dr.getStatus();
 
         if (!ALLOWED_TRANSITIONS.getOrDefault(current, Set.of()).contains(newStatus)) {
@@ -114,6 +115,7 @@ public class DeployRequestService {
         }
 
         dr.setStatus(newStatus);
+        dr.setActionComment(req.getComment());
         switch (newStatus) {
             case REQUESTED -> { dr.setApprover(null); dr.setRequestedAt(LocalDateTime.now()); }
             case APPROVED -> {
@@ -122,6 +124,7 @@ public class DeployRequestService {
                 createRedmineVersionIfPossible(dr);
             }
             case COMPLETED -> dr.setDeployedAt(LocalDateTime.now());
+            case REJECTED  -> dr.setRejectionReason(req.getComment());
             default -> {}
         }
         return new DeployRequestDto.Response(dr);

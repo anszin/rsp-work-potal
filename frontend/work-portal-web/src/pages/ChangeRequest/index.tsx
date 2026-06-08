@@ -45,8 +45,8 @@ export default function ChangeRequestPage() {
   const [form, setForm] = useState<CreateChangeRequest>(emptyForm)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [rejectModal, setRejectModal] = useState<{ id: number } | null>(null)
-  const [rejectReason, setRejectReason] = useState('')
+  const [actionModal, setActionModal] = useState<{ id: number; next: RequestStatus } | null>(null)
+  const [actionComment, setActionComment] = useState('')
   const [pasteHighlight, setPasteHighlight] = useState(false)
   const [detail, setDetail] = useState<ChangeRequest | null>(null)
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
@@ -105,8 +105,8 @@ export default function ChangeRequestPage() {
     onError: (e: unknown) => alert('수정 실패: ' + apiError(e)),
   })
   const statusMut = useMutation({
-    mutationFn: ({ id, status, rejectionReason }: { id: number; status: RequestStatus; rejectionReason?: string }) =>
-      changeRequestStatus(id, status, rejectionReason),
+    mutationFn: ({ id, status, comment }: { id: number; status: RequestStatus; comment?: string }) =>
+      changeRequestStatus(id, status, comment),
     onSuccess: () => { invalidate(); setDetail(null) },
     onError: (e: unknown) => alert('상태 변경 실패: ' + apiError(e)),
   })
@@ -150,18 +150,24 @@ export default function ChangeRequestPage() {
   const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER'
   const canManage = (systemId: number) => isAdminOrManager || managedSystemIds.includes(systemId)
 
-  const submitReject = () => {
-    if (!rejectReason.trim()) return alert('반려 사유를 입력해주세요.')
-    statusMut.mutate({ id: rejectModal!.id, status: 'REJECTED', rejectionReason: rejectReason })
-    setRejectModal(null)
-    setRejectReason('')
+  const ACTION_MODAL_CONFIG: Partial<Record<RequestStatus, { title: string; btnLabel: string; btnColor: string; required: boolean }>> = {
+    APPROVED:  { title: '승인 처리', btnLabel: '승인 확정', btnColor: '#276749', required: false },
+    REJECTED:  { title: '반려 처리', btnLabel: '반려 확정', btnColor: '#e53e3e', required: true },
+    COMPLETED: { title: '완료 처리', btnLabel: '완료 확정', btnColor: '#285E61', required: false },
+  }
+
+  const submitActionModal = () => {
+    const cfg = ACTION_MODAL_CONFIG[actionModal!.next]
+    if (cfg?.required && !actionComment.trim()) return alert('사유를 입력해주세요.')
+    statusMut.mutate({ id: actionModal!.id, status: actionModal!.next, comment: actionComment.trim() || undefined })
+    setActionModal(null)
+    setActionComment('')
   }
 
   const handleStatus = (r: ChangeRequest, next: RequestStatus) => {
-    if (next === 'REJECTED') { setRejectModal({ id: r.id }); setRejectReason(''); return }
-    const confirmMsg = next === 'APPROVED' ? '승인하시겠습니까?' : next === 'COMPLETED' ? '완료 처리하시겠습니까?' : undefined
-    if (confirmMsg && !confirm(confirmMsg)) return
-    statusMut.mutate({ id: r.id, status: next })
+    if (next === 'REQUESTED') { statusMut.mutate({ id: r.id, status: next }); return }
+    setActionModal({ id: r.id, next })
+    setActionComment('')
   }
 
   const isPending = createMut.isPending || updateMut.isPending
@@ -170,26 +176,32 @@ export default function ChangeRequestPage() {
 
   return (
     <div style={s.page}>
-      {/* 반려 사유 모달 */}
-      {rejectModal && (
-        <div style={s.overlay}>
-          <div style={s.modal}>
-            <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>반려 사유 입력</h3>
-            <textarea
-              value={rejectReason}
-              onChange={e => setRejectReason(e.target.value)}
-              placeholder="반려 사유를 입력하세요"
-              rows={4}
-              style={{ width: '100%', padding: '8px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, resize: 'vertical', boxSizing: 'border-box', background: 'var(--c-input-bg)', color: 'var(--c-text)' }}
-              autoFocus
-            />
-            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
-              <button style={s.btnSecondary} onClick={() => setRejectModal(null)}>취소</button>
-              <button style={{ ...s.btn, background: '#e53e3e' }} onClick={submitReject}>반려 확정</button>
+      {/* 액션 코멘트 모달 */}
+      {actionModal && (() => {
+        const cfg = ACTION_MODAL_CONFIG[actionModal.next]!
+        return (
+          <div style={s.overlay}>
+            <div style={s.modal}>
+              <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>{cfg.title}</h3>
+              <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--c-text-muted)' }}>
+                {cfg.required ? '사유를 입력하세요 (필수)' : '첨언을 입력하세요 (선택)'}
+              </p>
+              <textarea
+                value={actionComment}
+                onChange={e => setActionComment(e.target.value)}
+                placeholder={cfg.required ? '사유를 입력하세요' : '첨언 (없으면 비워두세요)'}
+                rows={4}
+                style={{ width: '100%', padding: '8px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, resize: 'vertical', boxSizing: 'border-box', background: 'var(--c-input-bg)', color: 'var(--c-text)' }}
+                autoFocus
+              />
+              <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+                <button style={s.btnSecondary} onClick={() => setActionModal(null)}>취소</button>
+                <button style={{ ...s.btn, background: cfg.btnColor }} onClick={submitActionModal}>{cfg.btnLabel}</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       <PageHeader
         title="변경 관리"
@@ -388,7 +400,7 @@ export default function ChangeRequestPage() {
             <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
           </div>
           <div style={s.detailGrid}>
-            <span style={s.detailLabel}>상태</span><span>{STATUS_LABELS[detail.status]}{detail.status === 'REJECTED' && detail.rejectionReason ? ` — ${detail.rejectionReason}` : ''}</span>
+            <span style={s.detailLabel}>상태</span><span>{STATUS_LABELS[detail.status]}</span>
             <span style={s.detailLabel}>요청부서</span><span>{detail.requesterDept ?? '-'}</span>
             <span style={s.detailLabel}>요청자</span><span>{detail.requesterName ?? detail.requesterUsername}</span>
             <span style={s.detailLabel}>반영 목표일</span><span>{detail.targetDate ?? '-'}</span>
@@ -397,6 +409,12 @@ export default function ChangeRequestPage() {
             <span style={s.detailLabel}>완료일시</span><span>{detail.completedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
             <span style={s.detailLabel}>등록일</span><span>{detail.createdAt?.slice(0, 10)}</span>
           </div>
+          {(detail.actionComment || detail.rejectionReason) && (
+            <div style={{ marginTop: 12 }}>
+              <div style={s.detailLabel}>{detail.status === 'REJECTED' ? '반려 사유' : '첨언'}</div>
+              <pre style={s.contentBox}>{detail.actionComment || detail.rejectionReason}</pre>
+            </div>
+          )}
           {(detail.content) && (
             <div style={{ marginTop: 16 }}>
               <div style={s.detailLabel}>내용</div>
