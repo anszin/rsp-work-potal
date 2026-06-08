@@ -36,6 +36,8 @@ public class DeployRequestDto {
         private String title;
         private String version;
         private DeployRequest.DeployType deployType;
+        private DeployRequest.DeployScope deployScope;
+        private String deployTarget;
         private String content;
         private LocalDateTime scheduledAt;
         private List<IssueRef> redmineIssues = new ArrayList<>();
@@ -51,6 +53,8 @@ public class DeployRequestDto {
         private String title;
         private String version;
         private DeployRequest.DeployType deployType;
+        private DeployRequest.DeployScope deployScope;
+        private String deployTarget;
         private String content;
         private LocalDateTime scheduledAt;
         private List<IssueRef> redmineIssues = new ArrayList<>();
@@ -77,6 +81,8 @@ public class DeployRequestDto {
         private final String title;
         private final String version;
         private final DeployRequest.DeployType deployType;
+        private final DeployRequest.DeployScope deployScope;
+        private final String deployTarget;
         private final String content;
         private final String requesterUsername;
         private final String approverUsername;
@@ -104,6 +110,8 @@ public class DeployRequestDto {
             this.title = dr.getTitle();
             this.version = dr.getVersion();
             this.deployType = dr.getDeployType();
+            this.deployScope = dr.getDeployScope();
+            this.deployTarget = dr.getDeployTarget();
             this.content = dr.getContent();
             this.requesterUsername = dr.getRequester().getUsername();
             this.approverUsername = dr.getApprover() != null ? dr.getApprover().getUsername() : null;

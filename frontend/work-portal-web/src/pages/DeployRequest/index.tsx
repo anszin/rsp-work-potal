@@ -4,7 +4,7 @@ import axios from 'axios'
 import {
   getDeployRequests, createDeployRequest, updateDeployRequest,
   deployRequestStatus, deleteDeployRequest, syncRedmine,
-  type DeployRequest, type RequestStatus, type DeployType, type CreateDeployRequest, type RedmineIssueRef,
+  type DeployRequest, type RequestStatus, type DeployType, type DeployScope, type CreateDeployRequest, type RedmineIssueRef,
 } from '../../api/deployRequests'
 import { getActiveSystems, getActiveSubSystems } from '../../api/systems'
 import { fetchRedmineIssues, type RedmineIssue } from '../../api/redmine'
@@ -14,6 +14,9 @@ import PageHeader from '../../components/PageHeader'
 
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
   RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치',
+}
+const DEPLOY_SCOPE_LABELS: Record<DeployScope, string> = {
+  FULL: '전점', PARTIAL: '일부점',
 }
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
@@ -37,7 +40,7 @@ const PICKER_STATUS_TABS = [
   { label: '전체', value: '*' },
 ]
 
-const emptyForm: CreateDeployRequest = { systemId: 0, subSystemId: null, title: '', version: '', deployType: 'RELEASE', content: '' }
+const emptyForm: CreateDeployRequest = { systemId: 0, subSystemId: null, title: '', version: '', deployType: 'RELEASE', deployScope: 'FULL', deployTarget: '', content: '' }
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -176,7 +179,7 @@ export default function DeployRequestPage() {
 
   const openEdit = (r: DeployRequest) => {
     setEditing(r)
-    setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', content: r.content ?? '', scheduledAt: r.scheduledAt ?? undefined })
+    setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', deployScope: r.deployScope ?? 'FULL', deployTarget: r.deployTarget ?? '', content: r.content ?? '', scheduledAt: r.scheduledAt ?? undefined })
     setSelectedIssues(r.redmineIssues ?? [])
     setShowForm(true)
     setDetail(null)
@@ -275,6 +278,15 @@ export default function DeployRequestPage() {
             <select style={s.input} value={form.deployType} onChange={(e) => setForm({ ...form, deployType: e.target.value as DeployType })}>
               {Object.entries(DEPLOY_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
+            <label style={s.label}>배포 범위</label>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <select style={{ ...s.input, width: 'auto' }} value={form.deployScope ?? 'FULL'} onChange={(e) => setForm({ ...form, deployScope: e.target.value as DeployScope, deployTarget: e.target.value === 'FULL' ? '' : form.deployTarget })}>
+                {Object.entries(DEPLOY_SCOPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+              {form.deployScope === 'PARTIAL' && (
+                <input style={{ ...s.input, flex: 1 }} value={form.deployTarget ?? ''} onChange={(e) => setForm({ ...form, deployTarget: e.target.value })} placeholder="대상 점포 (예: 강남점, 홍대점)" />
+              )}
+            </div>
             <label style={s.label}>예정일시</label>
             <input style={s.input} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
             <label style={s.label}>레드마인 일감</label>
@@ -338,9 +350,10 @@ export default function DeployRequestPage() {
               <tr style={s.thead}>
                 <th style={s.th}>번호</th>
                 <th style={s.th}>시스템</th>
-                <th style={{ ...s.th, width: '22%' }}>제목</th>
+                <th style={{ ...s.th, width: '20%' }}>제목</th>
                 <th style={s.th}>버전</th>
                 <th style={s.th}>유형</th>
+                <th style={s.th}>범위</th>
                 <th style={s.th}>요청자</th>
                 <th style={s.th}>승인자</th>
                 <th style={s.th}>상태</th>
@@ -350,7 +363,7 @@ export default function DeployRequestPage() {
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={10} style={s.empty}>등록된 배포 요청이 없습니다</td></tr>
+                <tr><td colSpan={11} style={s.empty}>등록된 배포 요청이 없습니다</td></tr>
               )}
               {filtered.map((r) => (
                 <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
@@ -363,6 +376,15 @@ export default function DeployRequestPage() {
                   <td style={s.td}>{r.title}</td>
                   <td style={s.td}>{r.version ?? '-'}</td>
                   <td style={s.td}>{r.deployType ? DEPLOY_TYPE_LABELS[r.deployType] : '-'}</td>
+                  <td style={s.td}>
+                    {r.deployScope ? (
+                      <span style={{
+                        fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 10,
+                        background: r.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
+                        color: r.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)',
+                      }}>{DEPLOY_SCOPE_LABELS[r.deployScope]}</span>
+                    ) : '-'}
+                  </td>
                   <td style={s.td}>{r.requesterUsername}</td>
                   <td style={s.td}>{r.approverUsername ?? '-'}</td>
                   <td style={s.td}><StatusBadge status={r.status} /></td>
@@ -424,6 +446,13 @@ export default function DeployRequestPage() {
             </span>
             <span style={s.detailLabel}>버전</span><span>{detail.version ?? '-'}</span>
             <span style={s.detailLabel}>배포 유형</span><span>{detail.deployType ? DEPLOY_TYPE_LABELS[detail.deployType] : '-'}</span>
+            <span style={s.detailLabel}>배포 범위</span>
+            <span>
+              {detail.deployScope ? DEPLOY_SCOPE_LABELS[detail.deployScope] : '-'}
+              {detail.deployScope === 'PARTIAL' && detail.deployTarget && (
+                <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--c-text-muted)' }}>({detail.deployTarget})</span>
+              )}
+            </span>
             <span style={s.detailLabel}>상태</span>
             <span>
               {STATUS_LABELS[detail.status]}

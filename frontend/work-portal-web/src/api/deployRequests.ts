@@ -2,6 +2,7 @@ import client from './client'
 
 export type RequestStatus = 'DRAFT' | 'REQUESTED' | 'APPROVED' | 'COMPLETED' | 'REJECTED'
 export type DeployType = 'RELEASE' | 'HOTFIX' | 'ROLLBACK' | 'PATCH'
+export type DeployScope = 'FULL' | 'PARTIAL'
 export type RedmineSyncStatus = 'SYNCED' | 'FAILED' | 'SKIPPED'
 
 export interface RedmineIssueRef {
@@ -21,6 +22,8 @@ export interface DeployRequest {
   title: string
   version: string | null
   deployType: DeployType | null
+  deployScope: DeployScope | null
+  deployTarget: string | null
   content: string | null
   requesterUsername: string
   approverUsername: string | null
@@ -41,6 +44,8 @@ export interface CreateDeployRequest {
   title: string
   version?: string
   deployType?: DeployType
+  deployScope?: DeployScope
+  deployTarget?: string
   content?: string
   scheduledAt?: string
   redmineIssues?: RedmineIssueRef[]

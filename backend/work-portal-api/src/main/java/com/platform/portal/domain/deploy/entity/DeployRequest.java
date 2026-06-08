@@ -45,6 +45,11 @@ public class DeployRequest {
     @Enumerated(EnumType.STRING)
     private DeployType deployType;
 
+    @Enumerated(EnumType.STRING)
+    private DeployScope deployScope;
+
+    private String deployTarget;
+
     @Column(columnDefinition = "TEXT")
     private String content;
 
@@ -86,6 +91,10 @@ public class DeployRequest {
 
     public enum DeployType {
         RELEASE, HOTFIX, ROLLBACK, PATCH
+    }
+
+    public enum DeployScope {
+        FULL, PARTIAL
     }
 
     public enum RedmineSyncStatus {

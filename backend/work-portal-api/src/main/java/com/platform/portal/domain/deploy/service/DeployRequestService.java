@@ -70,6 +70,8 @@ public class DeployRequestService {
         dr.setTitle(req.getTitle());
         dr.setVersion(req.getVersion());
         dr.setDeployType(req.getDeployType());
+        dr.setDeployScope(req.getDeployScope());
+        dr.setDeployTarget(req.getDeployScope() == DeployRequest.DeployScope.PARTIAL ? req.getDeployTarget() : null);
         dr.setContent(req.getContent());
         dr.setScheduledAt(req.getScheduledAt());
         if (req.getRedmineIssues() != null) {
@@ -93,6 +95,8 @@ public class DeployRequestService {
         dr.setTitle(req.getTitle());
         dr.setVersion(req.getVersion());
         dr.setDeployType(req.getDeployType());
+        dr.setDeployScope(req.getDeployScope());
+        dr.setDeployTarget(req.getDeployScope() == DeployRequest.DeployScope.PARTIAL ? req.getDeployTarget() : null);
         dr.setContent(req.getContent());
         dr.setScheduledAt(req.getScheduledAt());
         dr.getRedmineIssues().clear();
