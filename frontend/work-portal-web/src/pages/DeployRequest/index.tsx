@@ -98,7 +98,11 @@ export default function DeployRequestPage() {
         setIssueResults(results)
         setIssueDropOpen(true)
       } catch (e: any) {
-        const msg = e?.response?.data?.error ?? e?.message ?? '검색 오류'
+        const msg = typeof e?.response?.data?.error === 'string'
+          ? e.response.data.error
+          : typeof e?.message === 'string'
+          ? e.message
+          : '검색 오류'
         setIssueError(msg)
         setIssueResults([])
         setIssueDropOpen(true)
