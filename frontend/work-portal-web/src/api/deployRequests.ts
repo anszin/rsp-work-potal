@@ -8,6 +8,8 @@ export interface DeployRequest {
   systemId: number
   systemCode: string
   systemName: string
+  subSystemId: number | null
+  subSystemName: string | null
   title: string
   version: string | null
   deployType: DeployType | null
@@ -22,6 +24,7 @@ export interface DeployRequest {
 
 export interface CreateDeployRequest {
   systemId: number
+  subSystemId?: number | null
   title: string
   version?: string
   deployType?: DeployType

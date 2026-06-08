@@ -18,6 +18,7 @@ public class ChangeRequestDto {
     public static class CreateRequest {
         @NotNull
         private Long systemId;
+        private Long subSystemId;
         @NotBlank
         private String title;
         private String content;
@@ -39,6 +40,7 @@ public class ChangeRequestDto {
     public static class UpdateRequest {
         @NotNull
         private Long systemId;
+        private Long subSystemId;
         @NotBlank
         private String title;
         private String content;
@@ -83,6 +85,8 @@ public class ChangeRequestDto {
         private final Long systemId;
         private final String systemCode;
         private final String systemName;
+        private final Long subSystemId;
+        private final String subSystemName;
         private final String title;
         private final String content;
         private final String requesterUsername;
@@ -105,6 +109,8 @@ public class ChangeRequestDto {
             this.systemId = cr.getSystem().getId();
             this.systemCode = cr.getSystem().getCode();
             this.systemName = cr.getSystem().getName();
+            this.subSystemId = cr.getSubSystem() != null ? cr.getSubSystem().getId() : null;
+            this.subSystemName = cr.getSubSystem() != null ? cr.getSubSystem().getName() : null;
             this.title = cr.getTitle();
             this.content = cr.getContent();
             this.requesterUsername = cr.getRequester().getUsername();

@@ -3,9 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getSystems, createSystem, updateSystem, deleteSystem, System,
   getSystemManagers, addSystemManager, removeSystemManager, getUsers,
+  getSubSystems, createSubSystem, updateSubSystem, deleteSubSystem, SubSystem,
 } from '../../api/systems'
 
 const emptyForm = () => ({ code: '', name: '', description: '' })
+const emptySubForm = () => ({ code: '', name: '', description: '' })
 
 export default function SystemManagementPage() {
   const qc = useQueryClient()
@@ -14,6 +16,10 @@ export default function SystemManagementPage() {
   const [form, setForm] = useState(emptyForm())
   const [managerPanel, setManagerPanel] = useState<System | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<number>(0)
+  const [subPanel, setSubPanel] = useState<System | null>(null)
+  const [subForm, setSubForm] = useState(emptySubForm())
+  const [editingSub, setEditingSub] = useState<SubSystem | null>(null)
+  const [showSubForm, setShowSubForm] = useState(false)
 
   const { data: systems = [], isLoading } = useQuery({ queryKey: ['systems'], queryFn: getSystems })
   const { data: managers = [] } = useQuery({
@@ -26,9 +32,15 @@ export default function SystemManagementPage() {
     queryFn: getUsers,
     enabled: !!managerPanel,
   })
+  const { data: subSystems = [] } = useQuery({
+    queryKey: ['systems', subPanel?.id, 'subsystems'],
+    queryFn: () => getSubSystems(subPanel!.id),
+    enabled: !!subPanel,
+  })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['systems'] })
   const invalidateManagers = () => qc.invalidateQueries({ queryKey: ['systems', managerPanel?.id, 'managers'] })
+  const invalidateSubs = () => qc.invalidateQueries({ queryKey: ['systems', subPanel?.id, 'subsystems'] })
 
   const createMut = useMutation({ mutationFn: createSystem, onSuccess: () => { invalidate(); reset() } })
   const updateMut = useMutation({
@@ -45,13 +57,37 @@ export default function SystemManagementPage() {
     mutationFn: ({ systemId, userId }: { systemId: number; userId: number }) => removeSystemManager(systemId, userId),
     onSuccess: invalidateManagers,
   })
+  const createSubMut = useMutation({
+    mutationFn: ({ systemId, data }: { systemId: number; data: { code: string; name: string; description?: string } }) =>
+      createSubSystem(systemId, data),
+    onSuccess: () => { invalidateSubs(); resetSubForm() },
+    onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 등록 실패'),
+  })
+  const updateSubMut = useMutation({
+    mutationFn: ({ systemId, subId, data }: { systemId: number; subId: number; data: { name: string; description?: string; active?: boolean } }) =>
+      updateSubSystem(systemId, subId, data),
+    onSuccess: () => { invalidateSubs(); resetSubForm() },
+    onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 수정 실패'),
+  })
+  const deleteSubMut = useMutation({
+    mutationFn: ({ systemId, subId }: { systemId: number; subId: number }) => deleteSubSystem(systemId, subId),
+    onSuccess: invalidateSubs,
+    onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 삭제 실패'),
+  })
 
   const reset = () => { setShowForm(false); setEditing(null); setForm(emptyForm()) }
+  const resetSubForm = () => { setShowSubForm(false); setEditingSub(null); setSubForm(emptySubForm()) }
 
   const openEdit = (s: System) => {
     setEditing(s)
     setForm({ code: s.code, name: s.name, description: s.description ?? '' })
     setShowForm(true)
+  }
+
+  const openSubEdit = (sub: SubSystem) => {
+    setEditingSub(sub)
+    setSubForm({ code: sub.code, name: sub.name, description: sub.description ?? '' })
+    setShowSubForm(true)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,8 +99,23 @@ export default function SystemManagementPage() {
     }
   }
 
+  const handleSubSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!subPanel) return
+    if (editingSub) {
+      updateSubMut.mutate({ systemId: subPanel.id, subId: editingSub.id, data: { name: subForm.name, description: subForm.description || undefined } })
+    } else {
+      createSubMut.mutate({ systemId: subPanel.id, data: { code: subForm.code, name: subForm.name, description: subForm.description || undefined } })
+    }
+  }
+
   const toggleActive = (s: System) => {
     updateMut.mutate({ id: s.id, data: { name: s.name, active: !s.active } })
+  }
+
+  const toggleSubActive = (sub: SubSystem) => {
+    if (!subPanel) return
+    updateSubMut.mutate({ systemId: subPanel.id, subId: sub.id, data: { name: sub.name, active: !sub.active } })
   }
 
   const assignedUserIds = new Set(managers.map(m => m.userId))
@@ -74,10 +125,7 @@ export default function SystemManagementPage() {
     <div style={{ padding: 32 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>시스템 관리</h2>
-        <button
-          onClick={() => { reset(); setShowForm(true) }}
-          style={btn}
-        >
+        <button onClick={() => { reset(); setShowForm(true) }} style={btn}>
           + 시스템 등록
         </button>
       </div>
@@ -144,6 +192,10 @@ export default function SystemManagementPage() {
                   {new Date(s.createdAt).toLocaleDateString('ko-KR')}
                 </td>
                 <td style={{ padding: '10px 16px', whiteSpace: 'nowrap' }}>
+                  <button onClick={() => { setSubPanel(s); resetSubForm() }}
+                    style={{ marginRight: 6, padding: '4px 10px', fontSize: 12, border: '1px solid #80cbc4', borderRadius: 4, background: '#e0f2f1', color: '#00695c', cursor: 'pointer' }}>
+                    하위시스템
+                  </button>
                   <button onClick={() => setManagerPanel(s)}
                     style={{ marginRight: 6, padding: '4px 10px', fontSize: 12, border: '1px solid #b39ddb', borderRadius: 4, background: '#ede7f6', color: '#4527a0', cursor: 'pointer' }}>
                     담당자
@@ -163,6 +215,100 @@ export default function SystemManagementPage() {
         </table>
       )}
 
+      {/* Sub-system panel */}
+      {subPanel && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', borderRadius: 10, padding: 28, width: 560, maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <h3 style={{ margin: 0, fontSize: 16 }}>{subPanel.name} 하위시스템 관리</h3>
+              <button
+                onClick={() => { setShowSubForm(true); setEditingSub(null); setSubForm(emptySubForm()) }}
+                style={{ ...btn, padding: '6px 14px', fontSize: 12 }}
+              >
+                + 추가
+              </button>
+            </div>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: '#888' }}>프론트엔드, 백엔드, API 등 구성 컴포넌트를 관리합니다.</p>
+
+            {showSubForm && (
+              <form onSubmit={handleSubSubmit} style={{ background: '#f5f7fa', border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                  {!editingSub && (
+                    <label style={labelStyle}>
+                      <span style={{ fontSize: 12 }}>코드 *</span>
+                      <input value={subForm.code} onChange={e => setSubForm(f => ({ ...f, code: e.target.value }))}
+                        required placeholder="예: FRONTEND" style={{ ...inputStyle, fontSize: 12 }} />
+                    </label>
+                  )}
+                  <label style={labelStyle}>
+                    <span style={{ fontSize: 12 }}>이름 *</span>
+                    <input value={subForm.name} onChange={e => setSubForm(f => ({ ...f, name: e.target.value }))}
+                      required placeholder="하위시스템 이름" style={{ ...inputStyle, fontSize: 12 }} />
+                  </label>
+                  <label style={{ ...labelStyle, gridColumn: editingSub ? '1 / -1' : 'auto' }}>
+                    <span style={{ fontSize: 12 }}>설명</span>
+                    <input value={subForm.description} onChange={e => setSubForm(f => ({ ...f, description: e.target.value }))}
+                      placeholder="설명" style={{ ...inputStyle, fontSize: 12 }} />
+                  </label>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="submit" style={{ ...btn, padding: '6px 14px', fontSize: 12 }}>{editingSub ? '수정' : '등록'}</button>
+                  <button type="button" onClick={resetSubForm} style={{ ...btnSecondary, padding: '6px 12px', fontSize: 12 }}>취소</button>
+                </div>
+              </form>
+            )}
+
+            {subSystems.length === 0 ? (
+              <p style={{ color: '#aaa', fontSize: 13 }}>등록된 하위시스템이 없습니다.</p>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: '#f5f7fa' }}>
+                    {['코드', '이름', '설명', '상태', ''].map(h => (
+                      <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, fontSize: 12, borderBottom: '1px solid #e0e0e0' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {subSystems.map(sub => (
+                    <tr key={sub.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                      <td style={{ padding: '8px 10px', fontWeight: 600, color: '#1976d2', fontSize: 12 }}>{sub.code}</td>
+                      <td style={{ padding: '8px 10px' }}>{sub.name}</td>
+                      <td style={{ padding: '8px 10px', color: '#666', fontSize: 12 }}>{sub.description ?? '-'}</td>
+                      <td style={{ padding: '8px 10px' }}>
+                        <span onClick={() => toggleSubActive(sub)} style={{
+                          padding: '2px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                          background: sub.active ? '#e8f5e9' : '#fafafa',
+                          color: sub.active ? '#2e7d32' : '#999',
+                          border: `1px solid ${sub.active ? '#a5d6a7' : '#ddd'}`,
+                        }}>
+                          {sub.active ? '활성' : '비활성'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                        <button onClick={() => openSubEdit(sub)}
+                          style={{ marginRight: 4, padding: '3px 8px', fontSize: 11, border: '1px solid #90caf9', borderRadius: 4, background: '#e3f2fd', color: '#1565c0', cursor: 'pointer' }}>
+                          수정
+                        </button>
+                        <button onClick={() => { if (confirm(`[${sub.code}] ${sub.name}을 삭제하시겠습니까?`)) deleteSubMut.mutate({ systemId: subPanel.id, subId: sub.id }) }}
+                          style={{ padding: '3px 8px', fontSize: 11, border: '1px solid #ef9a9a', borderRadius: 4, background: '#ffebee', color: '#c62828', cursor: 'pointer' }}>
+                          삭제
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+              <button onClick={() => { setSubPanel(null); resetSubForm() }} style={btnSecondary}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manager panel */}
       {managerPanel && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', borderRadius: 10, padding: 28, width: 460, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>

@@ -6,7 +6,7 @@ import {
   deployRequestStatus, deleteDeployRequest,
   type DeployRequest, type RequestStatus, type DeployType, type CreateDeployRequest,
 } from '../../api/deployRequests'
-import { getActiveSystems } from '../../api/systems'
+import { getActiveSystems, getActiveSubSystems } from '../../api/systems'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
@@ -37,7 +37,7 @@ const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '반려', value: 'REJECTED' },
 ]
 
-const emptyForm: CreateDeployRequest = { systemId: 0, title: '', version: '', deployType: 'RELEASE', content: '' }
+const emptyForm: CreateDeployRequest = { systemId: 0, subSystemId: null, title: '', version: '', deployType: 'RELEASE', content: '' }
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -60,6 +60,11 @@ export default function DeployRequestPage() {
   const { data: systems = [] } = useQuery({
     queryKey: ['systems', 'active'],
     queryFn: getActiveSystems,
+  })
+  const { data: subSystems = [] } = useQuery({
+    queryKey: ['subsystems', 'active', form.systemId],
+    queryFn: () => getActiveSubSystems(form.systemId),
+    enabled: showForm && form.systemId > 0,
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['deploy-requests'] })
@@ -87,14 +92,14 @@ export default function DeployRequestPage() {
 
   const openCreate = () => {
     setEditing(null)
-    setForm({ ...emptyForm, systemId: systems[0]?.id ?? 0 })
+    setForm({ ...emptyForm, systemId: systems[0]?.id ?? 0, subSystemId: null })
     setShowForm(true)
     setDetail(null)
   }
 
   const openEdit = (r: DeployRequest) => {
     setEditing(r)
-    setForm({ systemId: r.systemId, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', content: r.content ?? '', scheduledAt: r.scheduledAt ?? undefined })
+    setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', content: r.content ?? '', scheduledAt: r.scheduledAt ?? undefined })
     setShowForm(true)
     setDetail(null)
   }
@@ -129,10 +134,19 @@ export default function DeployRequestPage() {
           <h3 style={s.formTitle}>{editing ? '배포 요청 수정' : '새 배포 요청'}</h3>
           <div style={s.formGrid}>
             <label style={s.label}>운영시스템 *</label>
-            <select style={s.input} value={form.systemId} onChange={(e) => setForm({ ...form, systemId: Number(e.target.value) })}>
+            <select style={s.input} value={form.systemId} onChange={(e) => setForm({ ...form, systemId: Number(e.target.value), subSystemId: null })}>
               <option value={0}>선택</option>
               {systems.map((sys) => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
             </select>
+            {subSystems.length > 0 && (
+              <>
+                <label style={s.label}>하위시스템</label>
+                <select style={s.input} value={form.subSystemId ?? 0} onChange={(e) => setForm({ ...form, subSystemId: Number(e.target.value) || null })}>
+                  <option value={0}>없음</option>
+                  {subSystems.map((sub) => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
+                </select>
+              </>
+            )}
             <label style={s.label}>제목 *</label>
             <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="배포 요청 제목" />
             <label style={s.label}>버전</label>
@@ -197,7 +211,10 @@ export default function DeployRequestPage() {
                 <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? '#f0f4ff' : undefined }}
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
                   <td style={s.td}>{r.id}</td>
-                  <td style={s.td}><span style={s.sysTag}>{r.systemCode}</span></td>
+                  <td style={s.td}>
+                    <span style={s.sysTag}>{r.systemCode}</span>
+                    {r.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{r.subSystemName}</span>}
+                  </td>
                   <td style={s.td}>{r.title}</td>
                   <td style={s.td}>{r.version ?? '-'}</td>
                   <td style={s.td}>{r.deployType ? DEPLOY_TYPE_LABELS[r.deployType] : '-'}</td>
@@ -239,6 +256,7 @@ export default function DeployRequestPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div>
               <span style={s.sysTag}>{detail.systemCode}</span>
+              {detail.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{detail.subSystemName}</span>}
               <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
             </div>
             <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>

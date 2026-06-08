@@ -5,6 +5,7 @@ import com.platform.portal.domain.deploy.entity.DeployRequest;
 import com.platform.portal.domain.deploy.entity.DeployRequest.Status;
 import com.platform.portal.domain.deploy.repository.DeployRequestRepository;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
+import com.platform.portal.domain.system.repository.SubSystemRepository;
 import com.platform.portal.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class DeployRequestService {
 
     private final DeployRequestRepository deployRequestRepository;
     private final OperationSystemRepository systemRepository;
+    private final SubSystemRepository subSystemRepository;
     private final UserRepository userRepository;
 
     private static final Map<Status, Set<Status>> ALLOWED_TRANSITIONS = Map.of(
@@ -51,6 +53,10 @@ public class DeployRequestService {
         DeployRequest dr = new DeployRequest();
         dr.setSystem(systemRepository.findById(req.getSystemId())
                 .orElseThrow(() -> new IllegalArgumentException("System not found")));
+        if (req.getSubSystemId() != null) {
+            dr.setSubSystem(subSystemRepository.findById(req.getSubSystemId())
+                    .orElseThrow(() -> new IllegalArgumentException("SubSystem not found")));
+        }
         dr.setRequester(userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found")));
         dr.setTitle(req.getTitle());
@@ -69,6 +75,9 @@ public class DeployRequestService {
         }
         dr.setSystem(systemRepository.findById(req.getSystemId())
                 .orElseThrow(() -> new IllegalArgumentException("System not found")));
+        dr.setSubSystem(req.getSubSystemId() != null
+                ? subSystemRepository.findById(req.getSubSystemId()).orElseThrow(() -> new IllegalArgumentException("SubSystem not found"))
+                : null);
         dr.setTitle(req.getTitle());
         dr.setVersion(req.getVersion());
         dr.setDeployType(req.getDeployType());

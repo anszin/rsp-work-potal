@@ -15,6 +15,7 @@ public class DeployRequestDto {
     public static class CreateRequest {
         @NotNull
         private Long systemId;
+        private Long subSystemId;
         @NotBlank
         private String title;
         private String version;
@@ -28,6 +29,7 @@ public class DeployRequestDto {
     public static class UpdateRequest {
         @NotNull
         private Long systemId;
+        private Long subSystemId;
         @NotBlank
         private String title;
         private String version;
@@ -49,6 +51,8 @@ public class DeployRequestDto {
         private final Long systemId;
         private final String systemCode;
         private final String systemName;
+        private final Long subSystemId;
+        private final String subSystemName;
         private final String title;
         private final String version;
         private final DeployRequest.DeployType deployType;
@@ -65,6 +69,8 @@ public class DeployRequestDto {
             this.systemId = dr.getSystem().getId();
             this.systemCode = dr.getSystem().getCode();
             this.systemName = dr.getSystem().getName();
+            this.subSystemId = dr.getSubSystem() != null ? dr.getSubSystem().getId() : null;
+            this.subSystemName = dr.getSubSystem() != null ? dr.getSubSystem().getName() : null;
             this.title = dr.getTitle();
             this.version = dr.getVersion();
             this.deployType = dr.getDeployType();

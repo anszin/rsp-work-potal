@@ -6,7 +6,7 @@ import {
   changeRequestStatus, deleteChangeRequest, buildPayload, downloadAttachment,
   type ChangeRequest, type RequestStatus, type CreateChangeRequest,
 } from '../../api/changeRequests'
-import { getActiveSystems, getManagedSystemIds } from '../../api/systems'
+import { getActiveSystems, getManagedSystemIds, getActiveSubSystems } from '../../api/systems'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
@@ -30,7 +30,7 @@ const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '반려', value: 'REJECTED' },
 ]
 
-const emptyForm: CreateChangeRequest = { systemId: 0, title: '', content: '', requesterDept: '', requesterName: '', targetDate: '', attachmentLink: '' }
+const emptyForm: CreateChangeRequest = { systemId: 0, subSystemId: null, title: '', content: '', requesterDept: '', requesterName: '', targetDate: '', attachmentLink: '' }
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -82,6 +82,11 @@ export default function ChangeRequestPage() {
     queryKey: ['systems', 'active'],
     queryFn: getActiveSystems,
   })
+  const { data: subSystems = [] } = useQuery({
+    queryKey: ['subsystems', 'active', form.systemId],
+    queryFn: () => getActiveSubSystems(form.systemId),
+    enabled: showForm && form.systemId > 0,
+  })
   const { data: managedSystemIds = [] } = useQuery({
     queryKey: ['systems', 'managed'],
     queryFn: getManagedSystemIds,
@@ -116,6 +121,7 @@ export default function ChangeRequestPage() {
     setForm({
       ...emptyForm,
       systemId: systems[0]?.id ?? 0,
+      subSystemId: null,
       requesterName: user?.name || '',
       requesterDept: user?.dept || '',
     })
@@ -125,7 +131,7 @@ export default function ChangeRequestPage() {
 
   const openEdit = (r: ChangeRequest) => {
     setEditing(r)
-    setForm({ systemId: r.systemId, title: r.title, content: r.content ?? '', requesterDept: r.requesterDept ?? '', requesterName: r.requesterName ?? '', targetDate: r.targetDate ?? '', attachmentLink: r.attachmentLink ?? '' })
+    setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, content: r.content ?? '', requesterDept: r.requesterDept ?? '', requesterName: r.requesterName ?? '', targetDate: r.targetDate ?? '', attachmentLink: r.attachmentLink ?? '' })
     setPendingFile(null)
     setShowForm(true)
     setDetail(null)
@@ -196,10 +202,19 @@ export default function ChangeRequestPage() {
           <h3 style={s.formTitle}>{editing ? '요청 수정' : '새 변경 요청'}</h3>
           <div style={s.formGrid}>
             <label style={s.label}>운영시스템 *</label>
-            <select style={s.input} value={form.systemId} onChange={(e) => setForm({ ...form, systemId: Number(e.target.value) })}>
+            <select style={s.input} value={form.systemId} onChange={(e) => setForm({ ...form, systemId: Number(e.target.value), subSystemId: null })}>
               <option value={0}>선택</option>
               {systems.map((sys) => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
             </select>
+            {subSystems.length > 0 && (
+              <>
+                <label style={s.label}>하위시스템</label>
+                <select style={s.input} value={form.subSystemId ?? 0} onChange={(e) => setForm({ ...form, subSystemId: Number(e.target.value) || null })}>
+                  <option value={0}>없음</option>
+                  {subSystems.map((sub) => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
+                </select>
+              </>
+            )}
             <label style={s.label}>제목 *</label>
             <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="변경 요청 제목" />
             <label style={s.label}>요청부서</label>
@@ -298,7 +313,10 @@ export default function ChangeRequestPage() {
                 <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? '#f0f4ff' : undefined }}
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
                   <td style={{ ...s.td, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap' }}>{r.requestNo ?? '-'}</td>
-                  <td style={s.td}><span style={s.sysTag}>{r.systemCode}</span></td>
+                  <td style={s.td}>
+                    <span style={s.sysTag}>{r.systemCode}</span>
+                    {r.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{r.subSystemName}</span>}
+                  </td>
                   <td style={s.td}>{r.requesterDept ?? '-'}</td>
                   <td style={s.td}>{r.requesterName ?? r.requesterUsername}</td>
                   <td style={s.td}>{r.title}</td>
@@ -363,6 +381,7 @@ export default function ChangeRequestPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div>
               <span style={s.sysTag}>{detail.systemCode}</span>
+              {detail.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{detail.subSystemName}</span>}
               <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
               {detail.requestNo && <span style={{ marginLeft: 8, fontSize: 12, color: '#888' }}>{detail.requestNo}</span>}
             </div>

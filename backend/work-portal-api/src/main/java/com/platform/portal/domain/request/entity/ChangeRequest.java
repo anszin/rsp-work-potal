@@ -1,6 +1,7 @@
 package com.platform.portal.domain.request.entity;
 
 import com.platform.portal.domain.system.entity.OperationSystem;
+import com.platform.portal.domain.system.entity.SubSystem;
 import com.platform.portal.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -27,6 +28,10 @@ public class ChangeRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "system_id", nullable = false)
     private OperationSystem system;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sub_system_id")
+    private SubSystem subSystem;
 
     @Column(unique = true, length = 20)
     private String requestNo;

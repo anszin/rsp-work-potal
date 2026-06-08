@@ -4,7 +4,9 @@ import com.platform.portal.domain.request.dto.ChangeRequestDto;
 import com.platform.portal.domain.request.entity.ChangeRequest;
 import com.platform.portal.domain.request.entity.ChangeRequest.Status;
 import com.platform.portal.domain.request.repository.ChangeRequestRepository;
+import com.platform.portal.domain.system.entity.SubSystem;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
+import com.platform.portal.domain.system.repository.SubSystemRepository;
 import com.platform.portal.domain.system.repository.SystemManagerRepository;
 import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
@@ -28,6 +30,7 @@ public class ChangeRequestService {
 
     private final ChangeRequestRepository changeRequestRepository;
     private final OperationSystemRepository systemRepository;
+    private final SubSystemRepository subSystemRepository;
     private final UserRepository userRepository;
     private final SystemManagerRepository systemManagerRepository;
     private final FileStorageService fileStorageService;
@@ -64,6 +67,10 @@ public class ChangeRequestService {
         ChangeRequest cr = new ChangeRequest();
         cr.setSystem(systemRepository.findById(req.getSystemId())
                 .orElseThrow(() -> new IllegalArgumentException("System not found")));
+        if (req.getSubSystemId() != null) {
+            cr.setSubSystem(subSystemRepository.findById(req.getSubSystemId())
+                    .orElseThrow(() -> new IllegalArgumentException("SubSystem not found")));
+        }
         cr.setRequester(userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found")));
         cr.setRequestNo(generateRequestNo());
@@ -93,6 +100,9 @@ public class ChangeRequestService {
         }
         cr.setSystem(systemRepository.findById(req.getSystemId())
                 .orElseThrow(() -> new IllegalArgumentException("System not found")));
+        cr.setSubSystem(req.getSubSystemId() != null
+                ? subSystemRepository.findById(req.getSubSystemId()).orElseThrow(() -> new IllegalArgumentException("SubSystem not found"))
+                : null);
         cr.setTitle(req.getTitle());
         cr.setContent(req.getContent());
         cr.setRequesterDept(req.getRequesterDept());

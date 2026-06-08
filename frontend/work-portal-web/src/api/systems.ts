@@ -55,6 +55,43 @@ export const addSystemManager = (systemId: number, userId: number) =>
 export const removeSystemManager = (systemId: number, userId: number) =>
   client.delete(`/systems/${systemId}/managers/${userId}`)
 
+export interface SubSystem {
+  id: number
+  systemId: number
+  code: string
+  name: string
+  description: string
+  active: boolean
+  createdAt: string
+}
+
+export interface CreateSubSystemRequest {
+  code: string
+  name: string
+  description?: string
+}
+
+export interface UpdateSubSystemRequest {
+  name: string
+  description?: string
+  active?: boolean
+}
+
+export const getSubSystems = (systemId: number) =>
+  client.get<SubSystem[]>(`/systems/${systemId}/subsystems`).then((r) => r.data)
+
+export const getActiveSubSystems = (systemId: number) =>
+  client.get<SubSystem[]>(`/systems/${systemId}/subsystems/active`).then((r) => r.data)
+
+export const createSubSystem = (systemId: number, data: CreateSubSystemRequest) =>
+  client.post<SubSystem>(`/systems/${systemId}/subsystems`, data).then((r) => r.data)
+
+export const updateSubSystem = (systemId: number, subId: number, data: UpdateSubSystemRequest) =>
+  client.put<SubSystem>(`/systems/${systemId}/subsystems/${subId}`, data).then((r) => r.data)
+
+export const deleteSubSystem = (systemId: number, subId: number) =>
+  client.delete(`/systems/${systemId}/subsystems/${subId}`)
+
 export interface UserSummary {
   id: number
   username: string

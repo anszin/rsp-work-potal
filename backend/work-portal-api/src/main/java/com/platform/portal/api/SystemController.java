@@ -79,4 +79,38 @@ public class SystemController {
         systemService.removeManager(id, userId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/subsystems")
+    public ResponseEntity<List<SystemDto.SubSystemResponse>> listSubSystems(@PathVariable Long id) {
+        return ResponseEntity.ok(systemService.findSubSystems(id));
+    }
+
+    @GetMapping("/{id}/subsystems/active")
+    public ResponseEntity<List<SystemDto.SubSystemResponse>> listActiveSubSystems(@PathVariable Long id) {
+        return ResponseEntity.ok(systemService.findActiveSubSystems(id));
+    }
+
+    @PostMapping("/{id}/subsystems")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<SystemDto.SubSystemResponse> createSubSystem(
+            @PathVariable Long id,
+            @Valid @RequestBody SystemDto.SubSystemCreateRequest req) {
+        return ResponseEntity.ok(systemService.createSubSystem(id, req));
+    }
+
+    @PutMapping("/{id}/subsystems/{subId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<SystemDto.SubSystemResponse> updateSubSystem(
+            @PathVariable Long id,
+            @PathVariable Long subId,
+            @Valid @RequestBody SystemDto.SubSystemUpdateRequest req) {
+        return ResponseEntity.ok(systemService.updateSubSystem(id, subId, req));
+    }
+
+    @DeleteMapping("/{id}/subsystems/{subId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Void> deleteSubSystem(@PathVariable Long id, @PathVariable Long subId) {
+        systemService.deleteSubSystem(id, subId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -8,6 +8,8 @@ export interface ChangeRequest {
   systemId: number
   systemCode: string
   systemName: string
+  subSystemId: number | null
+  subSystemName: string | null
   title: string
   content: string
   requesterUsername: string
@@ -27,6 +29,7 @@ export interface ChangeRequest {
 
 export interface CreateChangeRequest {
   systemId: number
+  subSystemId?: number | null
   title: string
   content?: string
   requesterDept?: string

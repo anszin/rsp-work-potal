@@ -1,6 +1,7 @@
 package com.platform.portal.domain.system.dto;
 
 import com.platform.portal.domain.system.entity.OperationSystem;
+import com.platform.portal.domain.system.entity.SubSystem;
 import com.platform.portal.domain.system.entity.SystemManager;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -41,6 +42,46 @@ public class SystemDto {
 
         public Response(OperationSystem s) {
             this.id = s.getId();
+            this.code = s.getCode();
+            this.name = s.getName();
+            this.description = s.getDescription();
+            this.active = s.isActive();
+            this.createdAt = s.getCreatedAt();
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class SubSystemCreateRequest {
+        @NotBlank
+        private String code;
+        @NotBlank
+        private String name;
+        private String description;
+    }
+
+    @Getter
+    @Setter
+    public static class SubSystemUpdateRequest {
+        @NotBlank
+        private String name;
+        private String description;
+        private Boolean active;
+    }
+
+    @Getter
+    public static class SubSystemResponse {
+        private final Long id;
+        private final Long systemId;
+        private final String code;
+        private final String name;
+        private final String description;
+        private final boolean active;
+        private final LocalDateTime createdAt;
+
+        public SubSystemResponse(SubSystem s) {
+            this.id = s.getId();
+            this.systemId = s.getSystem().getId();
             this.code = s.getCode();
             this.name = s.getName();
             this.description = s.getDescription();

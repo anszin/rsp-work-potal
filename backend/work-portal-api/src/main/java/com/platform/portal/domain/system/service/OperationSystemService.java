@@ -2,8 +2,10 @@ package com.platform.portal.domain.system.service;
 
 import com.platform.portal.domain.system.dto.SystemDto;
 import com.platform.portal.domain.system.entity.OperationSystem;
+import com.platform.portal.domain.system.entity.SubSystem;
 import com.platform.portal.domain.system.entity.SystemManager;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
+import com.platform.portal.domain.system.repository.SubSystemRepository;
 import com.platform.portal.domain.system.repository.SystemManagerRepository;
 import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
@@ -20,6 +22,7 @@ public class OperationSystemService {
 
     private final OperationSystemRepository systemRepository;
     private final SystemManagerRepository managerRepository;
+    private final SubSystemRepository subSystemRepository;
     private final UserRepository userRepository;
 
     public List<SystemDto.Response> findAll() {
@@ -94,5 +97,53 @@ public class OperationSystemService {
 
     public List<Long> findManagedSystemIds(String username) {
         return managerRepository.findSystemIdsByUsername(username);
+    }
+
+    public List<SystemDto.SubSystemResponse> findSubSystems(Long systemId) {
+        return subSystemRepository.findBySystemId(systemId).stream()
+                .map(SystemDto.SubSystemResponse::new).toList();
+    }
+
+    public List<SystemDto.SubSystemResponse> findActiveSubSystems(Long systemId) {
+        return subSystemRepository.findBySystemIdAndActiveTrue(systemId).stream()
+                .map(SystemDto.SubSystemResponse::new).toList();
+    }
+
+    @Transactional
+    public SystemDto.SubSystemResponse createSubSystem(Long systemId, SystemDto.SubSystemCreateRequest req) {
+        OperationSystem system = systemRepository.findById(systemId)
+                .orElseThrow(() -> new IllegalArgumentException("System not found: " + systemId));
+        if (subSystemRepository.existsBySystemIdAndCode(systemId, req.getCode())) {
+            throw new IllegalArgumentException("하위 시스템 코드가 이미 존재합니다: " + req.getCode());
+        }
+        SubSystem sub = new SubSystem();
+        sub.setSystem(system);
+        sub.setCode(req.getCode());
+        sub.setName(req.getName());
+        sub.setDescription(req.getDescription());
+        return new SystemDto.SubSystemResponse(subSystemRepository.save(sub));
+    }
+
+    @Transactional
+    public SystemDto.SubSystemResponse updateSubSystem(Long systemId, Long subId, SystemDto.SubSystemUpdateRequest req) {
+        SubSystem sub = subSystemRepository.findById(subId)
+                .orElseThrow(() -> new IllegalArgumentException("SubSystem not found: " + subId));
+        if (!sub.getSystem().getId().equals(systemId)) {
+            throw new IllegalArgumentException("하위 시스템이 해당 시스템에 속하지 않습니다.");
+        }
+        sub.setName(req.getName());
+        if (req.getDescription() != null) sub.setDescription(req.getDescription());
+        if (req.getActive() != null) sub.setActive(req.getActive());
+        return new SystemDto.SubSystemResponse(sub);
+    }
+
+    @Transactional
+    public void deleteSubSystem(Long systemId, Long subId) {
+        SubSystem sub = subSystemRepository.findById(subId)
+                .orElseThrow(() -> new IllegalArgumentException("SubSystem not found: " + subId));
+        if (!sub.getSystem().getId().equals(systemId)) {
+            throw new IllegalArgumentException("하위 시스템이 해당 시스템에 속하지 않습니다.");
+        }
+        subSystemRepository.deleteById(subId);
     }
 }
