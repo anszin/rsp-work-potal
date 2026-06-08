@@ -3,6 +3,11 @@ import client from './client'
 export type RequestStatus = 'DRAFT' | 'REQUESTED' | 'APPROVED' | 'COMPLETED' | 'REJECTED'
 export type DeployType = 'RELEASE' | 'HOTFIX' | 'ROLLBACK' | 'PATCH'
 
+export interface RedmineIssueRef {
+  redmineIssueId: number
+  redmineIssueTitle: string | null
+}
+
 export interface DeployRequest {
   id: number
   systemId: number
@@ -10,8 +15,7 @@ export interface DeployRequest {
   systemName: string
   subSystemId: number | null
   subSystemName: string | null
-  redmineIssueId: number | null
-  redmineIssueTitle: string | null
+  redmineIssues: RedmineIssueRef[]
   title: string
   version: string | null
   deployType: DeployType | null
@@ -34,8 +38,7 @@ export interface CreateDeployRequest {
   deployType?: DeployType
   content?: string
   scheduledAt?: string
-  redmineIssueId?: number | null
-  redmineIssueTitle?: string | null
+  redmineIssues?: RedmineIssueRef[]
 }
 
 export const getDeployRequests = (params?: { systemId?: number }) =>

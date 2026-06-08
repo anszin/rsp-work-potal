@@ -11,6 +11,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "deploy_requests")
@@ -55,8 +57,8 @@ public class DeployRequest {
     @Column(nullable = false)
     private Status status = Status.DRAFT;
 
-    private Integer redmineIssueId;
-    private String redmineIssueTitle;
+    @OneToMany(mappedBy = "deployRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeployRequestIssue> redmineIssues = new ArrayList<>();
 
     private LocalDateTime scheduledAt;
     private LocalDateTime requestedAt;

@@ -43,7 +43,7 @@ app:
   site-url: ${SITE_URL:https://rsp-work-potal.vercel.app}
 
 redmine:
-  base-url: ${REDMINE_URL:http://54.180.246.95:3000}
+  base-url: ${REDMINE_URL:https://54.180.246.95}
   api-key: ${REDMINE_API_KEY:73a41e7b34c67d93acce697355f7332283ef9916}
 
 logging:

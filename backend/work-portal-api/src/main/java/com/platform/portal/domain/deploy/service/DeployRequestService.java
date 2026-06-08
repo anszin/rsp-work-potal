@@ -3,6 +3,7 @@ package com.platform.portal.domain.deploy.service;
 import com.platform.portal.domain.deploy.dto.DeployRequestDto;
 import com.platform.portal.domain.deploy.entity.DeployRequest;
 import com.platform.portal.domain.deploy.entity.DeployRequest.Status;
+import com.platform.portal.domain.deploy.entity.DeployRequestIssue;
 import com.platform.portal.domain.deploy.repository.DeployRequestRepository;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.domain.system.repository.SubSystemRepository;
@@ -43,7 +44,7 @@ public class DeployRequestService {
     }
 
     public DeployRequestDto.Response findById(Long id) {
-        return deployRequestRepository.findById(id)
+        return deployRequestRepository.findWithIssues(id)
                 .map(DeployRequestDto.Response::new)
                 .orElseThrow(() -> new IllegalArgumentException("DeployRequest not found: " + id));
     }
@@ -64,8 +65,10 @@ public class DeployRequestService {
         dr.setDeployType(req.getDeployType());
         dr.setContent(req.getContent());
         dr.setScheduledAt(req.getScheduledAt());
-        dr.setRedmineIssueId(req.getRedmineIssueId());
-        dr.setRedmineIssueTitle(req.getRedmineIssueTitle());
+        if (req.getRedmineIssues() != null) {
+            req.getRedmineIssues().forEach(ref ->
+                dr.getRedmineIssues().add(new DeployRequestIssue(dr, ref.getRedmineIssueId(), ref.getRedmineIssueTitle())));
+        }
         return new DeployRequestDto.Response(deployRequestRepository.save(dr));
     }
 
@@ -85,8 +88,11 @@ public class DeployRequestService {
         dr.setDeployType(req.getDeployType());
         dr.setContent(req.getContent());
         dr.setScheduledAt(req.getScheduledAt());
-        dr.setRedmineIssueId(req.getRedmineIssueId());
-        dr.setRedmineIssueTitle(req.getRedmineIssueTitle());
+        dr.getRedmineIssues().clear();
+        if (req.getRedmineIssues() != null) {
+            req.getRedmineIssues().forEach(ref ->
+                dr.getRedmineIssues().add(new DeployRequestIssue(dr, ref.getRedmineIssueId(), ref.getRedmineIssueTitle())));
+        }
         return new DeployRequestDto.Response(dr);
     }
 
