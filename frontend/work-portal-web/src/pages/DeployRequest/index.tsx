@@ -314,7 +314,7 @@ export default function DeployRequestPage() {
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
                   <td style={s.td}>{r.id}</td>
                   <td style={s.td}>
-                    <span style={s.sysTag}>{r.systemCode}</span>
+                    <span style={s.sysTag}>{r.systemName}</span>
                     {r.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{r.subSystemName}</span>}
                   </td>
                   <td style={s.td}>
@@ -368,7 +368,7 @@ export default function DeployRequestPage() {
         <div style={s.card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div>
-              <span style={s.sysTag}>{detail.systemCode}</span>
+              <span style={s.sysTag}>{detail.systemName}</span>
               {detail.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{detail.subSystemName}</span>}
               <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
             </div>
