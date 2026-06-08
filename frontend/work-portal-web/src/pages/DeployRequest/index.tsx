@@ -317,18 +317,7 @@ export default function DeployRequestPage() {
                     <span style={s.sysTag}>{r.systemName}</span>
                     {r.subSystemName && <span style={{ ...s.sysTag, background: '#F0FFF4', color: '#276749', marginLeft: 4 }}>{r.subSystemName}</span>}
                   </td>
-                  <td style={s.td}>
-                    {r.title}
-                    {r.redmineIssues?.length > 0 && r.redmineIssues.map(i => (
-                      <a key={i.redmineIssueId}
-                        href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
-                        target="_blank" rel="noreferrer"
-                        onClick={e => e.stopPropagation()}
-                        style={{ marginLeft: 4, fontSize: 11, color: '#1976d2', textDecoration: 'none', background: '#EBF8FF', padding: '1px 6px', borderRadius: 3 }}>
-                        #{i.redmineIssueId}
-                      </a>
-                    ))}
-                  </td>
+                  <td style={s.td}>{r.title}</td>
                   <td style={s.td}>{r.version ?? '-'}</td>
                   <td style={s.td}>{r.deployType ? DEPLOY_TYPE_LABELS[r.deployType] : '-'}</td>
                   <td style={s.td}>{r.requesterUsername}</td>
