@@ -4,14 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedmineService {
@@ -26,17 +29,23 @@ public class RedmineService {
 
     public List<RedmineIssue> searchIssues(String projectKey, String query) {
         if (projectKey == null || projectKey.isBlank()) return Collections.emptyList();
-        String url = UriComponentsBuilder.fromHttpUrl(baseUrl + "/issues.json")
-                .queryParam("project_id", projectKey)
-                .queryParam("subject", "~" + (query == null ? "" : query))
-                .queryParam("status_id", "open")
-                .queryParam("limit", 20)
-                .queryParam("key", apiKey)
-                .toUriString();
         try {
+            String encodedQuery = URLEncoder.encode(query == null ? "" : query, StandardCharsets.UTF_8);
+            // Redmine explicit filter format: f[]=subject&op[subject]=~&v[subject][]=keyword
+            String url = baseUrl + "/issues.json"
+                    + "?project_id=" + URLEncoder.encode(projectKey, StandardCharsets.UTF_8)
+                    + "&f%5B%5D=subject"          // f[]=subject
+                    + "&op%5Bsubject%5D=~"        // op[subject]=~  (contains)
+                    + "&v%5Bsubject%5D%5B%5D=" + encodedQuery  // v[subject][]=query
+                    + "&limit=20"
+                    + "&key=" + apiKey;
+            log.info("Redmine search URL: {}", url);
             RedmineIssuesResponse resp = restTemplate.getForObject(url, RedmineIssuesResponse.class);
-            return resp != null && resp.getIssues() != null ? resp.getIssues() : Collections.emptyList();
+            List<RedmineIssue> issues = resp != null && resp.getIssues() != null ? resp.getIssues() : Collections.emptyList();
+            log.info("Redmine search result count: {}", issues.size());
+            return issues;
         } catch (Exception e) {
+            log.error("Redmine search failed: {}", e.getMessage(), e);
             return Collections.emptyList();
         }
     }
