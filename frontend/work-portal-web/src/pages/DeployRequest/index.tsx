@@ -659,19 +659,21 @@ const s: Record<string, React.CSSProperties> = {
 
 function DeployTimeline({ detail }: { detail: import('../../api/deployRequests').DeployRequest }) {
   const isRejected = detail.status === 'REJECTED'
+  const req = detail.requesterUsername
+  const apr = detail.approverUsername
 
-  type Step = { label: string; ts: string | null; done: boolean; rejected?: boolean }
+  type Step = { label: string; ts: string | null; done: boolean; rejected?: boolean; person?: string | null }
   const steps: Step[] = isRejected
     ? [
-        { label: '초안',   ts: detail.createdAt,   done: true },
-        { label: '요청',   ts: detail.requestedAt, done: true },
-        { label: '반려',   ts: null,               done: false, rejected: true },
+        { label: '초안',   ts: detail.createdAt,   done: true,  person: req },
+        { label: '요청',   ts: detail.requestedAt, done: true,  person: req },
+        { label: '반려',   ts: null,               done: false, rejected: true, person: apr },
       ]
     : [
-        { label: '초안',   ts: detail.createdAt,   done: true },
-        { label: '요청',   ts: detail.requestedAt, done: ['REQUESTED','APPROVED','COMPLETED'].includes(detail.status) },
-        { label: '승인',   ts: detail.approvedAt,  done: ['APPROVED','COMPLETED'].includes(detail.status) },
-        { label: '완료',   ts: detail.deployedAt,  done: detail.status === 'COMPLETED' },
+        { label: '초안',   ts: detail.createdAt,   done: true,  person: req },
+        { label: '요청',   ts: detail.requestedAt, done: ['REQUESTED','APPROVED','COMPLETED'].includes(detail.status), person: req },
+        { label: '승인',   ts: detail.approvedAt,  done: ['APPROVED','COMPLETED'].includes(detail.status), person: apr },
+        { label: '완료',   ts: detail.deployedAt,  done: detail.status === 'COMPLETED', person: apr },
       ]
 
   const fmtTs = (ts: string | null) => ts ? ts.slice(0, 10) + '\n' + ts.slice(11, 16) : ''
@@ -692,6 +694,9 @@ function DeployTimeline({ detail }: { detail: import('../../api/deployRequests')
               </div>
               <div style={{ fontSize: 12, fontWeight: 600, color: textColor, marginTop: 7, whiteSpace: 'nowrap' }}>{step.label}</div>
               <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3, textAlign: 'center', whiteSpace: 'pre', lineHeight: 1.5 }}>{fmtTs(step.ts)}</div>
+              {step.person && step.done && (
+                <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 4, textAlign: 'center', fontStyle: 'italic' }}>{step.person}</div>
+              )}
             </div>
             {idx < steps.length - 1 && (
               <div style={{ flex: 1, height: 2, background: lineColor, marginTop: 14, marginLeft: -2, marginRight: -2 }} />
