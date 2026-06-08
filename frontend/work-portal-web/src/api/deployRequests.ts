@@ -2,6 +2,7 @@ import client from './client'
 
 export type RequestStatus = 'DRAFT' | 'REQUESTED' | 'APPROVED' | 'COMPLETED' | 'REJECTED'
 export type DeployType = 'RELEASE' | 'HOTFIX' | 'ROLLBACK' | 'PATCH'
+export type RedmineSyncStatus = 'SYNCED' | 'FAILED' | 'SKIPPED'
 
 export interface RedmineIssueRef {
   redmineIssueId: number
@@ -27,6 +28,7 @@ export interface DeployRequest {
   requestedAt: string | null
   approvedAt: string | null
   deployedAt: string | null
+  redmineSyncStatus: RedmineSyncStatus | null
   createdAt: string
 }
 
@@ -55,6 +57,9 @@ export const updateDeployRequest = (id: number, data: CreateDeployRequest) =>
 
 export const deployRequestStatus = (id: number, status: RequestStatus) =>
   client.patch<DeployRequest>(`/deploy-requests/${id}/status`, { status }).then((r) => r.data)
+
+export const syncRedmine = (id: number) =>
+  client.post<DeployRequest>(`/deploy-requests/${id}/sync-redmine`).then(r => r.data)
 
 export const deleteDeployRequest = (id: number) =>
   client.delete(`/deploy-requests/${id}`)

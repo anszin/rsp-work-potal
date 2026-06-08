@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import {
   getDeployRequests, createDeployRequest, updateDeployRequest,
-  deployRequestStatus, deleteDeployRequest,
+  deployRequestStatus, deleteDeployRequest, syncRedmine,
   type DeployRequest, type RequestStatus, type DeployType, type CreateDeployRequest, type RedmineIssueRef,
 } from '../../api/deployRequests'
 import { getActiveSystems, getActiveSubSystems } from '../../api/systems'
@@ -158,6 +158,11 @@ export default function DeployRequestPage() {
     mutationFn: deleteDeployRequest,
     onSuccess: () => { invalidate(); setDetail(null) },
     onError: (e) => alert('삭제 실패: ' + apiError(e)),
+  })
+  const syncMut = useMutation({
+    mutationFn: syncRedmine,
+    onSuccess: (updated) => { invalidate(); setDetail(updated) },
+    onError: (e) => alert('재동기화 실패: ' + apiError(e)),
   })
 
   const openCreate = () => {
@@ -395,6 +400,29 @@ export default function DeployRequestPage() {
             <span style={s.detailLabel}>승인일시</span><span>{detail.approvedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
             <span style={s.detailLabel}>배포완료</span><span>{detail.deployedAt?.slice(0, 16).replace('T', ' ') ?? '-'}</span>
             <span style={s.detailLabel}>등록일</span><span>{detail.createdAt?.slice(0, 10)}</span>
+            {detail.redmineSyncStatus && (
+              <>
+                <span style={s.detailLabel}>Redmine</span>
+                <span style={{ gridColumn: 'span 3', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {detail.redmineSyncStatus === 'SYNCED' && (
+                    <span style={{ fontSize: 12, color: '#276749', background: '#F0FFF4', border: '1px solid #C6F6D5', padding: '2px 8px', borderRadius: 4 }}>동기화 완료</span>
+                  )}
+                  {detail.redmineSyncStatus === 'FAILED' && (
+                    <>
+                      <span style={{ fontSize: 12, color: '#9B2C2C', background: '#FFF5F5', border: '1px solid #FED7D7', padding: '2px 8px', borderRadius: 4 }}>동기화 실패</span>
+                      <button style={{ ...s.btnSm, color: '#C05621', borderColor: '#C05621', marginRight: 0 }}
+                        onClick={() => syncMut.mutate(detail.id)}
+                        disabled={syncMut.isPending}>
+                        {syncMut.isPending ? '재시도 중...' : '재시도'}
+                      </button>
+                    </>
+                  )}
+                  {detail.redmineSyncStatus === 'SKIPPED' && (
+                    <span style={{ fontSize: 12, color: '#888' }}>미설정 (프로젝트키 또는 버전 없음)</span>
+                  )}
+                </span>
+              </>
+            )}
           </div>
           {detail.content && (
             <div style={{ marginTop: 16 }}>

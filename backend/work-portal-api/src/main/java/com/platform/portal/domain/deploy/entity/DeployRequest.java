@@ -60,6 +60,9 @@ public class DeployRequest {
     @OneToMany(mappedBy = "deployRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeployRequestIssue> redmineIssues = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    private RedmineSyncStatus redmineSyncStatus;
+
     private LocalDateTime scheduledAt;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;
@@ -75,5 +78,9 @@ public class DeployRequest {
 
     public enum DeployType {
         RELEASE, HOTFIX, ROLLBACK, PATCH
+    }
+
+    public enum RedmineSyncStatus {
+        SYNCED, FAILED, SKIPPED
     }
 }

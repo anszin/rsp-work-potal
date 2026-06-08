@@ -133,11 +133,23 @@ public class DeployRequestService {
         deployRequestRepository.deleteById(id);
     }
 
+    @Transactional
+    public DeployRequestDto.Response syncRedmine(Long id) {
+        DeployRequest dr = deployRequestRepository.findWithIssues(id)
+                .orElseThrow(() -> new IllegalArgumentException("DeployRequest not found: " + id));
+        if (dr.getStatus() != Status.APPROVED && dr.getStatus() != Status.COMPLETED) {
+            throw new IllegalStateException("승인된 배포 요청만 재동기화할 수 있습니다.");
+        }
+        createRedmineVersionIfPossible(dr);
+        return new DeployRequestDto.Response(dr);
+    }
+
     private void createRedmineVersionIfPossible(DeployRequest dr) {
         String projectKey = dr.getSystem().getRedmineProjectKey();
         String version = dr.getVersion();
         if (projectKey == null || projectKey.isBlank() || version == null || version.isBlank()) {
             log.info("Redmine version creation skipped: no projectKey or version field");
+            dr.setRedmineSyncStatus(DeployRequest.RedmineSyncStatus.SKIPPED);
             return;
         }
         String versionName = dr.getSubSystem() != null
@@ -154,8 +166,10 @@ public class DeployRequestService {
                     }
                 }
             }
+            dr.setRedmineSyncStatus(DeployRequest.RedmineSyncStatus.SYNCED);
         } catch (Exception e) {
-            log.warn("Redmine version creation failed (non-blocking): {}", e.getMessage());
+            log.warn("Redmine sync failed: {}", e.getMessage());
+            dr.setRedmineSyncStatus(DeployRequest.RedmineSyncStatus.FAILED);
         }
     }
 

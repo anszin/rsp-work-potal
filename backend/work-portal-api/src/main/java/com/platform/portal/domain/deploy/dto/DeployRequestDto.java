@@ -83,6 +83,7 @@ public class DeployRequestDto {
         private final LocalDateTime requestedAt;
         private final LocalDateTime approvedAt;
         private final LocalDateTime deployedAt;
+        private final DeployRequest.RedmineSyncStatus redmineSyncStatus;
         private final LocalDateTime createdAt;
 
         public Response(DeployRequest dr) {
@@ -106,6 +107,7 @@ public class DeployRequestDto {
             this.requestedAt = dr.getRequestedAt();
             this.approvedAt = dr.getApprovedAt();
             this.deployedAt = dr.getDeployedAt();
+            this.redmineSyncStatus = dr.getRedmineSyncStatus();
             this.createdAt = dr.getCreatedAt();
         }
     }

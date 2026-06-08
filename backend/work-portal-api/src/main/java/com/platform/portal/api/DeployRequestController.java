@@ -52,6 +52,11 @@ public class DeployRequestController {
         return ResponseEntity.ok(service.changeStatus(id, req.getStatus(), user.getUsername()));
     }
 
+    @PostMapping("/{id}/sync-redmine")
+    public ResponseEntity<DeployRequestDto.Response> syncRedmine(@PathVariable Long id) {
+        return ResponseEntity.ok(service.syncRedmine(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
