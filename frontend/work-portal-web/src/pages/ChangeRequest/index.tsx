@@ -360,7 +360,7 @@ export default function ChangeRequestPage() {
                         )
                         return null
                       })}
-                      {r.status === 'DRAFT' && (
+                      {(r.status === 'DRAFT' || isAdminOrManager) && (
                         <button style={{ ...s.btnSm, color: '#e53e3e' }}
                           onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
                           삭제

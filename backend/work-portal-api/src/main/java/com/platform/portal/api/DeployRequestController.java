@@ -58,8 +58,9 @@ public class DeployRequestController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id,
+                                       @AuthenticationPrincipal UserDetails user) {
+        service.delete(id, user.getUsername());
         return ResponseEntity.noContent().build();
     }
 }

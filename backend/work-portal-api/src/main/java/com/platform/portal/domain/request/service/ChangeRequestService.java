@@ -186,9 +186,12 @@ public class ChangeRequestService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, String username) {
         ChangeRequest cr = getOrThrow(id);
-        if (cr.getStatus() != Status.DRAFT) {
+        User actor = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+        boolean isAdminOrManager = actor.getRole() == User.Role.ADMIN || actor.getRole() == User.Role.MANAGER;
+        if (!isAdminOrManager && cr.getStatus() != Status.DRAFT) {
             throw new IllegalStateException("DRAFT 상태에서만 삭제 가능합니다.");
         }
         try { fileStorageService.delete(cr.getAttachmentPath()); } catch (IOException ignored) {}

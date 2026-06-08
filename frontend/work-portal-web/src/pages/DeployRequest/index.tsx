@@ -337,7 +337,7 @@ export default function DeployRequestPage() {
                           </button>
                         )
                       ))}
-                      {r.status === 'DRAFT' && (
+                      {(r.status === 'DRAFT' || isAdmin) && (
                         <button style={{ ...s.btnSm, color: '#e53e3e' }}
                           onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
                           삭제

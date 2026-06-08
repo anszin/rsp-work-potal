@@ -7,6 +7,7 @@ import com.platform.portal.domain.deploy.entity.DeployRequestIssue;
 import com.platform.portal.domain.deploy.repository.DeployRequestRepository;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.domain.system.repository.SubSystemRepository;
+import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
 import com.platform.portal.service.RedmineService;
 import lombok.RequiredArgsConstructor;
@@ -127,9 +128,12 @@ public class DeployRequestService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, String username) {
         DeployRequest dr = getOrThrow(id);
-        if (dr.getStatus() != Status.DRAFT) {
+        User actor = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+        boolean isAdminOrManager = actor.getRole() == User.Role.ADMIN || actor.getRole() == User.Role.MANAGER;
+        if (!isAdminOrManager && dr.getStatus() != Status.DRAFT) {
             throw new IllegalStateException("DRAFT 상태에서만 삭제 가능합니다.");
         }
         deployRequestRepository.deleteById(id);
