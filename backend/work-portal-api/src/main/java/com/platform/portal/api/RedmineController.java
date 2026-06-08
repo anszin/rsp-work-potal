@@ -19,17 +19,20 @@ public class RedmineController {
     private final OperationSystemRepository systemRepository;
 
     @GetMapping("/issues")
-    public ResponseEntity<List<RedmineIssueResponse>> searchIssues(
+    public ResponseEntity<IssueListResponse> searchIssues(
             @RequestParam Long systemId,
             @RequestParam(required = false, defaultValue = "") String q,
-            @RequestParam(required = false, defaultValue = "open") String status) {
+            @RequestParam(required = false, defaultValue = "open") String status,
+            @RequestParam(required = false, defaultValue = "0") int offset) {
         OperationSystem system = systemRepository.findById(systemId)
                 .orElseThrow(() -> new IllegalArgumentException("System not found: " + systemId));
         String projectKey = system.getRedmineProjectKey();
-        List<RedmineService.RedmineIssue> issues = redmineService.searchIssues(projectKey, q, status);
-        List<RedmineIssueResponse> result = issues.stream().map(RedmineIssueResponse::new).toList();
-        return ResponseEntity.ok(result);
+        RedmineService.RedmineIssuesResponse resp = redmineService.searchIssues(projectKey, q, status, offset);
+        List<RedmineIssueResponse> issues = resp.getIssues().stream().map(RedmineIssueResponse::new).toList();
+        return ResponseEntity.ok(new IssueListResponse(issues, resp.getTotalCount() != null ? resp.getTotalCount() : 0));
     }
+
+    public record IssueListResponse(List<RedmineIssueResponse> issues, int totalCount) {}
 
     @Getter
     public static class RedmineIssueResponse {

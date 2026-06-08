@@ -27,14 +27,15 @@ public class RedmineService {
 
     private final RestTemplate restTemplate;
 
-    public List<RedmineIssue> searchIssues(String projectKey, String query, String statusId) {
-        if (projectKey == null || projectKey.isBlank()) return Collections.emptyList();
+    public RedmineIssuesResponse searchIssues(String projectKey, String query, String statusId, int offset) {
+        if (projectKey == null || projectKey.isBlank()) return new RedmineIssuesResponse();
         try {
             String safeProject = URLEncoder.encode(projectKey, StandardCharsets.UTF_8);
             StringBuilder url = new StringBuilder(baseUrl)
                     .append("/issues.json")
                     .append("?project_id=").append(safeProject)
-                    .append("&limit=50")
+                    .append("&limit=100")
+                    .append("&offset=").append(offset)
                     .append("&key=").append(apiKey);
             if (query != null && !query.isBlank()) {
                 String safeQuery = URLEncoder.encode(query, StandardCharsets.UTF_8).replace("+", "%20");
@@ -46,9 +47,9 @@ public class RedmineService {
             java.net.URI uri = java.net.URI.create(url.toString());
             log.info("Redmine URI: {}", uri);
             RedmineIssuesResponse resp = restTemplate.getForObject(uri, RedmineIssuesResponse.class);
-            List<RedmineIssue> issues = resp != null && resp.getIssues() != null ? resp.getIssues() : Collections.emptyList();
-            log.info("Redmine result count: {}", issues.size());
-            return issues;
+            log.info("Redmine total: {}, fetched: {}", resp != null ? resp.getTotalCount() : 0,
+                    resp != null && resp.getIssues() != null ? resp.getIssues().size() : 0);
+            return resp != null ? resp : new RedmineIssuesResponse();
         } catch (Exception e) {
             log.error("Redmine API error: {}", e.getMessage());
             throw new RuntimeException("레드마인 검색 실패: " + e.getMessage(), e);
@@ -58,7 +59,9 @@ public class RedmineService {
     @Getter
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RedmineIssuesResponse {
-        private List<RedmineIssue> issues;
+        private List<RedmineIssue> issues = Collections.emptyList();
+        @JsonProperty("total_count")
+        private Integer totalCount = 0;
     }
 
     @Getter

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import {
@@ -7,7 +7,7 @@ import {
   type DeployRequest, type RequestStatus, type DeployType, type CreateDeployRequest, type RedmineIssueRef,
 } from '../../api/deployRequests'
 import { getActiveSystems, getActiveSubSystems } from '../../api/systems'
-import { searchRedmineIssues, type RedmineIssue } from '../../api/redmine'
+import { fetchRedmineIssues, type RedmineIssue } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
@@ -63,6 +63,10 @@ export default function DeployRequestPage() {
   const [pickerInput, setPickerInput] = useState('')
   const [pickerQuery, setPickerQuery] = useState('')
   const [pickerDraft, setPickerDraft] = useState<RedmineIssueRef[]>([])
+  const [pickerIssues, setPickerIssues] = useState<RedmineIssue[]>([])
+  const [pickerTotal, setPickerTotal] = useState(0)
+  const [pickerLoading, setPickerLoading] = useState(false)
+  const [pickerFetchError, setPickerFetchError] = useState<string | null>(null)
   const pickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { data: requests = [], isLoading } = useQuery({
@@ -78,17 +82,35 @@ export default function DeployRequestPage() {
     enabled: showForm && form.systemId > 0,
   })
 
-  const { data: pickerIssues = [], isFetching: pickerFetching, error: pickerError } = useQuery({
-    queryKey: ['redmine-picker', form.systemId, pickerStatus, pickerQuery],
-    queryFn: () => searchRedmineIssues(form.systemId, pickerQuery, pickerStatus),
-    enabled: showPicker && form.systemId > 0 && !!selectedSystem?.redmineProjectKey,
-    staleTime: 30000,
-  })
+  const loadPickerIssues = useCallback(async (query: string, status: string, offset: number, append: boolean) => {
+    if (!form.systemId) return
+    setPickerLoading(true)
+    setPickerFetchError(null)
+    try {
+      const result = await fetchRedmineIssues(form.systemId, query, status, offset)
+      setPickerIssues(prev => append ? [...prev, ...result.issues] : result.issues)
+      setPickerTotal(result.totalCount)
+    } catch (e) {
+      setPickerFetchError(e instanceof Error ? e.message : '조회 실패')
+    } finally {
+      setPickerLoading(false)
+    }
+  }, [form.systemId])
+
+  useEffect(() => {
+    if (showPicker && selectedSystem?.redmineProjectKey) {
+      loadPickerIssues(pickerQuery, pickerStatus, 0, false)
+    }
+  }, [showPicker, pickerQuery, pickerStatus, loadPickerIssues, selectedSystem?.redmineProjectKey])
 
   const handlePickerInput = (val: string) => {
     setPickerInput(val)
     if (pickerTimer.current) clearTimeout(pickerTimer.current)
     pickerTimer.current = setTimeout(() => setPickerQuery(val), 400)
+  }
+
+  const loadMore = () => {
+    loadPickerIssues(pickerQuery, pickerStatus, pickerIssues.length, true)
   }
 
   const togglePickerIssue = (issue: RedmineIssue) => {
@@ -104,6 +126,9 @@ export default function DeployRequestPage() {
     setPickerStatus('open')
     setPickerInput('')
     setPickerQuery('')
+    setPickerIssues([])
+    setPickerTotal(0)
+    setPickerFetchError(null)
     setShowPicker(true)
   }
 
@@ -406,38 +431,48 @@ export default function DeployRequestPage() {
               />
             </div>
             <div style={s.modalBody}>
-              {pickerFetching ? (
+              {pickerIssues.length === 0 && pickerLoading ? (
                 <div style={s.modalEmpty}>불러오는 중...</div>
-              ) : pickerError ? (
-                <div style={{ ...s.modalEmpty, color: '#e53e3e' }}>
-                  오류: {pickerError instanceof Error ? pickerError.message : '조회 실패'}
-                </div>
+              ) : pickerFetchError ? (
+                <div style={{ ...s.modalEmpty, color: '#e53e3e' }}>오류: {pickerFetchError}</div>
               ) : pickerIssues.length === 0 ? (
                 <div style={s.modalEmpty}>일감이 없습니다</div>
               ) : (
-                pickerIssues.map(issue => {
-                  const checked = pickerDraft.some(i => i.redmineIssueId === issue.id)
-                  return (
-                    <div key={issue.id} onClick={() => togglePickerIssue(issue)}
-                      style={{ ...s.issueRow, background: checked ? '#f0fdf4' : undefined }}>
-                      <div style={{ ...s.issueCheck, borderColor: checked ? '#38a169' : '#cbd5e0', background: checked ? '#38a169' : '#fff' }}>
-                        {checked && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+                <>
+                  <div style={{ padding: '6px 20px', fontSize: 12, color: '#888', background: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+                    전체 {pickerTotal}개 중 {pickerIssues.length}개 표시
+                  </div>
+                  {pickerIssues.map(issue => {
+                    const checked = pickerDraft.some(i => i.redmineIssueId === issue.id)
+                    return (
+                      <div key={issue.id} onClick={() => togglePickerIssue(issue)}
+                        style={{ ...s.issueRow, background: checked ? '#f0fdf4' : undefined }}>
+                        <div style={{ ...s.issueCheck, borderColor: checked ? '#38a169' : '#cbd5e0', background: checked ? '#38a169' : '#fff' }}>
+                          {checked && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ color: '#1976d2', fontWeight: 600, marginRight: 8, fontSize: 13 }}>#{issue.id}</span>
+                          <span style={{ fontSize: 13 }}>{issue.subject}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                          {issue.status && (
+                            <span style={{ fontSize: 11, color: '#666', background: '#f0f0f0', padding: '2px 6px', borderRadius: 3 }}>{issue.status}</span>
+                          )}
+                          {issue.assignedTo && (
+                            <span style={{ fontSize: 11, color: '#999' }}>{issue.assignedTo}</span>
+                          )}
+                        </div>
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ color: '#1976d2', fontWeight: 600, marginRight: 8, fontSize: 13 }}>#{issue.id}</span>
-                        <span style={{ fontSize: 13 }}>{issue.subject}</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                        {issue.status && (
-                          <span style={{ fontSize: 11, color: '#666', background: '#f0f0f0', padding: '2px 6px', borderRadius: 3 }}>{issue.status}</span>
-                        )}
-                        {issue.assignedTo && (
-                          <span style={{ fontSize: 11, color: '#999' }}>{issue.assignedTo}</span>
-                        )}
-                      </div>
+                    )
+                  })}
+                  {pickerIssues.length < pickerTotal && (
+                    <div style={{ padding: '12px 20px', textAlign: 'center' }}>
+                      <button onClick={loadMore} disabled={pickerLoading} style={s.btnOutline}>
+                        {pickerLoading ? '불러오는 중...' : `더 보기 (${pickerTotal - pickerIssues.length}개 남음)`}
+                      </button>
                     </div>
-                  )
-                })
+                  )}
+                </>
               )}
             </div>
             <div style={s.modalFooter}>

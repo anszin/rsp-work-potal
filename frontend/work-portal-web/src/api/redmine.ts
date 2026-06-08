@@ -7,5 +7,10 @@ export interface RedmineIssue {
   assignedTo: string | null
 }
 
-export const searchRedmineIssues = (systemId: number, q: string, status = 'open') =>
-  client.get<RedmineIssue[]>('/redmine/issues', { params: { systemId, q, status } }).then((r) => r.data)
+export interface RedmineIssueListResult {
+  issues: RedmineIssue[]
+  totalCount: number
+}
+
+export const fetchRedmineIssues = (systemId: number, q: string, status = 'open', offset = 0) =>
+  client.get<RedmineIssueListResult>('/redmine/issues', { params: { systemId, q, status, offset } }).then(r => r.data)
