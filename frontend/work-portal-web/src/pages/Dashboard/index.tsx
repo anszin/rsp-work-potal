@@ -65,8 +65,9 @@ function BarChart({ data }: { data: MonthlySummary[] }) {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, menuPermissions } = useAuth()
   const navigate = useNavigate()
+  const can = (key: string) => menuPermissions[key] !== false
 
   const { data: summary = [] } = useQuery({
     queryKey: ['finance-summary', currentYear],
@@ -124,42 +125,51 @@ export default function DashboardPage() {
       </div>
 
       {/* 요약 카드 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
-        <StatCard
-          label={`${currentMonth}월 손익`}
-          value={(thisMonthSummary.profit >= 0 ? '+' : '') + fmt(thisMonthSummary.profit) + '원'}
-          sub={`매출 ${fmt(thisMonthSummary.revenue)} / 지출 ${fmt(thisMonthSummary.expense)}`}
-          color={thisMonthSummary.profit >= 0 ? '#4caf50' : '#f44336'}
-          onClick={() => navigate('/finance')}
-        />
-        <StatCard
-          label="진행 중 수주"
-          value={activeContracts.length + '건'}
-          sub={activeContracts.reduce((s, i) => s + (i.amount ?? 0), 0) > 0
-            ? fmt(activeContracts.reduce((s, i) => s + (i.amount ?? 0), 0)) + '원' : '금액 미정'}
-          color="#1976d2"
-          onClick={() => navigate('/inventory')}
-        />
-        <StatCard
-          label="미결 변경관리"
-          value={pendingChanges.length + '건'}
-          sub={`전체 ${changeRequests.length}건`}
-          color="#ff9800"
-          onClick={() => navigate('/requests')}
-        />
-        <StatCard
-          label="미결 배포요청"
-          value={pendingDeploys.length + '건'}
-          sub={`전체 ${deployRequests.length}건`}
-          color="#9c27b0"
-          onClick={() => navigate('/deploys')}
-        />
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${[can('finance'), can('inventory'), can('change_requests'), can('deploys')].filter(Boolean).length}, 1fr)`, gap: 14, marginBottom: 20 }}>
+        {can('finance') && (
+          <StatCard
+            label={`${currentMonth}월 손익`}
+            value={(thisMonthSummary.profit >= 0 ? '+' : '') + fmt(thisMonthSummary.profit) + '원'}
+            sub={`매출 ${fmt(thisMonthSummary.revenue)} / 지출 ${fmt(thisMonthSummary.expense)}`}
+            color={thisMonthSummary.profit >= 0 ? '#4caf50' : '#f44336'}
+            onClick={() => navigate('/finance')}
+          />
+        )}
+        {can('inventory') && (
+          <StatCard
+            label="진행 중 수주"
+            value={activeContracts.length + '건'}
+            sub={activeContracts.reduce((s, i) => s + (i.amount ?? 0), 0) > 0
+              ? fmt(activeContracts.reduce((s, i) => s + (i.amount ?? 0), 0)) + '원' : '금액 미정'}
+            color="#1976d2"
+            onClick={() => navigate('/inventory')}
+          />
+        )}
+        {can('change_requests') && (
+          <StatCard
+            label="미결 변경관리"
+            value={pendingChanges.length + '건'}
+            sub={`전체 ${changeRequests.length}건`}
+            color="#ff9800"
+            onClick={() => navigate('/requests')}
+          />
+        )}
+        {can('deploys') && (
+          <StatCard
+            label="미결 배포요청"
+            value={pendingDeploys.length + '건'}
+            sub={`전체 ${deployRequests.length}건`}
+            color="#9c27b0"
+            onClick={() => navigate('/deploys')}
+          />
+        )}
       </div>
 
       {/* 중단: 차트 + 일일점검 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 14, marginBottom: 20 }}>
+      {(can('finance') || can('daily_check')) && (
+      <div style={{ display: 'grid', gridTemplateColumns: can('finance') && can('daily_check') ? '1fr 380px' : '1fr', gap: 14, marginBottom: 20 }}>
         {/* 월별 손익 차트 */}
-        <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        {can('finance') && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>{currentYear}년 월별 손익</div>
             <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--c-text-muted)' }}>
@@ -185,7 +195,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 오늘 일일점검 */}
-        <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        {can('daily_check') && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>오늘 점검 현황</div>
             <button onClick={() => navigate('/reports/daily')}
@@ -228,11 +238,12 @@ export default function DashboardPage() {
               ✓ 모든 시스템 정상 운영 중
             </div>
           )}
-        </div>
+        </div>}
       </div>
+      )}
 
       {/* 시스템별 배포 현황 */}
-      {systems.length > 0 && (
+      {can('deploys') && systems.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>시스템별 배포 현황</div>
@@ -321,20 +332,21 @@ export default function DashboardPage() {
       )}
 
       {/* 하단: 최근 요청 + 최근 회의록 */}
+      {(can('change_requests') || can('deploys') || can('meeting_minutes') || can('inventory')) && (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {/* 최근 변경/배포 요청 */}
-        <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        {(can('change_requests') || can('deploys')) && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>최근 요청</div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => navigate('/requests')}
+              {can('change_requests') && <button onClick={() => navigate('/requests')}
                 style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 변경관리 →
-              </button>
-              <button onClick={() => navigate('/deploys')}
+              </button>}
+              {can('deploys') && <button onClick={() => navigate('/deploys')}
                 style={{ fontSize: 12, color: '#9c27b0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 배포요청 →
-              </button>
+              </button>}
             </div>
           </div>
           {changeRequests.length === 0 && deployRequests.length === 0 ? (
@@ -370,41 +382,43 @@ export default function DashboardPage() {
                 ))}
             </div>
           )}
-        </div>
+        </div>}
 
-        {/* 최근 회의록 */}
-        <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontWeight: 600, fontSize: 14 }}>최근 회의록</div>
-            <button onClick={() => navigate('/reports/meeting')}
-              style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              전체보기 →
-            </button>
-          </div>
-          {meetings.length === 0 ? (
-            <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 회의록이 없습니다.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {meetings.slice(0, 5).map((m: any) => (
-                <div key={m.id} onClick={() => navigate('/reports/meeting')}
-                  style={{
-                    padding: '10px 12px', borderRadius: 6, background: 'var(--c-bg)',
-                    border: '1px solid var(--c-thead)', cursor: 'pointer',
-                  }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ fontWeight: 500, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{m.title}</div>
-                    <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginLeft: 8, flexShrink: 0 }}>{m.meetingDate}</div>
-                  </div>
-                  {m.attendees && (
-                    <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3 }}>참석: {m.attendees}</div>
-                  )}
-                </div>
-              ))}
+        {/* 최근 회의록 + 인벤토리 */}
+        {(can('meeting_minutes') || can('inventory')) && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          {can('meeting_minutes') && <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>최근 회의록</div>
+              <button onClick={() => navigate('/reports/meeting')}
+                style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                전체보기 →
+              </button>
             </div>
-          )}
+            {meetings.length === 0 ? (
+              <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 회의록이 없습니다.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {meetings.slice(0, 5).map((m: any) => (
+                  <div key={m.id} onClick={() => navigate('/reports/meeting')}
+                    style={{
+                      padding: '10px 12px', borderRadius: 6, background: 'var(--c-bg)',
+                      border: '1px solid var(--c-thead)', cursor: 'pointer',
+                    }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ fontWeight: 500, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{m.title}</div>
+                      <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginLeft: 8, flexShrink: 0 }}>{m.meetingDate}</div>
+                    </div>
+                    {m.attendees && (
+                      <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3 }}>참석: {m.attendees}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>}
 
           {/* 인벤토리 요약 */}
-          <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--c-thead)' }}>
+          {can('inventory') && <div style={{ marginTop: can('meeting_minutes') ? 16 : 0, paddingTop: can('meeting_minutes') ? 14 : 0, borderTop: can('meeting_minutes') ? '1px solid var(--c-thead)' : 'none' }}>
             <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10, color: 'var(--c-text-sub)' }}>인벤토리 현황</div>
             <div style={{ display: 'flex', gap: 10 }}>
               {[
@@ -423,9 +437,10 @@ export default function DashboardPage() {
                 )
               })}
             </div>
-          </div>
-        </div>
+          </div>}
+        </div>}
       </div>
+      )}
     </div>
   )
 }
