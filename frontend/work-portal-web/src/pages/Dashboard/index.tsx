@@ -81,12 +81,12 @@ export default function DashboardPage() {
 
   const { data: changeRequests = [] } = useQuery({
     queryKey: ['change-requests'],
-    queryFn: () => client.get<any[]>('/api/change-requests').then(r => r.data),
+    queryFn: () => client.get<any[]>('/change-requests').then(r => r.data),
   })
 
   const { data: deployRequests = [] } = useQuery({
     queryKey: ['deploy-requests'],
-    queryFn: () => client.get<any[]>('/api/deploy-requests').then(r => r.data),
+    queryFn: () => client.get<any[]>('/deploy-requests').then(r => r.data),
   })
 
   const { data: todayChecks = [] } = useQuery({
@@ -101,7 +101,7 @@ export default function DashboardPage() {
 
   const { data: systems = [] } = useQuery({
     queryKey: ['systems'],
-    queryFn: () => client.get<any[]>('/api/systems').then(r => r.data),
+    queryFn: () => client.get<any[]>('/systems').then(r => r.data),
   })
 
   const thisMonthSummary = summary.find(s => s.month === currentMonth) ?? { revenue: 0, expense: 0, profit: 0 }
@@ -169,76 +169,78 @@ export default function DashboardPage() {
       {(can('finance') || can('daily_check')) && (
       <div style={{ display: 'grid', gridTemplateColumns: can('finance') && can('daily_check') ? '1fr 380px' : '1fr', gap: 14, marginBottom: 20 }}>
         {/* 월별 손익 차트 */}
-        {can('finance') && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ fontWeight: 600, fontSize: 14 }}>{currentYear}년 월별 손익</div>
-            <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--c-text-muted)' }}>
-              <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#1976d2', borderRadius: 2, marginRight: 4 }} />매출</span>
-              <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#f44336', borderRadius: 2, marginRight: 4 }} />지출</span>
+        {can('finance') && (
+          <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>{currentYear}년 월별 손익</div>
+              <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--c-text-muted)' }}>
+                <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#1976d2', borderRadius: 2, marginRight: 4 }} />매출</span>
+                <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#f44336', borderRadius: 2, marginRight: 4 }} />지출</span>
+              </div>
             </div>
-          </div>
-          <BarChart data={summary} />
-          <div style={{ marginTop: 14, display: 'flex', gap: 20, fontSize: 12, color: 'var(--c-text-sub)', borderTop: '1px solid var(--c-thead)', paddingTop: 12 }}>
-            {['revenue', 'expense', 'profit'].map(key => {
-              const total = summary.reduce((s, d) => s + (d as any)[key], 0)
-              const labels: Record<string, string> = { revenue: '연간 누적 매출', expense: '연간 누적 지출', profit: '연간 누적 손익' }
-              return (
-                <div key={key}>
-                  <span style={{ color: 'var(--c-text-muted)' }}>{labels[key]}: </span>
-                  <span style={{ fontWeight: 600, color: key === 'profit' ? (total >= 0 ? '#4caf50' : '#f44336') : 'var(--c-text)' }}>
-                    {(total >= 0 && key === 'profit' ? '+' : '')}{fmt(total)}원
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* 오늘 일일점검 */}
-        {can('daily_check') && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontWeight: 600, fontSize: 14 }}>오늘 점검 현황</div>
-            <button onClick={() => navigate('/reports/daily')}
-              style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              전체보기 →
-            </button>
-          </div>
-          {systems.length === 0 ? (
-            <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 시스템이 없습니다.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {systems.map((sys: any) => {
-                const check = todayChecks.find((c: DailyCheckReport) => c.systemId === sys.id)
+            <BarChart data={summary} />
+            <div style={{ marginTop: 14, display: 'flex', gap: 20, fontSize: 12, color: 'var(--c-text-sub)', borderTop: '1px solid var(--c-thead)', paddingTop: 12 }}>
+              {['revenue', 'expense', 'profit'].map(key => {
+                const total = summary.reduce((s, d) => s + (d as any)[key], 0)
+                const labels: Record<string, string> = { revenue: '연간 누적 매출', expense: '연간 누적 지출', profit: '연간 누적 손익' }
                 return (
-                  <div key={sys.id} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '8px 12px', borderRadius: 6,
-                    background: check ? STATUS_COLOR[check.status] + '11' : 'var(--c-bg)',
-                    border: '1px solid ' + (check ? STATUS_COLOR[check.status] + '44' : 'var(--c-thead)'),
-                  }}>
-                    <div>
-                      <div style={{ fontWeight: 500, fontSize: 13 }}>{sys.name}</div>
-                      {check?.note && <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{check.note}</div>}
-                    </div>
-                    {check ? (
-                      <span style={{
-                        padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600,
-                        background: STATUS_COLOR[check.status] + '22', color: STATUS_COLOR[check.status],
-                      }}>{STATUS_LABEL[check.status]}</span>
-                    ) : (
-                      <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>미점검</span>
-                    )}
+                  <div key={key}>
+                    <span style={{ color: 'var(--c-text-muted)' }}>{labels[key]}: </span>
+                    <span style={{ fontWeight: 600, color: key === 'profit' ? (total >= 0 ? '#4caf50' : '#f44336') : 'var(--c-text)' }}>
+                      {(total >= 0 && key === 'profit' ? '+' : '')}{fmt(total)}원
+                    </span>
                   </div>
                 )
               })}
             </div>
-          )}
-          {todayChecks.length > 0 && todayChecks.every((c: DailyCheckReport) => c.status === 'NORMAL') && (
-            <div style={{ marginTop: 12, fontSize: 12, color: '#4caf50', fontWeight: 600, textAlign: 'center' }}>
-              ✓ 모든 시스템 정상 운영 중
+          </div>
+        )}
+        {can('daily_check') && (
+          <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>오늘 점검 현황</div>
+              <button onClick={() => navigate('/reports/daily')}
+                style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                전체보기 →
+              </button>
             </div>
-          )}
-        </div>}
+            {systems.length === 0 ? (
+              <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 시스템이 없습니다.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {systems.map((sys: any) => {
+                  const check = todayChecks.find((c: DailyCheckReport) => c.systemId === sys.id)
+                  return (
+                    <div key={sys.id} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '8px 12px', borderRadius: 6,
+                      background: check ? STATUS_COLOR[check.status] + '11' : 'var(--c-bg)',
+                      border: '1px solid ' + (check ? STATUS_COLOR[check.status] + '44' : 'var(--c-thead)'),
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: 500, fontSize: 13 }}>{sys.name}</div>
+                        {check?.note && <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{check.note}</div>}
+                      </div>
+                      {check ? (
+                        <span style={{
+                          padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600,
+                          background: STATUS_COLOR[check.status] + '22', color: STATUS_COLOR[check.status],
+                        }}>{STATUS_LABEL[check.status]}</span>
+                      ) : (
+                        <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>미점검</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            {todayChecks.length > 0 && todayChecks.every((c: DailyCheckReport) => c.status === 'NORMAL') && (
+              <div style={{ marginTop: 12, fontSize: 12, color: '#4caf50', fontWeight: 600, textAlign: 'center' }}>
+                ✓ 모든 시스템 정상 운영 중
+              </div>
+            )}
+          </div>
+        )}
       </div>
       )}
 
