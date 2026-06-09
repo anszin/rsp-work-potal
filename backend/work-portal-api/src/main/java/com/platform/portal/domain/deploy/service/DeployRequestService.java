@@ -7,6 +7,7 @@ import com.platform.portal.domain.deploy.entity.DeployRequestIssue;
 import com.platform.portal.domain.deploy.repository.DeployRequestRepository;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.domain.system.repository.SubSystemRepository;
+import com.platform.portal.domain.system.repository.SystemManagerRepository;
 import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
 import com.platform.portal.service.RedmineService;
@@ -31,6 +32,7 @@ public class DeployRequestService {
     private final DeployRequestRepository deployRequestRepository;
     private final OperationSystemRepository systemRepository;
     private final SubSystemRepository subSystemRepository;
+    private final SystemManagerRepository systemManagerRepository;
     private final UserRepository userRepository;
     private final RedmineService redmineService;
     private final WebexService webexService;
@@ -121,11 +123,19 @@ public class DeployRequestService {
                     String.format("%s → %s 전환 불가", current, newStatus));
         }
 
+        User actor = userRepository.findByUsername(approverUsername)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + approverUsername));
+        boolean isAdminOrManager = actor.getRole() == User.Role.ADMIN || actor.getRole() == User.Role.MANAGER;
+        boolean isSystemManager = systemManagerRepository.findSystemIdsByUsername(approverUsername)
+                .contains(dr.getSystem().getId());
+
         if (newStatus == Status.APPROVED || newStatus == Status.REJECTED) {
-            User actor = userRepository.findByUsername(approverUsername)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + approverUsername));
-            if (actor.getRole() != User.Role.ADMIN && actor.getRole() != User.Role.MANAGER) {
+            if (!isAdminOrManager) {
                 throw new IllegalStateException("승인/반려는 매니저 이상만 가능합니다.");
+            }
+        } else if (newStatus == Status.REQUESTED || newStatus == Status.COMPLETED) {
+            if (!isSystemManager && !isAdminOrManager) {
+                throw new IllegalStateException("해당 시스템의 담당자만 처리할 수 있습니다.");
             }
         }
 

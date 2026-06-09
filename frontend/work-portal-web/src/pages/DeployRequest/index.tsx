@@ -6,7 +6,7 @@ import {
   deployRequestStatus, deleteDeployRequest, syncRedmine,
   type DeployRequest, type RequestStatus, type DeployType, type DeployScope, type CreateDeployRequest, type RedmineIssueRef,
 } from '../../api/deployRequests'
-import { getActiveSystems, getActiveSubSystems } from '../../api/systems'
+import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../../api/systems'
 import { fetchRedmineIssues, type RedmineIssue } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
@@ -75,6 +75,7 @@ export default function DeployRequestPage() {
     queryFn: () => getDeployRequests(),
   })
   const { data: systems = [] } = useQuery({ queryKey: ['systems', 'active'], queryFn: getActiveSystems })
+  const { data: managedSystemIds = [] } = useQuery({ queryKey: ['systems', 'managed'], queryFn: getManagedSystemIds })
   const selectedSystem = systems.find(s => s.id === form.systemId)
 
   const { data: subSystems = [] } = useQuery({
@@ -391,14 +392,19 @@ export default function DeployRequestPage() {
                       {r.status === 'DRAFT' && (
                         <button style={s.btnSm} onClick={() => openEdit(r)}>수정</button>
                       )}
-                      {NEXT_STATUS[r.status]?.map(({ label, next }) => (
-                        (isAdmin || (next !== 'APPROVED' && next !== 'REJECTED')) && (
+                      {NEXT_STATUS[r.status]?.map(({ label, next }) => {
+                        const isManagedSystem = managedSystemIds.includes(r.systemId)
+                        const canAct =
+                          (next === 'APPROVED' || next === 'REJECTED') ? isAdmin :
+                          (next === 'REQUESTED' || next === 'COMPLETED') ? (isManagedSystem || isAdmin) :
+                          false
+                        return canAct && (
                           <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
                             onClick={() => handleStatus(r.id, next)}>
                             {label}
                           </button>
                         )
-                      ))}
+                      })}
                       {(r.status === 'DRAFT' || isAdmin) && (
                         <button style={{ ...s.btnSm, color: '#e53e3e' }}
                           onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
