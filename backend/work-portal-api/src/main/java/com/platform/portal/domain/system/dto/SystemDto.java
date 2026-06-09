@@ -46,6 +46,7 @@ public class SystemDto {
         private final String redmineProjectKey;
         private final String webexRoomId;
         private final int sortOrder;
+
         private final boolean active;
         private final LocalDateTime createdAt;
 
@@ -56,7 +57,7 @@ public class SystemDto {
             this.description = s.getDescription();
             this.redmineProjectKey = s.getRedmineProjectKey();
             this.webexRoomId = s.getWebexRoomId();
-            this.sortOrder = s.getSortOrder();
+            this.sortOrder = s.getSortOrder() != null ? s.getSortOrder() : 0;
             this.active = s.isActive();
             this.createdAt = s.getCreatedAt();
         }

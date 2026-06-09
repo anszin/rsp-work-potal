@@ -35,8 +35,7 @@ public class OperationSystem {
     @Column(length = 200)
     private String webexRoomId;
 
-    @Column(nullable = false)
-    private int sortOrder = 0;
+    private Integer sortOrder = 0;
 
     @Column(nullable = false)
     private boolean active = true;
