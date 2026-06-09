@@ -231,6 +231,95 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* 시스템별 배포 현황 */}
+      {systems.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ fontWeight: 600, fontSize: 14 }}>시스템별 배포 현황</div>
+            <button onClick={() => navigate('/deploys')}
+              style={{ fontSize: 12, color: '#9c27b0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              전체보기 →
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+            {systems.map((sys: any) => {
+              const sysDeploys: any[] = deployRequests.filter((r: any) => r.systemId === sys.id)
+              const thisMonthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`
+              const lastMonth = currentMonth === 1 ? 12 : currentMonth - 1
+              const lastMonthYear = currentMonth === 1 ? currentYear - 1 : currentYear
+              const lastMonthKey = `${lastMonthYear}-${String(lastMonth).padStart(2, '0')}`
+              const thisMonthCount = sysDeploys.filter(r => r.createdAt?.slice(0, 7) === thisMonthKey).length
+              const lastMonthCount = sysDeploys.filter(r => r.createdAt?.slice(0, 7) === lastMonthKey).length
+              const statusCounts: Record<string, number> = {}
+              sysDeploys.forEach(r => { statusCounts[r.status] = (statusCounts[r.status] || 0) + 1 })
+              const recent = [...sysDeploys].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+              const pendingCount = (statusCounts['REQUESTED'] || 0) + (statusCounts['APPROVED'] || 0)
+              const trendIcon = thisMonthCount > lastMonthCount ? '↑' : thisMonthCount < lastMonthCount ? '↓' : '━'
+              const trendColor = thisMonthCount > lastMonthCount ? '#4caf50' : thisMonthCount < lastMonthCount ? '#f44336' : 'var(--c-text-muted)'
+              return (
+                <div key={sys.id} onClick={() => navigate('/deploys')} style={{
+                  background: 'var(--c-card)', borderRadius: 10, padding: '16px 20px',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.08)', cursor: 'pointer',
+                  borderTop: `3px solid ${pendingCount > 0 ? '#9c27b0' : 'var(--c-border)'}`,
+                  transition: 'box-shadow 0.15s',
+                }}
+                  onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)')}
+                  onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)')}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{sys.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{sys.code}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#9c27b0' }}>{thisMonthCount}건</div>
+                      <div style={{ fontSize: 11, color: trendColor, marginTop: 2 }}>
+                        전달 {lastMonthCount}건 {trendIcon}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' as const }}>
+                    {([
+                      { key: 'DRAFT',     label: '초안', color: '#9e9e9e' },
+                      { key: 'REQUESTED', label: '요청', color: '#2196f3' },
+                      { key: 'APPROVED',  label: '승인', color: '#4caf50' },
+                      { key: 'COMPLETED', label: '완료', color: '#00bcd4' },
+                      { key: 'REJECTED',  label: '반려', color: '#f44336' },
+                    ] as const).map(({ key, label, color }) =>
+                      statusCounts[key] > 0 && (
+                        <span key={key} style={{
+                          fontSize: 11, padding: '2px 8px', borderRadius: 10,
+                          background: color + '22', color,
+                        }}>
+                          {label} {statusCounts[key]}
+                        </span>
+                      )
+                    )}
+                    {sysDeploys.length === 0 && (
+                      <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>배포 내역 없음</span>
+                    )}
+                  </div>
+
+                  {recent && (
+                    <div style={{
+                      fontSize: 12, color: 'var(--c-text-muted)',
+                      borderTop: '1px solid var(--c-thead)', paddingTop: 8,
+                      display: 'flex', justifyContent: 'space-between', gap: 8,
+                    }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const, flex: 1 }}>
+                        {recent.version ? `${recent.version} · ` : ''}{recent.title}
+                      </span>
+                      <span style={{ flexShrink: 0, color: 'var(--c-text-muted)' }}>{recent.createdAt?.slice(0, 10)}</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* 하단: 최근 요청 + 최근 회의록 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {/* 최근 변경/배포 요청 */}
