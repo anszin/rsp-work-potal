@@ -26,13 +26,13 @@ public class OperationSystemService {
     private final UserRepository userRepository;
 
     public List<SystemDto.Response> findAll() {
-        return systemRepository.findAllByOrderBySortOrderAscIdAsc().stream()
+        return systemRepository.findAllOrdered().stream()
                 .map(SystemDto.Response::new)
                 .toList();
     }
 
     public List<SystemDto.Response> findActive() {
-        return systemRepository.findByActiveTrueOrderBySortOrderAscIdAsc().stream()
+        return systemRepository.findActiveOrdered().stream()
                 .map(SystemDto.Response::new)
                 .toList();
     }
