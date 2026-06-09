@@ -45,7 +45,8 @@ public class WebexService {
     );
 
     public void notifyCreated(DeployRequest dr) {
-        if (!isConfigured()) return;
+        String targetRoomId = resolveRoomId(dr);
+        if (targetRoomId == null) return;
         try {
             String sys = dr.getSystem().getName()
                     + (dr.getSubSystem() != null ? " / " + dr.getSubSystem().getName() : "");
@@ -64,14 +65,15 @@ public class WebexService {
             }
             if (dr.getScheduledAt() != null)
                 sb.append("\n> 예정: ").append(dr.getScheduledAt().toString().replace("T", " ").substring(0, 16));
-            sendMessage(sb.toString());
+            sendMessage(sb.toString(), targetRoomId);
         } catch (Exception e) {
             log.warn("Webex notify failed (created): {}", e.getMessage());
         }
     }
 
     public void notifyStatusChanged(DeployRequest dr, String actorUsername, String comment) {
-        if (!isConfigured()) return;
+        String targetRoomId = resolveRoomId(dr);
+        if (targetRoomId == null) return;
         try {
             String emoji = STATUS_EMOJI.getOrDefault(dr.getStatus(), "🔔");
             String label = STATUS_LABELS.getOrDefault(dr.getStatus(), dr.getStatus().name());
@@ -83,17 +85,25 @@ public class WebexService {
             sb.append("> 처리자: **").append(actorUsername).append("**");
             if (comment != null && !comment.isBlank())
                 sb.append("\n> ").append(comment);
-            sendMessage(sb.toString());
+            sendMessage(sb.toString(), targetRoomId);
         } catch (Exception e) {
             log.warn("Webex notify failed (status {}): {}", dr.getStatus(), e.getMessage());
         }
     }
 
-    private void sendMessage(String markdown) {
+    private String resolveRoomId(DeployRequest dr) {
+        if (botToken == null || botToken.isBlank()) return null;
+        String systemRoomId = dr.getSystem().getWebexRoomId();
+        if (systemRoomId != null && !systemRoomId.isBlank()) return systemRoomId;
+        if (roomId != null && !roomId.isBlank()) return roomId;
+        return null;
+    }
+
+    private void sendMessage(String markdown, String targetRoomId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(botToken);
-        Map<String, String> body = Map.of("roomId", roomId, "markdown", markdown);
+        Map<String, String> body = Map.of("roomId", targetRoomId, "markdown", markdown);
         restTemplate.postForEntity("https://webexapis.com/v1/messages",
                 new HttpEntity<>(body, headers), String.class);
     }

@@ -32,6 +32,9 @@ public class OperationSystem {
     @Column(length = 100)
     private String redmineProjectKey;
 
+    @Column(length = 200)
+    private String webexRoomId;
+
     @Column(nullable = false)
     private boolean active = true;
 

@@ -53,6 +53,7 @@ public class OperationSystemService {
         system.setName(req.getName());
         system.setDescription(req.getDescription());
         system.setRedmineProjectKey(req.getRedmineProjectKey());
+        system.setWebexRoomId(req.getWebexRoomId());
         return new SystemDto.Response(systemRepository.save(system));
     }
 
@@ -64,6 +65,7 @@ public class OperationSystemService {
         if (req.getDescription() != null) system.setDescription(req.getDescription());
         if (req.getActive() != null) system.setActive(req.getActive());
         system.setRedmineProjectKey(req.getRedmineProjectKey());
+        system.setWebexRoomId(req.getWebexRoomId());
         return new SystemDto.Response(system);
     }
 

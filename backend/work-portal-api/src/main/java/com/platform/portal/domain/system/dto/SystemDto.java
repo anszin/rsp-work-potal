@@ -21,6 +21,7 @@ public class SystemDto {
         private String name;
         private String description;
         private String redmineProjectKey;
+        private String webexRoomId;
     }
 
     @Getter
@@ -31,6 +32,7 @@ public class SystemDto {
         private String description;
         private Boolean active;
         private String redmineProjectKey;
+        private String webexRoomId;
     }
 
     @Getter
@@ -40,6 +42,7 @@ public class SystemDto {
         private final String name;
         private final String description;
         private final String redmineProjectKey;
+        private final String webexRoomId;
         private final boolean active;
         private final LocalDateTime createdAt;
 
@@ -49,6 +52,7 @@ public class SystemDto {
             this.name = s.getName();
             this.description = s.getDescription();
             this.redmineProjectKey = s.getRedmineProjectKey();
+            this.webexRoomId = s.getWebexRoomId();
             this.active = s.isActive();
             this.createdAt = s.getCreatedAt();
         }

@@ -6,6 +6,7 @@ export interface System {
   name: string
   description: string
   redmineProjectKey: string | null
+  webexRoomId: string | null
   active: boolean
   createdAt: string
 }
@@ -15,6 +16,7 @@ export interface CreateSystemRequest {
   name: string
   description?: string
   redmineProjectKey?: string
+  webexRoomId?: string
 }
 
 export interface UpdateSystemRequest {
@@ -22,6 +24,7 @@ export interface UpdateSystemRequest {
   description?: string
   active?: boolean
   redmineProjectKey?: string
+  webexRoomId?: string
 }
 
 export interface SystemManager {

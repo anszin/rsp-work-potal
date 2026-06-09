@@ -6,7 +6,7 @@ import {
   getSubSystems, createSubSystem, updateSubSystem, deleteSubSystem, SubSystem,
 } from '../../api/systems'
 
-const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '' })
+const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '' })
 const emptySubForm = () => ({ code: '', name: '', description: '' })
 
 export default function SystemManagementPage() {
@@ -44,7 +44,7 @@ export default function SystemManagementPage() {
 
   const createMut = useMutation({ mutationFn: createSystem, onSuccess: () => { invalidate(); reset() } })
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { name: string; description?: string; active?: boolean; redmineProjectKey?: string } }) =>
+    mutationFn: ({ id, data }: { id: number; data: { name: string; description?: string; active?: boolean; redmineProjectKey?: string; webexRoomId?: string } }) =>
       updateSystem(id, data),
     onSuccess: () => { invalidate(); reset() },
   })
@@ -80,7 +80,7 @@ export default function SystemManagementPage() {
 
   const openEdit = (s: System) => {
     setEditing(s)
-    setForm({ code: s.code, name: s.name, description: s.description ?? '', redmineProjectKey: s.redmineProjectKey ?? '' })
+    setForm({ code: s.code, name: s.name, description: s.description ?? '', redmineProjectKey: s.redmineProjectKey ?? '', webexRoomId: s.webexRoomId ?? '' })
     setShowForm(true)
   }
 
@@ -93,9 +93,9 @@ export default function SystemManagementPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: { name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined } })
+      updateMut.mutate({ id: editing.id, data: { name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined, webexRoomId: form.webexRoomId || undefined } })
     } else {
-      createMut.mutate({ code: form.code, name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined })
+      createMut.mutate({ code: form.code, name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined, webexRoomId: form.webexRoomId || undefined })
     }
   }
 
@@ -156,6 +156,11 @@ export default function SystemManagementPage() {
                 <span style={{ fontSize: 13 }}>레드마인 프로젝트 키</span>
                 <input value={form.redmineProjectKey} onChange={e => setForm(f => ({ ...f, redmineProjectKey: e.target.value }))}
                   placeholder="예: retail-platform (레드마인 프로젝트 식별자)" style={inputStyle} />
+              </label>
+              <label style={{ ...labelStyle, gridColumn: '1 / -1' }}>
+                <span style={{ fontSize: 13 }}>Webex Room ID</span>
+                <input value={form.webexRoomId} onChange={e => setForm(f => ({ ...f, webexRoomId: e.target.value }))}
+                  placeholder="Webex 스페이스 Room ID (배포 알림 전송)" style={inputStyle} />
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
