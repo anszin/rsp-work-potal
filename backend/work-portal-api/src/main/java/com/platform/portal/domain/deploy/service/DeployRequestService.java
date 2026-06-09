@@ -134,7 +134,7 @@ public class DeployRequestService {
             case REJECTED  -> dr.setRejectionReason(req.getComment());
             default -> {}
         }
-        if (newStatus == Status.REQUESTED || newStatus == Status.APPROVED || newStatus == Status.COMPLETED) {
+        if (newStatus != Status.DRAFT) {
             webexService.notifyStatusChanged(dr, approverUsername, req.getComment());
         }
         return new DeployRequestDto.Response(dr);
