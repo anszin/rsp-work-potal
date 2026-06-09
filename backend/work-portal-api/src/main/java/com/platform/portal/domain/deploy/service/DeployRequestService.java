@@ -10,6 +10,7 @@ import com.platform.portal.domain.system.repository.SubSystemRepository;
 import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
 import com.platform.portal.service.RedmineService;
+import com.platform.portal.service.WebexService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class DeployRequestService {
     private final SubSystemRepository subSystemRepository;
     private final UserRepository userRepository;
     private final RedmineService redmineService;
+    private final WebexService webexService;
 
     private static final Map<Status, Set<Status>> ALLOWED_TRANSITIONS = Map.of(
             Status.DRAFT,     Set.of(Status.REQUESTED),
@@ -78,7 +80,9 @@ public class DeployRequestService {
             req.getRedmineIssues().forEach(ref ->
                 dr.getRedmineIssues().add(new DeployRequestIssue(dr, ref.getRedmineIssueId(), ref.getRedmineIssueTitle())));
         }
-        return new DeployRequestDto.Response(deployRequestRepository.save(dr));
+        DeployRequest saved = deployRequestRepository.save(dr);
+        webexService.notifyCreated(saved);
+        return new DeployRequestDto.Response(saved);
     }
 
     @Transactional
@@ -131,6 +135,7 @@ public class DeployRequestService {
             case REJECTED  -> dr.setRejectionReason(req.getComment());
             default -> {}
         }
+        webexService.notifyStatusChanged(dr, approverUsername, req.getComment());
         return new DeployRequestDto.Response(dr);
     }
 
