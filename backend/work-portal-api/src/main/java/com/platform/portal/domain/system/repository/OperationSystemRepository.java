@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OperationSystemRepository extends JpaRepository<OperationSystem, Long> {
-    List<OperationSystem> findByActiveTrue();
+    List<OperationSystem> findAllByOrderBySortOrderAscIdAsc();
+    List<OperationSystem> findByActiveTrueOrderBySortOrderAscIdAsc();
     Optional<OperationSystem> findByCode(String code);
     boolean existsByCode(String code);
 }

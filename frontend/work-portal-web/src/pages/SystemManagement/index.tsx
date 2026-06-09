@@ -7,7 +7,7 @@ import {
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
 
-const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '' })
+const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '', sortOrder: '' })
 const emptySubForm = () => ({ code: '', name: '', description: '' })
 
 export default function SystemManagementPage() {
@@ -45,7 +45,7 @@ export default function SystemManagementPage() {
 
   const createMut = useMutation({ mutationFn: createSystem, onSuccess: () => { invalidate(); reset() } })
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { name: string; description?: string; active?: boolean; redmineProjectKey?: string; webexRoomId?: string } }) =>
+    mutationFn: ({ id, data }: { id: number; data: { name: string; description?: string; active?: boolean; redmineProjectKey?: string; webexRoomId?: string; sortOrder?: number } }) =>
       updateSystem(id, data),
     onSuccess: () => { invalidate(); reset() },
   })
@@ -81,7 +81,7 @@ export default function SystemManagementPage() {
 
   const openEdit = (s: System) => {
     setEditing(s)
-    setForm({ code: s.code, name: s.name, description: s.description ?? '', redmineProjectKey: s.redmineProjectKey ?? '', webexRoomId: s.webexRoomId ?? '' })
+    setForm({ code: s.code, name: s.name, description: s.description ?? '', redmineProjectKey: s.redmineProjectKey ?? '', webexRoomId: s.webexRoomId ?? '', sortOrder: String(s.sortOrder ?? 0) })
     setShowForm(true)
   }
 
@@ -93,10 +93,11 @@ export default function SystemManagementPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const sortOrder = form.sortOrder !== '' ? Number(form.sortOrder) : undefined
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: { name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined, webexRoomId: form.webexRoomId || undefined } })
+      updateMut.mutate({ id: editing.id, data: { name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined, webexRoomId: form.webexRoomId || undefined, sortOrder } })
     } else {
-      createMut.mutate({ code: form.code, name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined, webexRoomId: form.webexRoomId || undefined })
+      createMut.mutate({ code: form.code, name: form.name, description: form.description || undefined, redmineProjectKey: form.redmineProjectKey || undefined, webexRoomId: form.webexRoomId || undefined, sortOrder })
     }
   }
 
@@ -153,6 +154,9 @@ export default function SystemManagementPage() {
               <label style={s.label}>Webex Room ID</label>
               <input value={form.webexRoomId} onChange={e => setForm(f => ({ ...f, webexRoomId: e.target.value }))}
                 placeholder="Webex 스페이스 Room ID" style={s.input} />
+              <label style={s.label}>노출 순서</label>
+              <input type="number" value={form.sortOrder} onChange={e => setForm(f => ({ ...f, sortOrder: e.target.value }))}
+                placeholder="숫자가 낮을수록 먼저 표시 (기본 0)" style={{ ...s.input, width: 160 }} />
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
               <button type="button" onClick={reset} style={s.btnSecondary}>취소</button>
@@ -167,16 +171,17 @@ export default function SystemManagementPage() {
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
-                {['코드', '시스템명', '설명', '상태', '등록일', ''].map(h => (
+                {['순서', '코드', '시스템명', '설명', '상태', '등록일', ''].map(h => (
                   <th key={h} style={s.th}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {systems.length === 0 ? (
-                <tr><td colSpan={6} style={s.empty}>등록된 시스템이 없습니다.</td></tr>
+                <tr><td colSpan={7} style={s.empty}>등록된 시스템이 없습니다.</td></tr>
               ) : systems.map(sys => (
                 <tr key={sys.id} style={s.tr}>
+                  <td style={{ ...s.td, color: 'var(--c-text-muted)', textAlign: 'center' }}>{sys.sortOrder}</td>
                   <td style={{ ...s.td, fontWeight: 600, color: '#1976d2' }}>{sys.code}</td>
                   <td style={{ ...s.td, fontWeight: 500 }}>{sys.name}</td>
                   <td style={{ ...s.td, color: 'var(--c-text-sub)' }}>{sys.description ?? '-'}</td>

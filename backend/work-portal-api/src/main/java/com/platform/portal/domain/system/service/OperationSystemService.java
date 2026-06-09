@@ -26,13 +26,13 @@ public class OperationSystemService {
     private final UserRepository userRepository;
 
     public List<SystemDto.Response> findAll() {
-        return systemRepository.findAll().stream()
+        return systemRepository.findAllByOrderBySortOrderAscIdAsc().stream()
                 .map(SystemDto.Response::new)
                 .toList();
     }
 
     public List<SystemDto.Response> findActive() {
-        return systemRepository.findByActiveTrue().stream()
+        return systemRepository.findByActiveTrueOrderBySortOrderAscIdAsc().stream()
                 .map(SystemDto.Response::new)
                 .toList();
     }
@@ -54,6 +54,7 @@ public class OperationSystemService {
         system.setDescription(req.getDescription());
         system.setRedmineProjectKey(req.getRedmineProjectKey());
         system.setWebexRoomId(req.getWebexRoomId());
+        if (req.getSortOrder() != null) system.setSortOrder(req.getSortOrder());
         return new SystemDto.Response(systemRepository.save(system));
     }
 
@@ -66,6 +67,7 @@ public class OperationSystemService {
         if (req.getActive() != null) system.setActive(req.getActive());
         system.setRedmineProjectKey(req.getRedmineProjectKey());
         system.setWebexRoomId(req.getWebexRoomId());
+        if (req.getSortOrder() != null) system.setSortOrder(req.getSortOrder());
         return new SystemDto.Response(system);
     }
 

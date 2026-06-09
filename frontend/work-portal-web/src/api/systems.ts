@@ -7,6 +7,7 @@ export interface System {
   description: string
   redmineProjectKey: string | null
   webexRoomId: string | null
+  sortOrder: number
   active: boolean
   createdAt: string
 }
@@ -17,6 +18,7 @@ export interface CreateSystemRequest {
   description?: string
   redmineProjectKey?: string
   webexRoomId?: string
+  sortOrder?: number
 }
 
 export interface UpdateSystemRequest {
@@ -25,6 +27,7 @@ export interface UpdateSystemRequest {
   active?: boolean
   redmineProjectKey?: string
   webexRoomId?: string
+  sortOrder?: number
 }
 
 export interface SystemManager {
