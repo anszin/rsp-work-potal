@@ -392,7 +392,7 @@ export default function DeployRequestPage() {
                         <button style={s.btnSm} onClick={() => openEdit(r)}>수정</button>
                       )}
                       {NEXT_STATUS[r.status]?.map(({ label, next }) => (
-                        (isAdmin || next === 'REQUESTED') && (
+                        (isAdmin || (next !== 'APPROVED' && next !== 'REJECTED')) && (
                           <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
                             onClick={() => handleStatus(r.id, next)}>
                             {label}

@@ -121,6 +121,14 @@ public class DeployRequestService {
                     String.format("%s → %s 전환 불가", current, newStatus));
         }
 
+        if (newStatus == Status.APPROVED || newStatus == Status.REJECTED) {
+            User actor = userRepository.findByUsername(approverUsername)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + approverUsername));
+            if (actor.getRole() != User.Role.ADMIN && actor.getRole() != User.Role.MANAGER) {
+                throw new IllegalStateException("승인/반려는 매니저 이상만 가능합니다.");
+            }
+        }
+
         dr.setStatus(newStatus);
         dr.setActionComment(req.getComment());
         switch (newStatus) {
