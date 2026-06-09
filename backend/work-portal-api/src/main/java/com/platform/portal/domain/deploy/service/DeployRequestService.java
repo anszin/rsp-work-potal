@@ -81,7 +81,6 @@ public class DeployRequestService {
                 dr.getRedmineIssues().add(new DeployRequestIssue(dr, ref.getRedmineIssueId(), ref.getRedmineIssueTitle())));
         }
         DeployRequest saved = deployRequestRepository.save(dr);
-        webexService.notifyCreated(saved);
         return new DeployRequestDto.Response(saved);
     }
 
@@ -135,7 +134,9 @@ public class DeployRequestService {
             case REJECTED  -> dr.setRejectionReason(req.getComment());
             default -> {}
         }
-        webexService.notifyStatusChanged(dr, approverUsername, req.getComment());
+        if (newStatus == Status.REQUESTED || newStatus == Status.APPROVED || newStatus == Status.COMPLETED) {
+            webexService.notifyStatusChanged(dr, approverUsername, req.getComment());
+        }
         return new DeployRequestDto.Response(dr);
     }
 
