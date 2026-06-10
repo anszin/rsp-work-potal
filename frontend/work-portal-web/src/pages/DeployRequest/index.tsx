@@ -7,7 +7,7 @@ import {
   type DeployRequest, type RequestStatus, type DeployType, type DeployScope, type CreateDeployRequest, type RedmineIssueRef,
 } from '../../api/deployRequests'
 import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../../api/systems'
-import { fetchRedmineIssues, type RedmineIssue } from '../../api/redmine'
+import { fetchRedmineIssues, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
@@ -60,6 +60,7 @@ export default function DeployRequestPage() {
 
   // 일감 선택 모달
   const [showPicker, setShowPicker] = useState(false)
+  const [pickerTrackerId, setPickerTrackerId] = useState<number | undefined>(undefined)
   const [pickerStatus, setPickerStatus] = useState('open')
   const [pickerInput, setPickerInput] = useState('')
   const [pickerQuery, setPickerQuery] = useState('')
@@ -84,12 +85,21 @@ export default function DeployRequestPage() {
     enabled: showForm && form.systemId > 0,
   })
 
-  const loadPickerIssues = useCallback(async (query: string, status: string, offset: number, append: boolean) => {
+  const { data: trackerConfigs = [] } = useQuery<RedmineTrackerConfig[]>({
+    queryKey: ['redmine-trackers'],
+    queryFn: fetchRedmineTrackers,
+  })
+
+  const pickerStatusOptions = pickerTrackerId
+    ? trackerConfigs.find(t => t.id === pickerTrackerId)?.statuses ?? []
+    : []
+
+  const loadPickerIssues = useCallback(async (query: string, status: string, trackerId: number | undefined, offset: number, append: boolean) => {
     if (!form.systemId) return
     setPickerLoading(true)
     setPickerFetchError(null)
     try {
-      const result = await fetchRedmineIssues(form.systemId, query, status, offset)
+      const result = await fetchRedmineIssues(form.systemId, query, status, trackerId, offset)
       setPickerIssues(prev => append ? [...prev, ...result.issues] : result.issues)
       setPickerTotal(result.totalCount)
     } catch (e) {
@@ -101,9 +111,9 @@ export default function DeployRequestPage() {
 
   useEffect(() => {
     if (showPicker && selectedSystem?.redmineProjectKey) {
-      loadPickerIssues(pickerQuery, pickerStatus, 0, false)
+      loadPickerIssues(pickerQuery, pickerStatus, pickerTrackerId, 0, false)
     }
-  }, [showPicker, pickerQuery, pickerStatus, loadPickerIssues, selectedSystem?.redmineProjectKey])
+  }, [showPicker, pickerQuery, pickerStatus, pickerTrackerId, loadPickerIssues, selectedSystem?.redmineProjectKey])
 
   const handlePickerInput = (val: string) => {
     setPickerInput(val)
@@ -112,7 +122,7 @@ export default function DeployRequestPage() {
   }
 
   const loadMore = () => {
-    loadPickerIssues(pickerQuery, pickerStatus, pickerIssues.length, true)
+    loadPickerIssues(pickerQuery, pickerStatus, pickerTrackerId, pickerIssues.length, true)
   }
 
   const togglePickerIssue = (issue: RedmineIssue) => {
@@ -532,22 +542,41 @@ export default function DeployRequestPage() {
               <span style={{ fontWeight: 600, fontSize: 15 }}>레드마인 일감 선택</span>
               <button onClick={() => setShowPicker(false)} style={s.modalClose}>✕</button>
             </div>
-            <div style={s.modalFilter}>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {PICKER_STATUS_TABS.map(tab => (
-                  <button key={tab.value}
-                    style={{ ...s.tabBtn, ...(pickerStatus === tab.value ? s.tabBtnActive : {}) }}
-                    onClick={() => setPickerStatus(tab.value)}>
-                    {tab.label}
-                  </button>
-                ))}
+            <div style={{ ...s.modalFilter, flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <select
+                  value={pickerTrackerId ?? ''}
+                  onChange={e => {
+                    const val = e.target.value ? Number(e.target.value) : undefined
+                    setPickerTrackerId(val)
+                    setPickerStatus('open')
+                  }}
+                  style={{ ...s.input, margin: 0, width: 'auto', minWidth: 100 }}
+                >
+                  <option value="">전체 유형</option>
+                  {trackerConfigs.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <select
+                  value={pickerStatus}
+                  onChange={e => setPickerStatus(e.target.value)}
+                  style={{ ...s.input, margin: 0, width: 'auto', minWidth: 100 }}
+                >
+                  <option value="open">진행중</option>
+                  <option value="closed">완료</option>
+                  <option value="*">전체</option>
+                  {pickerStatusOptions.map(st => (
+                    <option key={st.id} value={String(st.id)}>{st.name}</option>
+                  ))}
+                </select>
+                <input
+                  value={pickerInput}
+                  onChange={e => handlePickerInput(e.target.value)}
+                  placeholder="제목으로 검색..."
+                  style={{ ...s.input, flex: 1, margin: 0 }}
+                />
               </div>
-              <input
-                value={pickerInput}
-                onChange={e => handlePickerInput(e.target.value)}
-                placeholder="제목으로 검색..."
-                style={{ ...s.input, flex: 1, margin: 0 }}
-              />
             </div>
             <div style={s.modalBody}>
               {pickerIssues.length === 0 && pickerLoading ? (

@@ -3,6 +3,7 @@ package com.platform.portal.api;
 import com.platform.portal.domain.system.entity.OperationSystem;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.service.RedmineService;
+import com.platform.portal.service.RedmineTrackerProperties;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +18,24 @@ public class RedmineController {
 
     private final RedmineService redmineService;
     private final OperationSystemRepository systemRepository;
+    private final RedmineTrackerProperties trackerProperties;
+
+    @GetMapping("/trackers")
+    public ResponseEntity<List<RedmineTrackerProperties.TrackerConfig>> getTrackers() {
+        return ResponseEntity.ok(trackerProperties.getTrackers());
+    }
 
     @GetMapping("/issues")
     public ResponseEntity<IssueListResponse> searchIssues(
             @RequestParam Long systemId,
             @RequestParam(required = false, defaultValue = "") String q,
             @RequestParam(required = false, defaultValue = "open") String status,
+            @RequestParam(required = false) Integer trackerId,
             @RequestParam(required = false, defaultValue = "0") int offset) {
         OperationSystem system = systemRepository.findById(systemId)
                 .orElseThrow(() -> new IllegalArgumentException("System not found: " + systemId));
         String projectKey = system.getRedmineProjectKey();
-        RedmineService.RedmineIssuesResponse resp = redmineService.searchIssues(projectKey, q, status, offset);
+        RedmineService.RedmineIssuesResponse resp = redmineService.searchIssues(projectKey, q, status, trackerId, offset);
         List<RedmineIssueResponse> issues = resp.getIssues().stream().map(RedmineIssueResponse::new).toList();
         return ResponseEntity.ok(new IssueListResponse(issues, resp.getTotalCount() != null ? resp.getTotalCount() : 0));
     }

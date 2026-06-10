@@ -33,7 +33,7 @@ public class RedmineService {
 
     private final RestTemplate restTemplate;
 
-    public RedmineIssuesResponse searchIssues(String projectKey, String query, String statusId, int offset) {
+    public RedmineIssuesResponse searchIssues(String projectKey, String query, String statusId, Integer trackerId, int offset) {
         if (projectKey == null || projectKey.isBlank()) return new RedmineIssuesResponse();
         try {
             String safeProject = URLEncoder.encode(projectKey, StandardCharsets.UTF_8);
@@ -49,6 +49,9 @@ public class RedmineService {
             }
             if (statusId != null && !statusId.isBlank()) {
                 url.append("&status_id=").append(statusId);
+            }
+            if (trackerId != null) {
+                url.append("&tracker_id=").append(trackerId);
             }
             java.net.URI uri = java.net.URI.create(url.toString());
             log.info("Redmine URI: {}", uri);

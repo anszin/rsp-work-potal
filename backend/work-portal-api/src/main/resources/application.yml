@@ -45,6 +45,26 @@ app:
 redmine:
   base-url: ${REDMINE_URL:https://54.180.246.95}
   api-key: ${REDMINE_API_KEY:73a41e7b34c67d93acce697355f7332283ef9916}
+  trackers:
+    - id: 1
+      name: 버그
+      statuses:
+        - { id: 1, name: 신규 }
+        - { id: 2, name: 진행중 }
+        - { id: 3, name: 해결됨 }
+        - { id: 5, name: 완료 }
+    - id: 2
+      name: 기능
+      statuses:
+        - { id: 1, name: 신규 }
+        - { id: 2, name: 진행중 }
+        - { id: 5, name: 완료 }
+    - id: 3
+      name: 지원
+      statuses:
+        - { id: 1, name: 신규 }
+        - { id: 2, name: 진행중 }
+        - { id: 5, name: 완료 }
 
 webex:
   bot-token: ${WEBEX_BOT_TOKEN:}
