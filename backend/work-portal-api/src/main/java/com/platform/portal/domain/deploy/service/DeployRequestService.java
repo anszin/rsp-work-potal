@@ -130,8 +130,15 @@ public class DeployRequestService {
                 .contains(dr.getSystem().getId());
 
         if (newStatus == Status.APPROVED || newStatus == Status.REJECTED) {
-            if (!isAdminOrManager) {
-                throw new IllegalStateException("승인/반려는 매니저 이상만 가능합니다.");
+            boolean isRelease = dr.getDeployType() == DeployRequest.DeployType.RELEASE;
+            if (isRelease) {
+                if (!isAdminOrManager) {
+                    throw new IllegalStateException("릴리즈 배포 승인/반려는 매니저 이상만 가능합니다.");
+                }
+            } else {
+                if (!isAdminOrManager && !isSystemManager) {
+                    throw new IllegalStateException("승인/반려는 매니저 이상 또는 시스템 담당자만 가능합니다.");
+                }
             }
         } else if (newStatus == Status.REQUESTED || newStatus == Status.COMPLETED) {
             if (!isSystemManager && !isAdminOrManager) {

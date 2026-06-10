@@ -394,8 +394,9 @@ export default function DeployRequestPage() {
                       )}
                       {NEXT_STATUS[r.status]?.map(({ label, next }) => {
                         const isManagedSystem = managedSystemIds.includes(r.systemId)
+                        const isRelease = r.deployType === 'RELEASE'
                         const canAct =
-                          (next === 'APPROVED' || next === 'REJECTED') ? isAdmin :
+                          (next === 'APPROVED' || next === 'REJECTED') ? (isAdmin || (!isRelease && isManagedSystem)) :
                           (next === 'REQUESTED' || next === 'COMPLETED') ? (isManagedSystem || isAdmin) :
                           false
                         return canAct && (
