@@ -7,6 +7,7 @@ import {
   type ChangeRequest, type RequestStatus, type CreateChangeRequest,
 } from '../../api/changeRequests'
 import { getActiveSystems, getManagedSystemIds, getActiveSubSystems } from '../../api/systems'
+import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -29,7 +30,7 @@ const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '반려', value: 'REJECTED' },
 ]
 
-const emptyForm: CreateChangeRequest = { systemId: 0, subSystemId: null, title: '', content: '', requesterDept: '', requesterName: '', targetDate: '', attachmentLink: '' }
+const emptyForm: CreateChangeRequest = { systemId: 0, subSystemId: null, title: '', content: '', requesterDept: '', requesterName: '', targetDate: '', attachmentLink: '', redmineTrackerId: null }
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -91,6 +92,11 @@ export default function ChangeRequestPage() {
     queryKey: ['systems', 'managed'],
     queryFn: getManagedSystemIds,
   })
+  const { data: trackerConfigs = [] } = useQuery<RedmineTrackerConfig[]>({
+    queryKey: ['redmine-trackers'],
+    queryFn: fetchRedmineTrackers,
+  })
+  const selectedSystem = systems.find(s => s.id === form.systemId)
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['change-requests'] })
 
@@ -251,6 +257,15 @@ export default function ChangeRequestPage() {
             <input style={s.input} value={form.requesterDept ?? ''} onChange={(e) => setForm({ ...form, requesterDept: e.target.value })} placeholder="요청 부서명" />
             <label style={s.label}>요청자명</label>
             <input style={s.input} value={form.requesterName ?? ''} onChange={(e) => setForm({ ...form, requesterName: e.target.value })} placeholder="요청자 이름" />
+            {selectedSystem?.redmineProjectKey && (
+              <>
+                <label style={s.label}>레드마인 유형</label>
+                <select style={s.input} value={form.redmineTrackerId ?? ''} onChange={e => setForm({ ...form, redmineTrackerId: e.target.value ? Number(e.target.value) : null })}>
+                  <option value="">선택 안함</option>
+                  {trackerConfigs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </>
+            )}
             <label style={s.label}>반영 목표일</label>
             <input type="date" style={s.input} value={form.targetDate ?? ''} onChange={(e) => setForm({ ...form, targetDate: e.target.value || undefined })} />
             <label style={s.label}>링크 첨부</label>

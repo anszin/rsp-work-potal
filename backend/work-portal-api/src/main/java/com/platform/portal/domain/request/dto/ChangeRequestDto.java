@@ -30,6 +30,7 @@ public class ChangeRequestDto {
         private String attachmentLink;
         private String attachmentFilename;
         private String attachmentContent; // base64
+        private Integer redmineTrackerId;
 
         public byte[] decodeAttachment() {
             if (attachmentContent == null) return null;

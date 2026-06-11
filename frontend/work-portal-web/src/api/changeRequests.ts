@@ -47,6 +47,7 @@ export interface CreateChangeRequest {
   attachmentLink?: string
   attachmentFilename?: string
   attachmentContent?: string // base64
+  redmineTrackerId?: number | null
 }
 
 const readFileAsBase64 = (file: File): Promise<string> =>

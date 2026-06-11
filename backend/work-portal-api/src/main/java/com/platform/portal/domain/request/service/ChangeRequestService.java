@@ -88,6 +88,7 @@ public class ChangeRequestService {
         cr.setRequesterName(req.getRequesterName());
         cr.setTargetDate(req.getTargetDate());
         cr.setAttachmentLink(req.getAttachmentLink());
+        cr.setRedmineTrackerId(req.getRedmineTrackerId());
         ChangeRequest saved = changeRequestRepository.save(cr);
         byte[] fileBytes = req.decodeAttachment();
         if (fileBytes != null && req.getAttachmentFilename() != null) {
@@ -97,28 +98,29 @@ public class ChangeRequestService {
                 saved.setAttachmentOriginalName(req.getAttachmentFilename());
             } catch (IOException e) { throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e); }
         }
-        createRedmineIssueIfPossible(saved);
+        createRedmineIssueIfPossible(saved, req.getRedmineTrackerId());
         return new ChangeRequestDto.Response(saved);
     }
 
     @Transactional
     public ChangeRequestDto.Response syncRedmine(Long id) {
         ChangeRequest cr = getOrThrow(id);
-        createRedmineIssueIfPossible(cr);
+        createRedmineIssueIfPossible(cr, cr.getRedmineTrackerId());
         return new ChangeRequestDto.Response(cr);
     }
 
-    private void createRedmineIssueIfPossible(ChangeRequest cr) {
+    private void createRedmineIssueIfPossible(ChangeRequest cr, Integer trackerId) {
         String projectKey = cr.getSystem().getRedmineProjectKey();
         if (projectKey == null || projectKey.isBlank()) {
             cr.setRedmineSyncStatus(ChangeRequest.RedmineSyncStatus.SKIPPED);
             return;
         }
+        Integer resolvedTrackerId = trackerId != null ? trackerId : crTrackerId;
         String subject = cr.getSubSystem() != null
                 ? "[" + cr.getSubSystem().getName() + "] " + cr.getTitle()
                 : cr.getTitle();
         try {
-            Integer issueId = redmineService.createIssue(projectKey, subject, cr.getContent(), crTrackerId);
+            Integer issueId = redmineService.createIssue(projectKey, subject, cr.getContent(), resolvedTrackerId);
             if (issueId != null) {
                 cr.getRedmineIssues().add(new ChangeRequestIssue(cr, issueId, subject));
             }

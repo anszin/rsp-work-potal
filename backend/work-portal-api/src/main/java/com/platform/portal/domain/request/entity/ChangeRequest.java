@@ -70,6 +70,8 @@ public class ChangeRequest {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    private Integer redmineTrackerId;
+
     @OneToMany(mappedBy = "changeRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChangeRequestIssue> redmineIssues = new ArrayList<>();
 
