@@ -798,6 +798,17 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
     return { month: m, total: items.length, byStatus: STATUSES.reduce((acc, s) => { acc[s] = items.filter(r => r.status === s).length; return acc }, {} as Record<RequestStatus, number>) }
   })
 
+  const SYS_COLORS = ['#3182ce','#e53e3e','#d69e2e','#38a169','#805ad5','#dd6b20','#319795','#b7791f']
+  const systemsInYear = [...new Set(requests.filter(r => new Date(r.createdAt).getFullYear() === selYear).map(r => r.systemName))].sort()
+  const systemMonthlyData = systemsInYear.map((sysName, si) => ({
+    name: sysName,
+    color: SYS_COLORS[si % SYS_COLORS.length],
+    counts: Array.from({ length: 12 }, (_, i) => {
+      const m = i + 1
+      return requests.filter(r => r.systemName === sysName && new Date(r.createdAt).getFullYear() === selYear && new Date(r.createdAt).getMonth() + 1 === m).length
+    })
+  }))
+
   const bySystem = Object.entries(filtered.reduce((acc, r) => { acc[r.systemName] = (acc[r.systemName] || 0) + 1; return acc }, {} as Record<string, number>)).sort((a, b) => b[1] - a[1])
   const maxSys   = Math.max(...bySystem.map(([, n]) => n), 1)
   const byType   = Object.entries(filtered.reduce((acc, r) => { if (r.deployType) acc[r.deployType] = (acc[r.deployType] || 0) + 1; return acc }, {} as Record<string, number>)).sort((a, b) => b[1] - a[1])
@@ -868,6 +879,16 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
           ))}
         </div>
       </div>
+
+      {/* 월별 시스템별 꺾은선 */}
+      {systemMonthlyData.length > 0 && (
+        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 14 }}>
+            월별 시스템별 배포 현황 ({selYear}년)
+          </div>
+          <SystemMonthlyLineChart systems={systemMonthlyData} selMonth={selMonth} onClickMonth={m => setSelMonth(selMonth === m ? 'all' : m)} />
+        </div>
+      )}
 
       {/* 시스템별 + 유형별 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -993,6 +1014,84 @@ function MonthlyLineChart({
         )
       })}
     </svg>
+  )
+}
+
+function SystemMonthlyLineChart({
+  systems, selMonth, onClickMonth,
+}: {
+  systems: { name: string; color: string; counts: number[] }[]
+  selMonth: number | 'all'
+  onClickMonth: (m: number) => void
+}) {
+  const padL = 34, padR = 16, padT = 20, padB = 24
+  const W = 600, H = 180
+  const plotW = W - padL - padR
+  const plotH = H - padT - padB
+  const maxVal = Math.max(...systems.flatMap(s => s.counts), 1)
+
+  const xOf = (i: number) => padL + (i / 11) * plotW
+  const yOf = (v: number) => padT + plotH - (v / maxVal) * plotH
+
+  const gridVals = maxVal <= 4
+    ? Array.from({ length: maxVal + 1 }, (_, i) => i)
+    : [0, Math.round(maxVal * 0.25), Math.round(maxVal * 0.5), Math.round(maxVal * 0.75), maxVal]
+  const uniqueGridVals = [...new Set(gridVals)]
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H, display: 'block' }} preserveAspectRatio="xMidYMid meet">
+        {uniqueGridVals.map(v => {
+          const y = yOf(v)
+          return (
+            <g key={v}>
+              <line x1={padL} y1={y} x2={W - padR} y2={y} stroke="var(--c-border)" strokeWidth={0.5} strokeDasharray="3,3" />
+              <text x={padL - 6} y={y + 4} textAnchor="end" fontSize={9} fill="var(--c-text-muted)">{v}</text>
+            </g>
+          )
+        })}
+
+        {systems.map(sys => {
+          const points = sys.counts.map((v, i) => ({ x: xOf(i), y: yOf(v), v }))
+          return (
+            <g key={sys.name}>
+              <polyline
+                points={points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}
+                fill="none" stroke={sys.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" opacity={0.85}
+              />
+              {points.map((p, i) => p.v > 0 && (
+                <circle key={i} cx={p.x} cy={p.y} r={3.5} fill={sys.color} opacity={0.9} />
+              ))}
+            </g>
+          )
+        })}
+
+        {Array.from({ length: 12 }, (_, i) => {
+          const m = i + 1
+          const x = xOf(i)
+          const isSelected = selMonth === m
+          return (
+            <g key={i} style={{ cursor: 'pointer' }} onClick={() => onClickMonth(m)}>
+              <text x={x} y={H - 4} textAnchor="middle" fontSize={10}
+                fill={isSelected ? '#1a1a2e' : 'var(--c-text-muted)'}
+                fontWeight={isSelected ? 700 : 400}>
+                {m}월
+              </text>
+              <rect x={x - 14} y={padT} width={28} height={plotH} fill="transparent" />
+              {isSelected && <line x1={x} y1={padT} x2={x} y2={padT + plotH} stroke="#1a1a2e" strokeWidth={1} strokeDasharray="3,3" opacity={0.3} />}
+            </g>
+          )
+        })}
+      </svg>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' as const, marginTop: 8 }}>
+        {systems.map(sys => (
+          <span key={sys.name} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke={sys.color} strokeWidth="2.5" strokeLinecap="round" /></svg>
+            {sys.name}
+          </span>
+        ))}
+      </div>
+    </div>
   )
 }
 
