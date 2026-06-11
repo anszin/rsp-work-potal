@@ -14,6 +14,7 @@ export default function FinancePage() {
   const currentYear = new Date().getFullYear()
   const currentMonth = new Date().getMonth() + 1
 
+  const [tab, setTab] = useState<'list' | 'dashboard'>('list')
   const [selectedYear, setSelectedYear] = useState(currentYear)
   const [selectedMonth, setSelectedMonth] = useState(currentMonth)
   const [showForm, setShowForm] = useState(false)
@@ -77,13 +78,26 @@ export default function FinancePage() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h2 style={{ margin: 0 }}>손익 관리</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <h2 style={{ margin: 0 }}>손익 관리</h2>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['list', 'dashboard'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                style={{ padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: tab === t ? '#1a1a2e' : 'var(--c-card)', color: tab === t ? '#fff' : 'var(--c-text-sub)' }}>
+                {t === 'list' ? '월별 내역' : '연간 현황'}
+              </button>
+            ))}
+          </div>
+        </div>
         <select value={selectedYear} onChange={e => setSelectedYear(+e.target.value)}
           style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14 }}>
           {years.map(y => <option key={y} value={y}>{y}년</option>)}
         </select>
       </div>
 
+      {tab === 'dashboard' && <FinanceDashboard summary={summary} year={selectedYear} />}
+
+      {tab === 'list' && <>
       {/* 월별 요약 바 */}
       <div style={{ background: 'var(--c-card)', borderRadius: 8, padding: 16, marginBottom: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowX: 'auto' }}>
         <div style={{ display: 'flex', gap: 4, minWidth: 700 }}>
@@ -233,6 +247,67 @@ export default function FinancePage() {
           </tbody>
         </table>
       )}
+      </>}
+    </div>
+  )
+}
+
+function FinanceDashboard({ summary, year }: { summary: import('../../api/finance').MonthlySummary[], year: number }) {
+  const fmt = (n: number) => n.toLocaleString('ko-KR')
+  const totalRevenue = summary.reduce((s, m) => s + m.revenue, 0)
+  const totalExpense = summary.reduce((s, m) => s + m.expense, 0)
+  const totalProfit  = totalRevenue - totalExpense
+  const maxVal = Math.max(...summary.map(m => Math.max(m.revenue, m.expense)), 1)
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 16 }}>
+        {[
+          { label: `${year}년 총 매출`, value: totalRevenue, color: '#1976d2' },
+          { label: `${year}년 총 지출`, value: totalExpense, color: '#f44336' },
+          { label: `${year}년 총 손익`, value: totalProfit,  color: totalProfit >= 0 ? '#4caf50' : '#f44336' },
+        ].map(card => (
+          <div key={card.label} style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '20px 24px' }}>
+            <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8 }}>{card.label}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: card.color, fontFamily: 'monospace' }}>
+              {totalProfit < 0 && card.label.includes('손익') ? '-' : ''}{fmt(Math.abs(card.value))}원
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>월별 매출 / 지출</div>
+        {summary.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 14 }}>
+            {summary.map(m => (
+              <div key={m.month}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5, color: 'var(--c-text-sub)' }}>
+                  <span style={{ fontWeight: 600 }}>{m.month}월</span>
+                  <span style={{ color: m.profit >= 0 ? '#4caf50' : '#f44336', fontWeight: 600 }}>
+                    손익 {m.profit >= 0 ? '+' : ''}{fmt(m.profit)}원
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 3 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, color: '#1976d2', width: 24 }}>매출</span>
+                    <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'var(--c-bg)' }}>
+                      <div style={{ height: '100%', borderRadius: 4, background: '#1976d2', width: `${(m.revenue / maxVal) * 100}%` }} />
+                    </div>
+                    <span style={{ fontSize: 11, fontFamily: 'monospace', minWidth: 80, textAlign: 'right' as const }}>{fmt(m.revenue)}원</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, color: '#f44336', width: 24 }}>지출</span>
+                    <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'var(--c-bg)' }}>
+                      <div style={{ height: '100%', borderRadius: 4, background: '#f44336', width: `${(m.expense / maxVal) * 100}%` }} />
+                    </div>
+                    <span style={{ fontSize: 11, fontFamily: 'monospace', minWidth: 80, textAlign: 'right' as const }}>{fmt(m.expense)}원</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

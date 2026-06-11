@@ -9,7 +9,6 @@ import {
 import { getActiveSystems, getManagedSystemIds, getActiveSubSystems } from '../../api/systems'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import PageHeader from '../../components/PageHeader'
 
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
@@ -40,6 +39,7 @@ function apiError(e: unknown): string {
 export default function ChangeRequestPage() {
   const { user } = useAuth()
   const qc = useQueryClient()
+  const [tab, setTab] = useState<'list' | 'dashboard'>('list')
   const [editing, setEditing] = useState<ChangeRequest | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<CreateChangeRequest>(emptyForm)
@@ -203,11 +203,24 @@ export default function ChangeRequestPage() {
         )
       })()}
 
-      <PageHeader
-        title="변경 관리"
-        action={<button style={s.btn} onClick={openCreate}>+ 새 요청</button>}
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>변경 관리</h2>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['list', 'dashboard'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                style={{ padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: tab === t ? '#1a1a2e' : 'var(--c-card)', color: tab === t ? '#fff' : 'var(--c-text-sub)' }}>
+                {t === 'list' ? '목록' : '현황'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {tab === 'list' && <button style={s.btn} onClick={openCreate}>+ 새 요청</button>}
+      </div>
 
+      {tab === 'dashboard' && <ChangeRequestDashboard requests={requests} />}
+
+      {tab === 'list' && <>
       {/* 등록/수정 폼 */}
       {showForm && (
         <div style={s.card}>
@@ -388,7 +401,7 @@ export default function ChangeRequestPage() {
       )}
 
       {/* 상세 패널 */}
-      {detail && (
+      {detail && tab === 'list' && (
         <div style={s.card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div>
@@ -437,6 +450,54 @@ export default function ChangeRequestPage() {
           )}
         </div>
       )}
+      </>}
+    </div>
+  )
+}
+
+function ChangeRequestDashboard({ requests }: { requests: import('../../api/changeRequests').ChangeRequest[] }) {
+  const statuses: RequestStatus[] = ['DRAFT', 'REQUESTED', 'APPROVED', 'COMPLETED', 'REJECTED']
+  const statusLabels: Record<RequestStatus, string> = { DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려' }
+  const statusColors: Record<RequestStatus, string> = { DRAFT: '#718096', REQUESTED: '#3182ce', APPROVED: '#38a169', COMPLETED: '#285E61', REJECTED: '#e53e3e' }
+  const statusBg: Record<RequestStatus, string>    = { DRAFT: '#f7fafc', REQUESTED: '#ebf8ff', APPROVED: '#f0fff4', COMPLETED: '#e6fffa', REJECTED: '#fff5f5' }
+
+  const byStatus = statuses.map(s => ({ status: s, count: requests.filter(r => r.status === s).length }))
+  const bySystem = Object.entries(
+    requests.reduce((acc, r) => { acc[r.systemName ?? r.systemCode] = (acc[r.systemName ?? r.systemCode] || 0) + 1; return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1])
+  const maxSys = Math.max(...bySystem.map(([, n]) => n), 1)
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 16 }}>
+        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '16px 20px' }}>
+          <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 6, fontWeight: 600 }}>전체</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-text)' }}>{requests.length}</div>
+        </div>
+        {byStatus.map(({ status, count }) => (
+          <div key={status} style={{ background: statusBg[status], border: `1px solid ${statusColors[status]}44`, borderRadius: 8, padding: '16px 20px' }}>
+            <div style={{ fontSize: 11, color: statusColors[status], marginBottom: 6, fontWeight: 600 }}>{statusLabels[status]}</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: statusColors[status] }}>{count}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>시스템별</div>
+        {bySystem.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
+          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
+            {bySystem.map(([name, count]) => (
+              <div key={name}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 13 }}>
+                  <span>{name}</span><span style={{ fontWeight: 600 }}>{count}건</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 3, background: 'var(--c-bg)' }}>
+                  <div style={{ height: '100%', borderRadius: 3, background: '#1a1a2e', width: `${(count / maxSys) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

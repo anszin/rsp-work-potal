@@ -11,7 +11,6 @@ import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../.
 import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import PageHeader from '../../components/PageHeader'
 
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
   RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치',
@@ -43,6 +42,7 @@ function apiError(e: unknown): string {
 export default function DeployRequestPage() {
   const { user } = useAuth()
   const qc = useQueryClient()
+  const [tab, setTab] = useState<'list' | 'dashboard'>('list')
   const [editing, setEditing] = useState<DeployRequest | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [detail, setDetail] = useState<DeployRequest | null>(null)
@@ -271,11 +271,24 @@ export default function DeployRequestPage() {
         )
       })()}
 
-      <PageHeader
-        title="배포 관리"
-        action={<button style={s.btn} onClick={openCreate}>+ 새 배포 요청</button>}
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>배포 관리</h2>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['list', 'dashboard'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                style={{ padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: tab === t ? '#1a1a2e' : 'var(--c-card)', color: tab === t ? '#fff' : 'var(--c-text-sub)' }}>
+                {t === 'list' ? '목록' : '현황'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {tab === 'list' && <button style={s.btn} onClick={openCreate}>+ 새 배포 요청</button>}
+      </div>
 
+      {tab === 'dashboard' && <DeployDashboard requests={requests} />}
+
+      {tab === 'list' && <>
       {/* 등록/수정 폼 */}
       {showForm && (
         <div style={s.card}>
@@ -595,6 +608,8 @@ export default function DeployRequestPage() {
         </div>
       )}
 
+      </>}
+
       {/* 일감 선택 모달 */}
       {showPicker && (
         <div style={s.overlay} onClick={() => setShowPicker(false)}>
@@ -752,6 +767,73 @@ const s: Record<string, React.CSSProperties> = {
   issueRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', cursor: 'pointer' },
   issueCheck: { width: 18, height: 18, borderRadius: 4, border: '2px solid #cbd5e0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   modalFooter: { padding: '12px 20px', borderTop: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+}
+
+function DeployDashboard({ requests }: { requests: import('../../api/deployRequests').DeployRequest[] }) {
+  const statuses: RequestStatus[] = ['DRAFT', 'REQUESTED', 'APPROVED', 'COMPLETED', 'REJECTED']
+  const statusLabels: Record<RequestStatus, string> = { DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려' }
+  const statusColors: Record<RequestStatus, string> = { DRAFT: '#718096', REQUESTED: '#3182ce', APPROVED: '#38a169', COMPLETED: '#285E61', REJECTED: '#e53e3e' }
+  const statusBg: Record<RequestStatus, string>    = { DRAFT: '#f7fafc', REQUESTED: '#ebf8ff', APPROVED: '#f0fff4', COMPLETED: '#e6fffa', REJECTED: '#fff5f5' }
+
+  const byStatus = statuses.map(s => ({ status: s, count: requests.filter(r => r.status === s).length }))
+  const bySystem = Object.entries(
+    requests.reduce((acc, r) => { acc[r.systemName] = (acc[r.systemName] || 0) + 1; return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1])
+  const maxSys = Math.max(...bySystem.map(([, n]) => n), 1)
+  const byType = Object.entries(
+    requests.reduce((acc, r) => { if (r.deployType) { acc[r.deployType] = (acc[r.deployType] || 0) + 1 } return acc }, {} as Record<string, number>)
+  ).sort((a, b) => b[1] - a[1])
+  const typeLabels: Record<string, string> = { RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치' }
+  const typeColors: Record<string, string> = { RELEASE: '#3182ce', HOTFIX: '#e53e3e', ROLLBACK: '#d69e2e', PATCH: '#38a169' }
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 16 }}>
+        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '16px 20px' }}>
+          <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 6, fontWeight: 600 }}>전체</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-text)' }}>{requests.length}</div>
+        </div>
+        {byStatus.map(({ status, count }) => (
+          <div key={status} style={{ background: statusBg[status], border: `1px solid ${statusColors[status]}44`, borderRadius: 8, padding: '16px 20px' }}>
+            <div style={{ fontSize: 11, color: statusColors[status], marginBottom: 6, fontWeight: 600 }}>{statusLabels[status]}</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: statusColors[status] }}>{count}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>시스템별</div>
+          {bySystem.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
+              {bySystem.map(([name, count]) => (
+                <div key={name}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 13 }}>
+                    <span>{name}</span><span style={{ fontWeight: 600 }}>{count}건</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: 'var(--c-bg)' }}>
+                    <div style={{ height: '100%', borderRadius: 3, background: '#1a1a2e', width: `${(count / maxSys) * 100}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>배포 유형별</div>
+          {byType.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
+              {byType.map(([type, count]) => (
+                <div key={type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 12, background: typeColors[type] + '22', color: typeColors[type], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>{typeLabels[type] ?? type}</span>
+                  <span style={{ fontWeight: 700, fontSize: 22, color: 'var(--c-text)' }}>{count}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function DeployTimeline({ detail }: { detail: import('../../api/deployRequests').DeployRequest }) {

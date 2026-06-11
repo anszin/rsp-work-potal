@@ -17,6 +17,7 @@ const emptyForm = (): SaveInventoryRequest => ({
 
 export default function InventoryPage() {
   const qc = useQueryClient()
+  const [tab, setTab] = useState<'list' | 'dashboard'>('list')
   const [typeFilter, setTypeFilter] = useState<ItemType | ''>('')
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<InventoryItem | null>(null)
@@ -71,11 +72,23 @@ export default function InventoryPage() {
   const fmt = (n: number | null) =>
     n != null ? n.toLocaleString('ko-KR') + '원' : '-'
 
+  const allItems = useQuery({ queryKey: ['inventory', ''], queryFn: () => inventoryApi.list(undefined).then(r => r.data) })
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h2 style={{ margin: 0 }}>인벤토리 (수주/제안)</h2>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <h2 style={{ margin: 0 }}>인벤토리 (수주/제안)</h2>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['list', 'dashboard'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                style={{ padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: tab === t ? '#1a1a2e' : 'var(--c-card)', color: tab === t ? '#fff' : 'var(--c-text-sub)' }}>
+                {t === 'list' ? '목록' : '현황'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {tab === 'list' && <div style={{ display: 'flex', gap: 8 }}>
           {(['', 'CONTRACT', 'PROPOSAL'] as const).map(t => (
             <button key={t}
               onClick={() => setTypeFilter(t)}
@@ -92,9 +105,12 @@ export default function InventoryPage() {
             style={{ padding: '6px 16px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
             + 추가
           </button>
-        </div>
+        </div>}
       </div>
 
+      {tab === 'dashboard' && <InventoryDashboard items={allItems.data ?? []} />}
+
+      {tab === 'list' && <>
       {showForm && (
         <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '항목 수정' : '새 항목 추가'}</h3>
@@ -210,6 +226,61 @@ export default function InventoryPage() {
           </tbody>
         </table>
       )}
+      </>}
+    </div>
+  )
+}
+
+function InventoryDashboard({ items }: { items: import('../../api/inventory').InventoryItem[] }) {
+  const fmt = (n: number) => n.toLocaleString('ko-KR') + '원'
+  const types: ItemType[] = ['CONTRACT', 'PROPOSAL']
+  const statuses: ItemStatus[] = ['ACTIVE', 'COMPLETED', 'ON_HOLD', 'CANCELLED']
+  const typeColors: Record<ItemType, string> = { CONTRACT: '#1565c0', PROPOSAL: '#e65100' }
+  const typeBg: Record<ItemType, string>    = { CONTRACT: '#e3f2fd', PROPOSAL: '#fff3e0' }
+  const statusColors: Record<ItemStatus, string> = { ACTIVE: '#2196f3', COMPLETED: '#4caf50', ON_HOLD: '#ff9800', CANCELLED: '#9e9e9e' }
+
+  const totalAmount = (t: ItemType) => items.filter(i => i.type === t).reduce((s, i) => s + (i.amount ?? 0), 0)
+  const byStatus = (t: ItemType) => statuses.map(st => ({ st, count: items.filter(i => i.type === t && i.status === st).length }))
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        {types.map(t => {
+          const typeItems = items.filter(i => i.type === t)
+          return (
+            <div key={t} style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                <div>
+                  <span style={{ fontSize: 11, background: typeBg[t], color: typeColors[t], padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>{TYPE_LABEL[t]}</span>
+                  <div style={{ fontSize: 26, fontWeight: 700, color: typeColors[t], marginTop: 10 }}>{typeItems.length}건</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 4 }}>총 금액</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace' }}>{fmt(totalAmount(t))}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
+                {byStatus(t).filter(({ count }) => count > 0).map(({ st, count }) => (
+                  <span key={st} style={{ fontSize: 12, background: statusColors[st] + '22', color: statusColors[st], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>
+                    {STATUS_LABEL[st]} {count}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>상태별 현황</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          {statuses.map(st => (
+            <div key={st} style={{ background: statusColors[st] + '11', border: `1px solid ${statusColors[st]}44`, borderRadius: 8, padding: '14px 18px' }}>
+              <div style={{ fontSize: 11, color: statusColors[st], fontWeight: 600, marginBottom: 6 }}>{STATUS_LABEL[st]}</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: statusColors[st] }}>{items.filter(i => i.status === st).length}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
