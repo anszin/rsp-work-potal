@@ -549,7 +549,10 @@ export default function DeployRequestPage() {
                   onChange={e => {
                     const val = e.target.value ? Number(e.target.value) : undefined
                     setPickerTrackerId(val)
-                    setPickerStatus('open')
+                    const firstStatus = val
+                      ? (trackerConfigs.find(t => t.id === val)?.statuses[0]?.id)
+                      : undefined
+                    setPickerStatus(firstStatus ? String(firstStatus) : 'open')
                   }}
                   style={{ ...s.input, margin: 0, width: 'auto', minWidth: 100 }}
                 >
@@ -563,12 +566,17 @@ export default function DeployRequestPage() {
                   onChange={e => setPickerStatus(e.target.value)}
                   style={{ ...s.input, margin: 0, width: 'auto', minWidth: 100 }}
                 >
-                  <option value="open">진행중</option>
-                  <option value="closed">완료</option>
-                  <option value="*">전체</option>
-                  {pickerStatusOptions.map(st => (
-                    <option key={st.id} value={String(st.id)}>{st.name}</option>
-                  ))}
+                  {pickerTrackerId && pickerStatusOptions.length > 0 ? (
+                    pickerStatusOptions.map(st => (
+                      <option key={st.id} value={String(st.id)}>{st.name}</option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="open">진행중</option>
+                      <option value="closed">완료</option>
+                      <option value="*">전체</option>
+                    </>
+                  )}
                 </select>
                 <input
                   value={pickerInput}
