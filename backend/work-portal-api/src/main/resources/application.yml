@@ -58,6 +58,12 @@ redmine:
         - { id: 1, name: 신규 }
         - { id: 9, name: 개발 }
         - { id: 11, name: 커밋 }
+    - id: 3
+      name: 수정
+      statuses:
+        - { id: 1, name: 신규 }
+        - { id: 9, name: 개발 }
+        - { id: 11, name: 커밋 }
 
 webex:
   bot-token: ${WEBEX_BOT_TOKEN:}
