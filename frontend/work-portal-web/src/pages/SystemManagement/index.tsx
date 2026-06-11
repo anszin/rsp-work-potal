@@ -4,7 +4,7 @@ import {
   getSystems, createSystem, updateSystem, deleteSystem, System,
   getSystemManagers, addSystemManager, removeSystemManager, getUsers,
   getSubSystems, createSubSystem, updateSubSystem, deleteSubSystem, SubSystem,
-  getSystemServers, addSystemServer, deleteSystemServer, SystemServer,
+  getSystemServers, addSystemServer, deleteSystemServer,
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
 
