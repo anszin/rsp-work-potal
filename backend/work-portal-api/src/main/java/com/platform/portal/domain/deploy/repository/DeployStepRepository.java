@@ -9,4 +9,5 @@ public interface DeployStepRepository extends JpaRepository<DeployStep, Long> {
     List<DeployStep> findByDeployRequestIdOrderByStepOrder(Long deployRequestId);
     long countByDeployRequestId(Long deployRequestId);
     long countByDeployRequestIdAndStatus(Long deployRequestId, DeployStep.StepStatus status);
+    void deleteByDeployRequestId(Long deployRequestId);
 }

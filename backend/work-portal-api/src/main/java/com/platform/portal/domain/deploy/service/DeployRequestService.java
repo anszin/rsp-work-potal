@@ -181,6 +181,7 @@ public class DeployRequestService {
         if (!isAdminOrManager && dr.getStatus() != Status.DRAFT) {
             throw new IllegalStateException("DRAFT 상태에서만 삭제 가능합니다.");
         }
+        deployStepRepository.deleteByDeployRequestId(id);
         deployRequestRepository.deleteById(id);
     }
 
