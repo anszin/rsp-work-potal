@@ -118,7 +118,10 @@ export default function DeployRequestPage() {
       const n = Number(pickerStatus)
       if (!isNaN(n) && issue.statusId !== n) return false
     }
-    if (pickerQuery && !issue.subject.toLowerCase().includes(pickerQuery.toLowerCase())) return false
+    if (pickerQuery) {
+      const q = pickerQuery.trim().toLowerCase()
+      if (!issue.subject.toLowerCase().includes(q) && !String(issue.id).includes(q)) return false
+    }
     return true
   })
 
