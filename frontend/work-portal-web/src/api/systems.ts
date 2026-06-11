@@ -109,3 +109,18 @@ export interface UserSummary {
 
 export const getUsers = () =>
   client.get<UserSummary[]>('/users').then((r) => r.data)
+
+export interface SystemServer {
+  id: number
+  serverName: string
+  stepOrder: number
+}
+
+export const getSystemServers = (systemId: number) =>
+  client.get<SystemServer[]>(`/systems/${systemId}/servers`).then((r) => r.data)
+
+export const addSystemServer = (systemId: number, serverName: string) =>
+  client.post<SystemServer>(`/systems/${systemId}/servers`, { serverName }).then((r) => r.data)
+
+export const deleteSystemServer = (systemId: number, serverId: number) =>
+  client.delete(`/systems/${systemId}/servers/${serverId}`)

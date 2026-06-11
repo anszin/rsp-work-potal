@@ -4,10 +4,14 @@ import com.platform.portal.domain.deploy.dto.DeployRequestDto;
 import com.platform.portal.domain.deploy.entity.DeployRequest;
 import com.platform.portal.domain.deploy.entity.DeployRequest.Status;
 import com.platform.portal.domain.deploy.entity.DeployRequestIssue;
+import com.platform.portal.domain.deploy.entity.DeployStep;
 import com.platform.portal.domain.deploy.repository.DeployRequestRepository;
+import com.platform.portal.domain.deploy.repository.DeployStepRepository;
+import com.platform.portal.domain.system.entity.SystemServer;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.domain.system.repository.SubSystemRepository;
 import com.platform.portal.domain.system.repository.SystemManagerRepository;
+import com.platform.portal.domain.system.repository.SystemServerRepository;
 import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
 import com.platform.portal.service.RedmineService;
@@ -30,9 +34,11 @@ import java.util.Set;
 public class DeployRequestService {
 
     private final DeployRequestRepository deployRequestRepository;
+    private final DeployStepRepository deployStepRepository;
     private final OperationSystemRepository systemRepository;
     private final SubSystemRepository subSystemRepository;
     private final SystemManagerRepository systemManagerRepository;
+    private final SystemServerRepository systemServerRepository;
     private final UserRepository userRepository;
     private final RedmineService redmineService;
     private final WebexService webexService;
@@ -154,6 +160,7 @@ public class DeployRequestService {
                 dr.setApprover(userRepository.findByUsername(approverUsername).orElse(null));
                 dr.setApprovedAt(LocalDateTime.now());
                 createRedmineVersionIfPossible(dr);
+                createDeploySteps(dr);
             }
             case COMPLETED -> dr.setDeployedAt(LocalDateTime.now());
             case REJECTED  -> dr.setRejectionReason(req.getComment());
@@ -215,6 +222,11 @@ public class DeployRequestService {
             log.warn("Redmine sync failed: {}", e.getMessage());
             dr.setRedmineSyncStatus(DeployRequest.RedmineSyncStatus.FAILED);
         }
+    }
+
+    private void createDeploySteps(DeployRequest dr) {
+        List<SystemServer> servers = systemServerRepository.findBySystemIdOrderByStepOrder(dr.getSystem().getId());
+        servers.forEach(s -> deployStepRepository.save(new DeployStep(dr, s.getServerName(), s.getStepOrder())));
     }
 
     private String generateDeployNo() {

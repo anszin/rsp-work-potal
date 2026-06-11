@@ -4,6 +4,7 @@ import axios from 'axios'
 import {
   getDeployRequests, createDeployRequest, updateDeployRequest,
   deployRequestStatus, deleteDeployRequest, syncRedmine,
+  getDeploySteps, completeDeployStep,
   type DeployRequest, type RequestStatus, type DeployType, type DeployScope, type CreateDeployRequest, type RedmineIssueRef,
 } from '../../api/deployRequests'
 import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../../api/systems'
@@ -151,6 +152,21 @@ export default function DeployRequestPage() {
   }
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['deploy-requests'] })
+
+  const { data: deploySteps = [], refetch: refetchSteps } = useQuery({
+    queryKey: ['deploy-steps', detail?.id],
+    queryFn: () => getDeploySteps(detail!.id),
+    enabled: !!detail && detail.status === 'APPROVED',
+  })
+
+  const completeStepMut = useMutation({
+    mutationFn: completeDeployStep,
+    onSuccess: (result) => {
+      refetchSteps()
+      if (result.allCompleted) invalidate()
+    },
+    onError: (e) => alert('완료 처리 실패: ' + apiError(e)),
+  })
 
   const createMut = useMutation({
     mutationFn: createDeployRequest,
@@ -530,6 +546,50 @@ export default function DeployRequestPage() {
                   {detail.redmineSyncStatus === 'SKIPPED' && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>미설정 (프로젝트키 또는 버전 없음)</span>}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* 배포 단계 */}
+          {detail.status === 'APPROVED' && deploySteps.length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <div style={s.infoSectionTitle}>배포 단계</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                {deploySteps.map((step, idx) => (
+                  <div key={step.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 14px', borderRadius: 6,
+                    background: step.status === 'DONE' ? '#f0fdf4' : 'var(--c-bg)',
+                    border: `1px solid ${step.status === 'DONE' ? '#c6f6d5' : 'var(--c-border-in)'}`,
+                  }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: step.status === 'DONE' ? '#38a169' : 'var(--c-card)',
+                      border: step.status === 'DONE' ? 'none' : '2px solid var(--c-border-in)',
+                      fontSize: 12, fontWeight: 700, color: step.status === 'DONE' ? '#fff' : 'var(--c-text-muted)',
+                    }}>
+                      {step.status === 'DONE' ? '✓' : idx + 1}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: 13, fontWeight: 500 }}>{step.serverName}</span>
+                      {step.status === 'DONE' && step.completedBy && (
+                        <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginLeft: 8 }}>
+                          {step.completedBy} · {step.completedAt?.slice(0, 16).replace('T', ' ')}
+                        </span>
+                      )}
+                    </div>
+                    {step.status === 'PENDING' && (isAdmin || managedSystemIds.includes(detail.systemId)) && (
+                      <button
+                        style={{ ...s.btnSm, color: '#276749', borderColor: '#276749' }}
+                        onClick={() => completeStepMut.mutate(step.id)}
+                        disabled={completeStepMut.isPending}
+                      >
+                        배포 완료
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

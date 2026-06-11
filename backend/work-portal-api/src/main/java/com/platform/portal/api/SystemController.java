@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/systems")
 @RequiredArgsConstructor
@@ -111,6 +113,26 @@ public class SystemController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteSubSystem(@PathVariable Long id, @PathVariable Long subId) {
         systemService.deleteSubSystem(id, subId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/servers")
+    public ResponseEntity<List<SystemDto.ServerResponse>> listServers(@PathVariable Long id) {
+        return ResponseEntity.ok(systemService.findServers(id));
+    }
+
+    @PostMapping("/{id}/servers")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<SystemDto.ServerResponse> addServer(
+            @PathVariable Long id,
+            @Valid @RequestBody SystemDto.ServerRequest req) {
+        return ResponseEntity.ok(systemService.addServer(id, req));
+    }
+
+    @DeleteMapping("/{id}/servers/{serverId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<Void> deleteServer(@PathVariable Long id, @PathVariable Long serverId) {
+        systemService.deleteServer(id, serverId);
         return ResponseEntity.noContent().build();
     }
 }

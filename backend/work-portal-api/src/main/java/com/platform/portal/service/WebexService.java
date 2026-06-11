@@ -91,6 +91,36 @@ public class WebexService {
         }
     }
 
+    public void notifyStepCompleted(DeployRequest dr, String serverName, int done, int total, String username) {
+        String targetRoomId = resolveRoomId(dr);
+        if (targetRoomId == null) return;
+        try {
+            String sys = dr.getSystem().getName()
+                    + (dr.getSubSystem() != null ? " / " + dr.getSubSystem().getName() : "");
+            String msg = "🔧 **배포 진행** `" + dr.getDeployNo() + "`\n"
+                    + "> **[" + sys + "]** " + dr.getTitle() + "\n"
+                    + "> **" + serverName + "** 배포 완료 (" + username + ") — " + done + "/" + total;
+            sendMessage(msg, targetRoomId);
+        } catch (Exception e) {
+            log.warn("Webex notify failed (step): {}", e.getMessage());
+        }
+    }
+
+    public void notifyAllStepsCompleted(DeployRequest dr, String username) {
+        String targetRoomId = resolveRoomId(dr);
+        if (targetRoomId == null) return;
+        try {
+            String sys = dr.getSystem().getName()
+                    + (dr.getSubSystem() != null ? " / " + dr.getSubSystem().getName() : "");
+            String msg = "🚀 **전체 배포 완료** `" + dr.getDeployNo() + "`\n"
+                    + "> **[" + sys + "]** " + dr.getTitle() + "\n"
+                    + "> 처리자: **" + username + "**";
+            sendMessage(msg, targetRoomId);
+        } catch (Exception e) {
+            log.warn("Webex notify failed (all steps): {}", e.getMessage());
+        }
+    }
+
     private String resolveRoomId(DeployRequest dr) {
         if (botToken == null || botToken.isBlank()) return null;
         String systemRoomId = dr.getSystem().getWebexRoomId();

@@ -71,3 +71,25 @@ export const syncRedmine = (id: number) =>
 
 export const deleteDeployRequest = (id: number) =>
   client.delete(`/deploy-requests/${id}`)
+
+export type StepStatus = 'PENDING' | 'DONE'
+
+export interface DeployStep {
+  id: number
+  serverName: string
+  stepOrder: number
+  status: StepStatus
+  completedBy: string | null
+  completedAt: string | null
+}
+
+export interface CompleteStepResult {
+  step: DeployStep
+  allCompleted: boolean
+}
+
+export const getDeploySteps = (deployRequestId: number) =>
+  client.get<DeployStep[]>(`/deploy-requests/${deployRequestId}/steps`).then((r) => r.data)
+
+export const completeDeployStep = (stepId: number) =>
+  client.post<CompleteStepResult>(`/deploy-requests/steps/${stepId}/complete`).then((r) => r.data)

@@ -1,7 +1,9 @@
 package com.platform.portal.api;
 
 import com.platform.portal.domain.deploy.dto.DeployRequestDto;
+import com.platform.portal.domain.deploy.dto.DeployStepDto;
 import com.platform.portal.domain.deploy.service.DeployRequestService;
+import com.platform.portal.domain.deploy.service.DeployStepService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import java.util.List;
 public class DeployRequestController {
 
     private final DeployRequestService service;
+    private final DeployStepService stepService;
 
     @GetMapping
     public ResponseEntity<List<DeployRequestDto.Response>> list(
@@ -62,5 +65,17 @@ public class DeployRequestController {
                                        @AuthenticationPrincipal UserDetails user) {
         service.delete(id, user.getUsername());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/steps")
+    public ResponseEntity<List<DeployStepDto.Response>> getSteps(@PathVariable Long id) {
+        return ResponseEntity.ok(stepService.findByDeployRequestId(id));
+    }
+
+    @PostMapping("/steps/{stepId}/complete")
+    public ResponseEntity<DeployStepDto.CompleteResult> completeStep(
+            @PathVariable Long stepId,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(stepService.complete(stepId, user.getUsername()));
     }
 }

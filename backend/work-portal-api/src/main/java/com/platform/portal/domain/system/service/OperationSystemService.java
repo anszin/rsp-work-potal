@@ -4,9 +4,11 @@ import com.platform.portal.domain.system.dto.SystemDto;
 import com.platform.portal.domain.system.entity.OperationSystem;
 import com.platform.portal.domain.system.entity.SubSystem;
 import com.platform.portal.domain.system.entity.SystemManager;
+import com.platform.portal.domain.system.entity.SystemServer;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.domain.system.repository.SubSystemRepository;
 import com.platform.portal.domain.system.repository.SystemManagerRepository;
+import com.platform.portal.domain.system.repository.SystemServerRepository;
 import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class OperationSystemService {
     private final OperationSystemRepository systemRepository;
     private final SystemManagerRepository managerRepository;
     private final SubSystemRepository subSystemRepository;
+    private final SystemServerRepository serverRepository;
     private final UserRepository userRepository;
 
     public List<SystemDto.Response> findAll() {
@@ -151,5 +154,25 @@ public class OperationSystemService {
             throw new IllegalArgumentException("하위 시스템이 해당 시스템에 속하지 않습니다.");
         }
         subSystemRepository.deleteById(subId);
+    }
+
+    public List<SystemDto.ServerResponse> findServers(Long systemId) {
+        return serverRepository.findBySystemIdOrderByStepOrder(systemId)
+                .stream().map(SystemDto.ServerResponse::new).toList();
+    }
+
+    @Transactional
+    public SystemDto.ServerResponse addServer(Long systemId, SystemDto.ServerRequest req) {
+        OperationSystem system = systemRepository.findById(systemId)
+                .orElseThrow(() -> new IllegalArgumentException("System not found: " + systemId));
+        List<SystemServer> existing = serverRepository.findBySystemIdOrderByStepOrder(systemId);
+        int order = req.getStepOrder() > 0 ? req.getStepOrder() : existing.size();
+        SystemServer server = new SystemServer(system, req.getServerName(), order);
+        return new SystemDto.ServerResponse(serverRepository.save(server));
+    }
+
+    @Transactional
+    public void deleteServer(Long systemId, Long serverId) {
+        serverRepository.deleteById(serverId);
     }
 }

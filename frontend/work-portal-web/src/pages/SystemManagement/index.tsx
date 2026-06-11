@@ -4,6 +4,7 @@ import {
   getSystems, createSystem, updateSystem, deleteSystem, System,
   getSystemManagers, addSystemManager, removeSystemManager, getUsers,
   getSubSystems, createSubSystem, updateSubSystem, deleteSubSystem, SubSystem,
+  getSystemServers, addSystemServer, deleteSystemServer, SystemServer,
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
 
@@ -21,6 +22,8 @@ export default function SystemManagementPage() {
   const [subForm, setSubForm] = useState(emptySubForm())
   const [editingSub, setEditingSub] = useState<SubSystem | null>(null)
   const [showSubForm, setShowSubForm] = useState(false)
+  const [serverPanel, setServerPanel] = useState<System | null>(null)
+  const [newServerName, setNewServerName] = useState('')
 
   const { data: systems = [], isLoading } = useQuery({ queryKey: ['systems'], queryFn: getSystems })
   const { data: managers = [] } = useQuery({
@@ -38,10 +41,16 @@ export default function SystemManagementPage() {
     queryFn: () => getSubSystems(subPanel!.id),
     enabled: !!subPanel,
   })
+  const { data: servers = [] } = useQuery({
+    queryKey: ['systems', serverPanel?.id, 'servers'],
+    queryFn: () => getSystemServers(serverPanel!.id),
+    enabled: !!serverPanel,
+  })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['systems'] })
   const invalidateManagers = () => qc.invalidateQueries({ queryKey: ['systems', managerPanel?.id, 'managers'] })
   const invalidateSubs = () => qc.invalidateQueries({ queryKey: ['systems', subPanel?.id, 'subsystems'] })
+  const invalidateServers = () => qc.invalidateQueries({ queryKey: ['systems', serverPanel?.id, 'servers'] })
 
   const createMut = useMutation({ mutationFn: createSystem, onSuccess: () => { invalidate(); reset() } })
   const updateMut = useMutation({
@@ -74,6 +83,15 @@ export default function SystemManagementPage() {
     mutationFn: ({ systemId, subId }: { systemId: number; subId: number }) => deleteSubSystem(systemId, subId),
     onSuccess: invalidateSubs,
     onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 삭제 실패'),
+  })
+  const addServerMut = useMutation({
+    mutationFn: ({ systemId, serverName }: { systemId: number; serverName: string }) => addSystemServer(systemId, serverName),
+    onSuccess: () => { invalidateServers(); setNewServerName('') },
+    onError: (e: any) => alert(e.response?.data?.error ?? '서버 등록 실패'),
+  })
+  const deleteServerMut = useMutation({
+    mutationFn: ({ systemId, serverId }: { systemId: number; serverId: number }) => deleteSystemServer(systemId, serverId),
+    onSuccess: invalidateServers,
   })
 
   const reset = () => { setShowForm(false); setEditing(null); setForm(emptyForm()) }
@@ -201,6 +219,7 @@ export default function SystemManagementPage() {
                   <td style={s.td}>
                     <button onClick={() => { setSubPanel(sys); resetSubForm() }} style={{ ...s.btnSm, color: '#00695c', borderColor: '#80cbc4' }}>하위시스템</button>
                     <button onClick={() => setManagerPanel(sys)} style={{ ...s.btnSm, color: '#4527a0', borderColor: '#b39ddb' }}>담당자</button>
+                    <button onClick={() => { setServerPanel(sys); setNewServerName('') }} style={{ ...s.btnSm, color: '#e65100', borderColor: '#ffb74d' }}>서버</button>
                     <button onClick={() => openEdit(sys)} style={s.btnSm}>수정</button>
                     <button onClick={() => { if (confirm(`[${sys.code}] ${sys.name}을 삭제하시겠습니까?`)) deleteMut.mutate(sys.id) }}
                       style={{ ...s.btnSm, color: '#e53e3e' }}>삭제</button>
@@ -287,6 +306,49 @@ export default function SystemManagementPage() {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
               <button onClick={() => { setSubPanel(null); resetSubForm() }} style={s.btnSecondary}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 서버 패널 */}
+      {serverPanel && (
+        <div style={s.overlay}>
+          <div style={{ ...s.modal, width: 460 }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 15 }}>{serverPanel.name} 배포 서버 관리</h3>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--c-text-muted)' }}>배포 승인 후 단계별로 완료 처리할 서버 목록입니다.</p>
+
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <input
+                value={newServerName}
+                onChange={e => setNewServerName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && newServerName.trim()) addServerMut.mutate({ systemId: serverPanel.id, serverName: newServerName.trim() }) }}
+                placeholder="서버명 입력 (예: 1번서버)"
+                style={{ ...s.input, flex: 1, fontSize: 13 }}
+              />
+              <button
+                onClick={() => { if (newServerName.trim()) addServerMut.mutate({ systemId: serverPanel.id, serverName: newServerName.trim() }) }}
+                disabled={!newServerName.trim()}
+                style={{ ...s.btn, opacity: newServerName.trim() ? 1 : 0.5 }}>추가</button>
+            </div>
+
+            {servers.length === 0 ? (
+              <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 서버가 없습니다.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {servers.map((sv, idx) => (
+                  <div key={sv.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>
+                    <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#1a1a2e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{idx + 1}</span>
+                    <span style={{ flex: 1, fontSize: 13 }}>{sv.serverName}</span>
+                    <button onClick={() => deleteServerMut.mutate({ systemId: serverPanel.id, serverId: sv.id })}
+                      style={{ ...s.btnSm, color: '#e53e3e', marginRight: 0 }}>삭제</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
+              <button onClick={() => setServerPanel(null)} style={s.btnSecondary}>닫기</button>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ package com.platform.portal.domain.system.dto;
 import com.platform.portal.domain.system.entity.OperationSystem;
 import com.platform.portal.domain.system.entity.SubSystem;
 import com.platform.portal.domain.system.entity.SystemManager;
+import com.platform.portal.domain.system.entity.SystemServer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -100,6 +101,27 @@ public class SystemDto {
             this.description = s.getDescription();
             this.active = s.isActive();
             this.createdAt = s.getCreatedAt();
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class ServerRequest {
+        @NotBlank
+        private String serverName;
+        private int stepOrder;
+    }
+
+    @Getter
+    public static class ServerResponse {
+        private final Long id;
+        private final String serverName;
+        private final int stepOrder;
+
+        public ServerResponse(SystemServer s) {
+            this.id = s.getId();
+            this.serverName = s.getServerName();
+            this.stepOrder = s.getStepOrder();
         }
     }
 
