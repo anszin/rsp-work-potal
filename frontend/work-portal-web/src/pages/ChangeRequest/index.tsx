@@ -127,14 +127,21 @@ export default function ChangeRequestPage() {
     onError: (e: unknown) => alert('재동기화 실패: ' + apiError(e)),
   })
 
+  const defaultTrackerId = (sysId: number) => {
+    const sys = systems.find(s => s.id === sysId)
+    return sys?.redmineProjectKey ? (trackerConfigs[0]?.id ?? null) : null
+  }
+
   const openCreate = () => {
     setEditing(null)
+    const sysId = systems[0]?.id ?? 0
     setForm({
       ...emptyForm,
-      systemId: systems[0]?.id ?? 0,
+      systemId: sysId,
       subSystemId: null,
       requesterName: user?.name || '',
       requesterDept: user?.dept || '',
+      redmineTrackerId: defaultTrackerId(sysId),
     })
     setShowForm(true)
     setDetail(null)
@@ -152,6 +159,10 @@ export default function ChangeRequestPage() {
 
   const submit = async () => {
     if (!form.title || !form.systemId) return
+    if (selectedSystem?.redmineProjectKey && !form.redmineTrackerId) {
+      alert('요청유형을 선택해주세요.')
+      return
+    }
     const base = { ...form, targetDate: form.targetDate || undefined }
     const data = await buildPayload(base, pendingFile)
     if (editing) updateMut.mutate({ id: editing.id, data })
@@ -238,7 +249,10 @@ export default function ChangeRequestPage() {
           <h3 style={s.formTitle}>{editing ? '요청 수정' : '새 변경 요청'}</h3>
           <div style={s.formGrid}>
             <label style={s.label}>운영시스템 *</label>
-            <select style={s.input} value={form.systemId} onChange={(e) => setForm({ ...form, systemId: Number(e.target.value), subSystemId: null })}>
+            <select style={s.input} value={form.systemId} onChange={(e) => {
+              const sysId = Number(e.target.value)
+              setForm({ ...form, systemId: sysId, subSystemId: null, redmineTrackerId: defaultTrackerId(sysId) })
+            }}>
               <option value={0}>선택</option>
               {systems.map((sys) => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
             </select>
@@ -259,9 +273,9 @@ export default function ChangeRequestPage() {
             <input style={s.input} value={form.requesterName ?? ''} onChange={(e) => setForm({ ...form, requesterName: e.target.value })} placeholder="요청자 이름" />
             {selectedSystem?.redmineProjectKey && (
               <>
-                <label style={s.label}>레드마인 유형</label>
+                <label style={s.label}>요청유형 *</label>
                 <select style={s.input} value={form.redmineTrackerId ?? ''} onChange={e => setForm({ ...form, redmineTrackerId: e.target.value ? Number(e.target.value) : null })}>
-                  <option value="">선택 안함</option>
+                  <option value="" disabled>선택하세요</option>
                   {trackerConfigs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </>
