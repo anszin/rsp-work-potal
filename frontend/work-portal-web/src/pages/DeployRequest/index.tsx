@@ -797,7 +797,6 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
     const items = requests.filter(r => { const d = new Date(r.createdAt); return d.getFullYear() === selYear && d.getMonth() + 1 === m })
     return { month: m, total: items.length, byStatus: STATUSES.reduce((acc, s) => { acc[s] = items.filter(r => r.status === s).length; return acc }, {} as Record<RequestStatus, number>) }
   })
-  const maxMonthly = Math.max(...monthlyData.map(m => m.total), 1)
 
   const bySystem = Object.entries(filtered.reduce((acc, r) => { acc[r.systemName] = (acc[r.systemName] || 0) + 1; return acc }, {} as Record<string, number>)).sort((a, b) => b[1] - a[1])
   const maxSys   = Math.max(...bySystem.map(([, n]) => n), 1)
@@ -836,43 +835,36 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
         ))}
       </div>
 
-      {/* 월별 누적 바 차트 */}
+      {/* 월별 꺾은선 그래프 */}
       <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20, marginBottom: 16 }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 14 }}>
-          월별 배포 현황 ({selYear}년) — 클릭하여 필터
+          월별 배포 추이 ({selYear}년) — 점 클릭으로 월 필터
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
-          {monthlyData.map(({ month, total, byStatus: bs }) => {
-            const isSelected = selMonth === month
-            return (
-              <div key={month}
-                onClick={() => setSelMonth(isSelected ? 'all' : month)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 8px', borderRadius: 6, cursor: 'pointer',
-                  background: isSelected ? 'var(--c-bg)' : 'transparent',
-                  border: `1px solid ${isSelected ? 'var(--c-border-in)' : 'transparent'}`,
-                  transition: 'background 0.15s',
-                }}>
-                <span style={{ fontSize: 12, color: 'var(--c-text-muted)', minWidth: 26, textAlign: 'right' as const }}>{month}월</span>
-                <div style={{ flex: 1, height: 20, borderRadius: 4, overflow: 'hidden', display: 'flex', background: 'var(--c-bg)', border: '1px solid var(--c-border-in)' }}>
-                  {total > 0 && STATUSES.map(s => {
-                    const c = bs[s]; if (!c) return null
-                    return <div key={s} style={{ width: `${(c / maxMonthly) * 100}%`, background: STATUS_COLORS[s], height: '100%', opacity: 0.85 }} title={`${STATUS_LABELS[s]}: ${c}`} />
-                  })}
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 700, minWidth: 20, textAlign: 'right' as const, color: total > 0 ? 'var(--c-text)' : 'var(--c-text-muted)' }}>{total}</span>
-                <span style={{ fontSize: 11, color: 'var(--c-text-muted)', minWidth: 140 }}>
-                  {STATUSES.filter(s => bs[s] > 0).map(s => `${STATUS_LABELS[s]} ${bs[s]}`).join('  ')}
-                </span>
-              </div>
-            )
-          })}
+        <MonthlyLineChart data={monthlyData} selMonth={selMonth} onClickMonth={m => setSelMonth(selMonth === m ? 'all' : m)} />
+        <div style={{ display: 'flex', gap: 14, marginTop: 10, flexWrap: 'wrap' as const }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#1a1a2e" strokeWidth="2.5" strokeLinecap="round" /></svg>
+            전체
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#285E61" strokeWidth="2" strokeDasharray="4,2" strokeLinecap="round" /></svg>
+            완료
+          </span>
         </div>
-        <div style={{ display: 'flex', gap: 14, marginTop: 12, flexWrap: 'wrap' as const }}>
-          {STATUSES.map(s => (
-            <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: STATUS_COLORS[s], display: 'inline-block', opacity: 0.85 }} />
-              {STATUS_LABELS[s]}
-            </span>
+        {/* 월별 상세 요약 */}
+        <div style={{ display: 'flex', gap: 4, marginTop: 12, flexWrap: 'wrap' as const }}>
+          {monthlyData.filter(m => m.total > 0).map(({ month, total, byStatus: bs }) => (
+            <button key={month} onClick={() => setSelMonth(selMonth === month ? 'all' : month)}
+              style={{ padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+                background: selMonth === month ? '#1a1a2e' : 'var(--c-bg)',
+                color: selMonth === month ? '#fff' : 'var(--c-text-sub)',
+                border: `1px solid ${selMonth === month ? '#1a1a2e' : 'var(--c-border-in)'}`,
+              }}>
+              {month}월 <strong>{total}</strong>
+              <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.7 }}>
+                {STATUSES.filter(s => bs[s] > 0).map(s => `${STATUS_LABELS[s]}${bs[s]}`).join(' ')}
+              </span>
+            </button>
           ))}
         </div>
       </div>
@@ -915,6 +907,92 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
         </div>
       </div>
     </div>
+  )
+}
+
+function MonthlyLineChart({
+  data, selMonth, onClickMonth,
+}: {
+  data: { month: number; total: number; byStatus: Record<RequestStatus, number> }[]
+  selMonth: number | 'all'
+  onClickMonth: (m: number) => void
+}) {
+  const padL = 34, padR = 16, padT = 20, padB = 24
+  const W = 600, H = 180
+  const plotW = W - padL - padR
+  const plotH = H - padT - padB
+  const maxVal = Math.max(...data.map(d => d.total), 1)
+
+  const xOf = (i: number) => padL + (i / 11) * plotW
+  const yOf = (v: number) => padT + plotH - (v / maxVal) * plotH
+
+  const pts = (key: 'total' | RequestStatus) =>
+    data.map((d, i) => ({ x: xOf(i), y: yOf(key === 'total' ? d.total : (d.byStatus[key] ?? 0)), v: key === 'total' ? d.total : (d.byStatus[key] ?? 0) }))
+
+  const toPolyline = (points: { x: number; y: number }[]) =>
+    points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+
+  const gridVals = maxVal <= 4
+    ? Array.from({ length: maxVal + 1 }, (_, i) => i)
+    : [0, Math.round(maxVal * 0.25), Math.round(maxVal * 0.5), Math.round(maxVal * 0.75), maxVal]
+  const uniqueGridVals = [...new Set(gridVals)]
+
+  const totalPts = pts('total')
+  const completedPts = pts('COMPLETED')
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H, display: 'block' }} preserveAspectRatio="xMidYMid meet">
+      {/* 그리드 */}
+      {uniqueGridVals.map(v => {
+        const y = yOf(v)
+        return (
+          <g key={v}>
+            <line x1={padL} y1={y} x2={W - padR} y2={y} stroke="var(--c-border)" strokeWidth={0.5} strokeDasharray="3,3" />
+            <text x={padL - 6} y={y + 4} textAnchor="end" fontSize={9} fill="var(--c-text-muted)">{v}</text>
+          </g>
+        )
+      })}
+
+      {/* 완료 꺾은선 (배경) */}
+      <polyline points={toPolyline(completedPts)} fill="none" stroke="#285E61" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5,3" opacity={0.7} />
+
+      {/* 전체 꺾은선 */}
+      <polyline points={toPolyline(totalPts)} fill="none" stroke="#1a1a2e" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+
+      {/* 데이터 포인트 + X 라벨 */}
+      {data.map((d, i) => {
+        const tp = totalPts[i]
+        const cp = completedPts[i]
+        const isSelected = selMonth === d.month
+        return (
+          <g key={i} style={{ cursor: 'pointer' }} onClick={() => onClickMonth(d.month)}>
+            {/* X 라벨 */}
+            <text x={tp.x} y={H - 4} textAnchor="middle" fontSize={10}
+              fill={isSelected ? '#1a1a2e' : 'var(--c-text-muted)'}
+              fontWeight={isSelected ? 700 : 400}>
+              {d.month}월
+            </text>
+            {/* 클릭 히트 영역 */}
+            <rect x={tp.x - 14} y={padT} width={28} height={plotH} fill="transparent" />
+            {/* 선택 강조선 */}
+            {isSelected && <line x1={tp.x} y1={padT} x2={tp.x} y2={padT + plotH} stroke="#1a1a2e" strokeWidth={1} strokeDasharray="3,3" opacity={0.3} />}
+            {/* 완료 점 */}
+            {cp.v > 0 && <circle cx={cp.x} cy={cp.y} r={3} fill="#285E61" opacity={0.8} />}
+            {/* 전체 점 */}
+            <circle cx={tp.x} cy={tp.y} r={isSelected ? 6 : 4.5}
+              fill={isSelected ? '#1a1a2e' : '#fff'}
+              stroke="#1a1a2e" strokeWidth={2}
+            />
+            {/* 값 라벨 */}
+            {d.total > 0 && (
+              <text x={tp.x} y={tp.y - 9} textAnchor="middle" fontSize={10} fontWeight={600} fill="#1a1a2e">
+                {d.total}
+              </text>
+            )}
+          </g>
+        )
+      })}
+    </svg>
   )
 }
 
