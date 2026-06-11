@@ -122,6 +122,26 @@ public class RedmineService {
         }
     }
 
+    public void updateIssue(Integer issueId, String subject, String description, Integer trackerId, Integer assigneeId, LocalDate dueDate) {
+        try {
+            java.net.URI uri = java.net.URI.create(baseUrl + "/issues/" + issueId + ".json?key=" + apiKey);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            Map<String, Object> issueBody = new HashMap<>();
+            issueBody.put("subject", subject);
+            if (description != null && !description.isBlank()) issueBody.put("description", description);
+            if (trackerId != null) issueBody.put("tracker_id", trackerId);
+            if (assigneeId != null) issueBody.put("assigned_to_id", assigneeId);
+            if (dueDate != null) issueBody.put("due_date", dueDate.toString());
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(Map.of("issue", issueBody), headers);
+            restTemplate.put(uri, entity);
+            log.info("Redmine issue #{} updated: '{}'", issueId, subject);
+        } catch (Exception e) {
+            log.error("Redmine issue update failed for #{}: {}", issueId, e.getMessage());
+            throw new RuntimeException("레드마인 일감 업데이트 실패: " + e.getMessage(), e);
+        }
+    }
+
     public void updateIssueFixedVersion(Integer issueId, Integer versionId) {
         try {
             java.net.URI uri = java.net.URI.create(baseUrl + "/issues/" + issueId + ".json?key=" + apiKey);

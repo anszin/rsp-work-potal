@@ -149,6 +149,22 @@ public class ChangeRequestService {
         cr.setRequesterName(req.getRequesterName());
         cr.setTargetDate(req.getTargetDate());
         cr.setAttachmentLink(req.getAttachmentLink());
+        cr.setRedmineTrackerId(req.getRedmineTrackerId());
+        cr.setRedmineAssigneeId(req.getRedmineAssigneeId());
+        if (!cr.getRedmineIssues().isEmpty()) {
+            String subject = cr.getSubSystem() != null
+                    ? "[" + cr.getSubSystem().getName() + "] " + cr.getTitle()
+                    : cr.getTitle();
+            Integer resolvedTrackerId = req.getRedmineTrackerId() != null ? req.getRedmineTrackerId() : crTrackerId;
+            for (ChangeRequestIssue issue : cr.getRedmineIssues()) {
+                try {
+                    redmineService.updateIssue(issue.getRedmineIssueId(), subject, cr.getContent(), resolvedTrackerId, req.getRedmineAssigneeId(), cr.getTargetDate());
+                    issue.setRedmineIssueTitle(subject);
+                } catch (Exception e) {
+                    log.warn("Failed to update Redmine issue #{}: {}", issue.getRedmineIssueId(), e.getMessage());
+                }
+            }
+        }
         byte[] fileBytes = req.decodeAttachment();
         if (fileBytes != null && req.getAttachmentFilename() != null) {
             try {
