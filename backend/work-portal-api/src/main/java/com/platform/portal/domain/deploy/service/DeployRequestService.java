@@ -235,8 +235,8 @@ public class DeployRequestService {
         int year = LocalDate.now().getYear();
         LocalDateTime start = LocalDate.of(year, 1, 1).atStartOfDay();
         LocalDateTime end = LocalDate.of(year + 1, 1, 1).atStartOfDay();
-        long count = deployRequestRepository.countByYear(start, end);
-        return String.format("DR-%d-%03d", year, count + 1);
+        long maxSeq = deployRequestRepository.maxSeqByYear(start, end);
+        return String.format("DR-%d-%03d", year, maxSeq + 1);
     }
 
     private DeployRequest getOrThrow(Long id) {

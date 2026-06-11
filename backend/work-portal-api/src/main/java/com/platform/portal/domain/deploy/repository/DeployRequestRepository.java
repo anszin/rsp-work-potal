@@ -22,6 +22,6 @@ public interface DeployRequestRepository extends JpaRepository<DeployRequest, Lo
     @Query("SELECT d FROM DeployRequest d JOIN FETCH d.system JOIN FETCH d.requester LEFT JOIN FETCH d.redmineIssues WHERE d.id = :id")
     Optional<DeployRequest> findWithIssues(Long id);
 
-    @Query("SELECT COUNT(d) FROM DeployRequest d WHERE d.createdAt >= :start AND d.createdAt < :end")
-    long countByYear(LocalDateTime start, LocalDateTime end);
+    @Query(value = "SELECT COALESCE(MAX(CAST(SUBSTRING(deploy_no, 9) AS INTEGER)), 0) FROM deploy_requests WHERE created_at >= :start AND created_at < :end AND deploy_no IS NOT NULL", nativeQuery = true)
+    long maxSeqByYear(LocalDateTime start, LocalDateTime end);
 }
