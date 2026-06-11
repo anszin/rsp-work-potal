@@ -392,7 +392,7 @@ export default function ChangeRequestPage() {
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
                   <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>{r.requestNo ?? '-'}</td>
                   <td style={s.td}>
-                    <span style={s.sysTag}>{r.systemCode}</span>
+                    <span style={s.sysTag}>{r.systemName}</span>
                     {r.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{r.subSystemName}</span>}
                   </td>
                   <td style={s.td}>{r.requesterDept ?? '-'}</td>
