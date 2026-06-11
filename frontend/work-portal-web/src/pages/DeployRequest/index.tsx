@@ -792,12 +792,6 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
   }
   const filtered = requests.filter(inPeriod)
 
-  const monthlyData = Array.from({ length: 12 }, (_, i) => {
-    const m = i + 1
-    const items = requests.filter(r => { const d = new Date(r.createdAt); return d.getFullYear() === selYear && d.getMonth() + 1 === m })
-    return { month: m, total: items.length, byStatus: STATUSES.reduce((acc, s) => { acc[s] = items.filter(r => r.status === s).length; return acc }, {} as Record<RequestStatus, number>) }
-  })
-
   const SYS_COLORS = ['#3182ce','#e53e3e','#d69e2e','#38a169','#805ad5','#dd6b20','#319795','#b7791f']
   const systemsInYear = [...new Set(requests.filter(r => new Date(r.createdAt).getFullYear() === selYear).map(r => r.systemName))].sort()
   const systemMonthlyData = systemsInYear.map((sysName, si) => ({
@@ -897,91 +891,6 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
   )
 }
 
-function MonthlyLineChart({
-  data, selMonth, onClickMonth,
-}: {
-  data: { month: number; total: number; byStatus: Record<RequestStatus, number> }[]
-  selMonth: number | 'all'
-  onClickMonth: (m: number) => void
-}) {
-  const padL = 34, padR = 16, padT = 20, padB = 24
-  const W = 600, H = 180
-  const plotW = W - padL - padR
-  const plotH = H - padT - padB
-  const maxVal = Math.max(...data.map(d => d.total), 1)
-
-  const xOf = (i: number) => padL + (i / 11) * plotW
-  const yOf = (v: number) => padT + plotH - (v / maxVal) * plotH
-
-  const pts = (key: 'total' | RequestStatus) =>
-    data.map((d, i) => ({ x: xOf(i), y: yOf(key === 'total' ? d.total : (d.byStatus[key] ?? 0)), v: key === 'total' ? d.total : (d.byStatus[key] ?? 0) }))
-
-  const toPolyline = (points: { x: number; y: number }[]) =>
-    points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-
-  const gridVals = maxVal <= 4
-    ? Array.from({ length: maxVal + 1 }, (_, i) => i)
-    : [0, Math.round(maxVal * 0.25), Math.round(maxVal * 0.5), Math.round(maxVal * 0.75), maxVal]
-  const uniqueGridVals = [...new Set(gridVals)]
-
-  const totalPts = pts('total')
-  const completedPts = pts('COMPLETED')
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H, display: 'block' }} preserveAspectRatio="xMidYMid meet">
-      {/* 그리드 */}
-      {uniqueGridVals.map(v => {
-        const y = yOf(v)
-        return (
-          <g key={v}>
-            <line x1={padL} y1={y} x2={W - padR} y2={y} stroke="var(--c-border)" strokeWidth={0.5} strokeDasharray="3,3" />
-            <text x={padL - 6} y={y + 4} textAnchor="end" fontSize={9} fill="var(--c-text-muted)">{v}</text>
-          </g>
-        )
-      })}
-
-      {/* 완료 꺾은선 (배경) */}
-      <polyline points={toPolyline(completedPts)} fill="none" stroke="#285E61" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5,3" opacity={0.7} />
-
-      {/* 전체 꺾은선 */}
-      <polyline points={toPolyline(totalPts)} fill="none" stroke="#1a1a2e" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-
-      {/* 데이터 포인트 + X 라벨 */}
-      {data.map((d, i) => {
-        const tp = totalPts[i]
-        const cp = completedPts[i]
-        const isSelected = selMonth === d.month
-        return (
-          <g key={i} style={{ cursor: 'pointer' }} onClick={() => onClickMonth(d.month)}>
-            {/* X 라벨 */}
-            <text x={tp.x} y={H - 4} textAnchor="middle" fontSize={10}
-              fill={isSelected ? '#1a1a2e' : 'var(--c-text-muted)'}
-              fontWeight={isSelected ? 700 : 400}>
-              {d.month}월
-            </text>
-            {/* 클릭 히트 영역 */}
-            <rect x={tp.x - 14} y={padT} width={28} height={plotH} fill="transparent" />
-            {/* 선택 강조선 */}
-            {isSelected && <line x1={tp.x} y1={padT} x2={tp.x} y2={padT + plotH} stroke="#1a1a2e" strokeWidth={1} strokeDasharray="3,3" opacity={0.3} />}
-            {/* 완료 점 */}
-            {cp.v > 0 && <circle cx={cp.x} cy={cp.y} r={3} fill="#285E61" opacity={0.8} />}
-            {/* 전체 점 */}
-            <circle cx={tp.x} cy={tp.y} r={isSelected ? 6 : 4.5}
-              fill={isSelected ? '#1a1a2e' : '#fff'}
-              stroke="#1a1a2e" strokeWidth={2}
-            />
-            {/* 값 라벨 */}
-            {d.total > 0 && (
-              <text x={tp.x} y={tp.y - 9} textAnchor="middle" fontSize={10} fontWeight={600} fill="#1a1a2e">
-                {d.total}
-              </text>
-            )}
-          </g>
-        )
-      })}
-    </svg>
-  )
-}
 
 function SystemMonthlyLineChart({
   systems, selMonth, onClickMonth,
