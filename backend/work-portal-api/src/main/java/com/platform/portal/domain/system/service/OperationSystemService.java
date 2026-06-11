@@ -156,23 +156,23 @@ public class OperationSystemService {
         subSystemRepository.deleteById(subId);
     }
 
-    public List<SystemDto.ServerResponse> findServers(Long systemId) {
-        return serverRepository.findBySystemIdOrderByStepOrder(systemId)
+    public List<SystemDto.ServerResponse> findServers(Long subSystemId) {
+        return serverRepository.findBySubSystemIdOrderByStepOrder(subSystemId)
                 .stream().map(SystemDto.ServerResponse::new).toList();
     }
 
     @Transactional
-    public SystemDto.ServerResponse addServer(Long systemId, SystemDto.ServerRequest req) {
-        OperationSystem system = systemRepository.findById(systemId)
-                .orElseThrow(() -> new IllegalArgumentException("System not found: " + systemId));
-        List<SystemServer> existing = serverRepository.findBySystemIdOrderByStepOrder(systemId);
+    public SystemDto.ServerResponse addServer(Long subSystemId, SystemDto.ServerRequest req) {
+        SubSystem subSystem = subSystemRepository.findById(subSystemId)
+                .orElseThrow(() -> new IllegalArgumentException("SubSystem not found: " + subSystemId));
+        List<SystemServer> existing = serverRepository.findBySubSystemIdOrderByStepOrder(subSystemId);
         int order = req.getStepOrder() > 0 ? req.getStepOrder() : existing.size();
-        SystemServer server = new SystemServer(system, req.getServerName(), order);
+        SystemServer server = new SystemServer(subSystem, req.getServerName(), order);
         return new SystemDto.ServerResponse(serverRepository.save(server));
     }
 
     @Transactional
-    public void deleteServer(Long systemId, Long serverId) {
+    public void deleteServer(Long subSystemId, Long serverId) {
         serverRepository.deleteById(serverId);
     }
 }

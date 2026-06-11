@@ -116,23 +116,26 @@ public class SystemController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/servers")
-    public ResponseEntity<List<SystemDto.ServerResponse>> listServers(@PathVariable Long id) {
-        return ResponseEntity.ok(systemService.findServers(id));
+    @GetMapping("/{id}/subsystems/{subId}/servers")
+    public ResponseEntity<List<SystemDto.ServerResponse>> listServers(
+            @PathVariable Long id, @PathVariable Long subId) {
+        return ResponseEntity.ok(systemService.findServers(subId));
     }
 
-    @PostMapping("/{id}/servers")
+    @PostMapping("/{id}/subsystems/{subId}/servers")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<SystemDto.ServerResponse> addServer(
             @PathVariable Long id,
+            @PathVariable Long subId,
             @Valid @RequestBody SystemDto.ServerRequest req) {
-        return ResponseEntity.ok(systemService.addServer(id, req));
+        return ResponseEntity.ok(systemService.addServer(subId, req));
     }
 
-    @DeleteMapping("/{id}/servers/{serverId}")
+    @DeleteMapping("/{id}/subsystems/{subId}/servers/{serverId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<Void> deleteServer(@PathVariable Long id, @PathVariable Long serverId) {
-        systemService.deleteServer(id, serverId);
+    public ResponseEntity<Void> deleteServer(
+            @PathVariable Long id, @PathVariable Long subId, @PathVariable Long serverId) {
+        systemService.deleteServer(subId, serverId);
         return ResponseEntity.noContent().build();
     }
 }

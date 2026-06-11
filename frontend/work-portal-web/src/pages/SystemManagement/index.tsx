@@ -22,7 +22,7 @@ export default function SystemManagementPage() {
   const [subForm, setSubForm] = useState(emptySubForm())
   const [editingSub, setEditingSub] = useState<SubSystem | null>(null)
   const [showSubForm, setShowSubForm] = useState(false)
-  const [serverPanel, setServerPanel] = useState<System | null>(null)
+  const [serverSubPanel, setServerSubPanel] = useState<SubSystem | null>(null)
   const [newServerName, setNewServerName] = useState('')
 
   const { data: systems = [], isLoading } = useQuery({ queryKey: ['systems'], queryFn: getSystems })
@@ -42,15 +42,15 @@ export default function SystemManagementPage() {
     enabled: !!subPanel,
   })
   const { data: servers = [] } = useQuery({
-    queryKey: ['systems', serverPanel?.id, 'servers'],
-    queryFn: () => getSystemServers(serverPanel!.id),
-    enabled: !!serverPanel,
+    queryKey: ['systems', subPanel?.id, 'subsystems', serverSubPanel?.id, 'servers'],
+    queryFn: () => getSystemServers(subPanel!.id, serverSubPanel!.id),
+    enabled: !!serverSubPanel && !!subPanel,
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['systems'] })
   const invalidateManagers = () => qc.invalidateQueries({ queryKey: ['systems', managerPanel?.id, 'managers'] })
   const invalidateSubs = () => qc.invalidateQueries({ queryKey: ['systems', subPanel?.id, 'subsystems'] })
-  const invalidateServers = () => qc.invalidateQueries({ queryKey: ['systems', serverPanel?.id, 'servers'] })
+  const invalidateServers = () => qc.invalidateQueries({ queryKey: ['systems', subPanel?.id, 'subsystems', serverSubPanel?.id, 'servers'] })
 
   const createMut = useMutation({ mutationFn: createSystem, onSuccess: () => { invalidate(); reset() } })
   const updateMut = useMutation({
@@ -85,12 +85,14 @@ export default function SystemManagementPage() {
     onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 삭제 실패'),
   })
   const addServerMut = useMutation({
-    mutationFn: ({ systemId, serverName }: { systemId: number; serverName: string }) => addSystemServer(systemId, serverName),
+    mutationFn: ({ systemId, subSystemId, serverName }: { systemId: number; subSystemId: number; serverName: string }) =>
+      addSystemServer(systemId, subSystemId, serverName),
     onSuccess: () => { invalidateServers(); setNewServerName('') },
     onError: (e: any) => alert(e.response?.data?.error ?? '서버 등록 실패'),
   })
   const deleteServerMut = useMutation({
-    mutationFn: ({ systemId, serverId }: { systemId: number; serverId: number }) => deleteSystemServer(systemId, serverId),
+    mutationFn: ({ systemId, subSystemId, serverId }: { systemId: number; subSystemId: number; serverId: number }) =>
+      deleteSystemServer(systemId, subSystemId, serverId),
     onSuccess: invalidateServers,
   })
 
@@ -219,7 +221,6 @@ export default function SystemManagementPage() {
                   <td style={s.td}>
                     <button onClick={() => { setSubPanel(sys); resetSubForm() }} style={{ ...s.btnSm, color: '#00695c', borderColor: '#80cbc4' }}>하위시스템</button>
                     <button onClick={() => setManagerPanel(sys)} style={{ ...s.btnSm, color: '#4527a0', borderColor: '#b39ddb' }}>담당자</button>
-                    <button onClick={() => { setServerPanel(sys); setNewServerName('') }} style={{ ...s.btnSm, color: '#e65100', borderColor: '#ffb74d' }}>서버</button>
                     <button onClick={() => openEdit(sys)} style={s.btnSm}>수정</button>
                     <button onClick={() => { if (confirm(`[${sys.code}] ${sys.name}을 삭제하시겠습니까?`)) deleteMut.mutate(sys.id) }}
                       style={{ ...s.btnSm, color: '#e53e3e' }}>삭제</button>
@@ -294,6 +295,7 @@ export default function SystemManagementPage() {
                         </span>
                       </td>
                       <td style={s.td}>
+                        <button onClick={() => { setServerSubPanel(sub); setNewServerName('') }} style={{ ...s.btnSm, color: '#e65100', borderColor: '#ffb74d' }}>서버</button>
                         <button onClick={() => openSubEdit(sub)} style={s.btnSm}>수정</button>
                         <button onClick={() => { if (confirm(`[${sub.code}] ${sub.name}을 삭제하시겠습니까?`)) deleteSubMut.mutate({ systemId: subPanel.id, subId: sub.id }) }}
                           style={{ ...s.btnSm, color: '#e53e3e' }}>삭제</button>
@@ -312,22 +314,22 @@ export default function SystemManagementPage() {
       )}
 
       {/* 서버 패널 */}
-      {serverPanel && (
+      {serverSubPanel && subPanel && (
         <div style={s.overlay}>
           <div style={{ ...s.modal, width: 460 }}>
-            <h3 style={{ margin: '0 0 4px', fontSize: 15 }}>{serverPanel.name} 배포 서버 관리</h3>
+            <h3 style={{ margin: '0 0 4px', fontSize: 15 }}>{serverSubPanel.name} 배포 서버 관리</h3>
             <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--c-text-muted)' }}>배포 승인 후 단계별로 완료 처리할 서버 목록입니다.</p>
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
               <input
                 value={newServerName}
                 onChange={e => setNewServerName(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && newServerName.trim()) addServerMut.mutate({ systemId: serverPanel.id, serverName: newServerName.trim() }) }}
+                onKeyDown={e => { if (e.key === 'Enter' && newServerName.trim()) addServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverName: newServerName.trim() }) }}
                 placeholder="서버명 입력 (예: 1번서버)"
                 style={{ ...s.input, flex: 1, fontSize: 13 }}
               />
               <button
-                onClick={() => { if (newServerName.trim()) addServerMut.mutate({ systemId: serverPanel.id, serverName: newServerName.trim() }) }}
+                onClick={() => { if (newServerName.trim()) addServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverName: newServerName.trim() }) }}
                 disabled={!newServerName.trim()}
                 style={{ ...s.btn, opacity: newServerName.trim() ? 1 : 0.5 }}>추가</button>
             </div>
@@ -340,7 +342,7 @@ export default function SystemManagementPage() {
                   <div key={sv.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>
                     <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#1a1a2e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{idx + 1}</span>
                     <span style={{ flex: 1, fontSize: 13 }}>{sv.serverName}</span>
-                    <button onClick={() => deleteServerMut.mutate({ systemId: serverPanel.id, serverId: sv.id })}
+                    <button onClick={() => deleteServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverId: sv.id })}
                       style={{ ...s.btnSm, color: '#e53e3e', marginRight: 0 }}>삭제</button>
                   </div>
                 ))}
@@ -348,7 +350,7 @@ export default function SystemManagementPage() {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
-              <button onClick={() => setServerPanel(null)} style={s.btnSecondary}>닫기</button>
+              <button onClick={() => setServerSubPanel(null)} style={s.btnSecondary}>닫기</button>
             </div>
           </div>
         </div>

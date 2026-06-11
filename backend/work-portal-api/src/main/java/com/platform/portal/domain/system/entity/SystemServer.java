@@ -15,16 +15,16 @@ public class SystemServer {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "system_id", nullable = false)
-    private OperationSystem system;
+    @JoinColumn(name = "sub_system_id", nullable = false)
+    private SubSystem subSystem;
 
     @Column(nullable = false)
     private String serverName;
 
     private int stepOrder = 0;
 
-    public SystemServer(OperationSystem system, String serverName, int stepOrder) {
-        this.system = system;
+    public SystemServer(SubSystem subSystem, String serverName, int stepOrder) {
+        this.subSystem = subSystem;
         this.serverName = serverName;
         this.stepOrder = stepOrder;
     }

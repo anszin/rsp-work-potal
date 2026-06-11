@@ -225,7 +225,8 @@ public class DeployRequestService {
     }
 
     private void createDeploySteps(DeployRequest dr) {
-        List<SystemServer> servers = systemServerRepository.findBySystemIdOrderByStepOrder(dr.getSystem().getId());
+        if (dr.getSubSystem() == null) return;
+        List<SystemServer> servers = systemServerRepository.findBySubSystemIdOrderByStepOrder(dr.getSubSystem().getId());
         servers.forEach(s -> deployStepRepository.save(new DeployStep(dr, s.getServerName(), s.getStepOrder())));
     }
 

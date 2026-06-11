@@ -116,11 +116,11 @@ export interface SystemServer {
   stepOrder: number
 }
 
-export const getSystemServers = (systemId: number) =>
-  client.get<SystemServer[]>(`/systems/${systemId}/servers`).then((r) => r.data)
+export const getSystemServers = (systemId: number, subSystemId: number) =>
+  client.get<SystemServer[]>(`/systems/${systemId}/subsystems/${subSystemId}/servers`).then((r) => r.data)
 
-export const addSystemServer = (systemId: number, serverName: string) =>
-  client.post<SystemServer>(`/systems/${systemId}/servers`, { serverName }).then((r) => r.data)
+export const addSystemServer = (systemId: number, subSystemId: number, serverName: string) =>
+  client.post<SystemServer>(`/systems/${systemId}/subsystems/${subSystemId}/servers`, { serverName }).then((r) => r.data)
 
-export const deleteSystemServer = (systemId: number, serverId: number) =>
-  client.delete(`/systems/${systemId}/servers/${serverId}`)
+export const deleteSystemServer = (systemId: number, subSystemId: number, serverId: number) =>
+  client.delete(`/systems/${systemId}/subsystems/${subSystemId}/servers/${serverId}`)
