@@ -140,6 +140,8 @@ public class RedmineService {
         private String subject;
         @JsonProperty("status")
         private RedmineRef status;
+        @JsonProperty("tracker")
+        private RedmineRef tracker;
         @JsonProperty("assigned_to")
         private RedmineRef assignedTo;
     }

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import {
@@ -7,7 +7,7 @@ import {
   type DeployRequest, type RequestStatus, type DeployType, type DeployScope, type CreateDeployRequest, type RedmineIssueRef,
 } from '../../api/deployRequests'
 import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../../api/systems'
-import { fetchRedmineIssues, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
+import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
@@ -30,11 +30,6 @@ const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '승인', value: 'APPROVED' },
   { label: '완료', value: 'COMPLETED' },
   { label: '반려', value: 'REJECTED' },
-]
-const PICKER_STATUS_TABS = [
-  { label: '진행중', value: 'open' },
-  { label: '완료', value: 'closed' },
-  { label: '전체', value: '*' },
 ]
 
 const emptyForm: CreateDeployRequest = { systemId: 0, subSystemId: null, title: '', version: '', deployType: 'RELEASE', deployScope: 'FULL', deployTarget: '', content: '' }
@@ -61,15 +56,13 @@ export default function DeployRequestPage() {
   // 일감 선택 모달
   const [showPicker, setShowPicker] = useState(false)
   const [pickerTrackerId, setPickerTrackerId] = useState<number | undefined>(undefined)
-  const [pickerStatus, setPickerStatus] = useState('open')
-  const [pickerInput, setPickerInput] = useState('')
+  const [pickerStatus, setPickerStatus] = useState('')
   const [pickerQuery, setPickerQuery] = useState('')
   const [pickerDraft, setPickerDraft] = useState<RedmineIssueRef[]>([])
-  const [pickerIssues, setPickerIssues] = useState<RedmineIssue[]>([])
-  const [pickerTotal, setPickerTotal] = useState(0)
+  const [pickerAllIssues, setPickerAllIssues] = useState<RedmineIssue[]>([])
+  const [pickerAllTotal, setPickerAllTotal] = useState(0)
   const [pickerLoading, setPickerLoading] = useState(false)
   const [pickerFetchError, setPickerFetchError] = useState<string | null>(null)
-  const pickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { data: requests = [], isLoading } = useQuery({
     queryKey: ['deploy-requests'],
@@ -91,39 +84,43 @@ export default function DeployRequestPage() {
   })
 
   const pickerStatusOptions = pickerTrackerId
-    ? trackerConfigs.find(t => t.id === pickerTrackerId)?.statuses ?? []
-    : []
-
-  const loadPickerIssues = useCallback(async (query: string, status: string, trackerId: number | undefined, offset: number, append: boolean) => {
-    if (!form.systemId) return
-    setPickerLoading(true)
-    setPickerFetchError(null)
-    try {
-      const result = await fetchRedmineIssues(form.systemId, query, status, trackerId, offset)
-      setPickerIssues(prev => append ? [...prev, ...result.issues] : result.issues)
-      setPickerTotal(result.totalCount)
-    } catch (e) {
-      setPickerFetchError(e instanceof Error ? e.message : '조회 실패')
-    } finally {
-      setPickerLoading(false)
-    }
-  }, [form.systemId])
+    ? (trackerConfigs.find(t => t.id === pickerTrackerId)?.statuses ?? [])
+    : trackerConfigs.flatMap(t => t.statuses).filter((s, i, a) => a.findIndex(x => x.id === s.id) === i)
 
   useEffect(() => {
-    if (showPicker && selectedSystem?.redmineProjectKey) {
-      loadPickerIssues(pickerQuery, pickerStatus, pickerTrackerId, 0, false)
+    if (!showPicker || !form.systemId) return
+    setPickerAllIssues([])
+    setPickerAllTotal(0)
+    setPickerFetchError(null)
+    setPickerLoading(true)
+    fetchRedmineIssuesAll(form.systemId, 0)
+      .then(result => {
+        setPickerAllIssues(result.issues)
+        setPickerAllTotal(result.totalCount)
+      })
+      .catch(e => setPickerFetchError(e instanceof Error ? e.message : '조회 실패'))
+      .finally(() => setPickerLoading(false))
+  }, [showPicker, form.systemId])
+
+  const loadMoreAllIssues = () => {
+    if (pickerLoading || pickerAllIssues.length >= pickerAllTotal) return
+    setPickerLoading(true)
+    fetchRedmineIssuesAll(form.systemId, pickerAllIssues.length)
+      .then(result => setPickerAllIssues(prev => [...prev, ...result.issues]))
+      .catch(e => setPickerFetchError(e instanceof Error ? e.message : '조회 실패'))
+      .finally(() => setPickerLoading(false))
+  }
+
+  const filteredIssues = pickerAllIssues.filter(issue => {
+    if (!trackerConfigs.some(t => t.id === issue.trackerId)) return false
+    if (pickerTrackerId && issue.trackerId !== pickerTrackerId) return false
+    if (pickerStatus) {
+      const n = Number(pickerStatus)
+      if (!isNaN(n) && issue.statusId !== n) return false
     }
-  }, [showPicker, pickerQuery, pickerStatus, pickerTrackerId, loadPickerIssues, selectedSystem?.redmineProjectKey])
-
-  const handlePickerInput = (val: string) => {
-    setPickerInput(val)
-    if (pickerTimer.current) clearTimeout(pickerTimer.current)
-    pickerTimer.current = setTimeout(() => setPickerQuery(val), 400)
-  }
-
-  const loadMore = () => {
-    loadPickerIssues(pickerQuery, pickerStatus, pickerTrackerId, pickerIssues.length, true)
-  }
+    if (pickerQuery && !issue.subject.toLowerCase().includes(pickerQuery.toLowerCase())) return false
+    return true
+  })
 
   const togglePickerIssue = (issue: RedmineIssue) => {
     setPickerDraft(prev =>
@@ -135,11 +132,9 @@ export default function DeployRequestPage() {
 
   const openPicker = () => {
     setPickerDraft([...selectedIssues])
-    setPickerStatus('open')
-    setPickerInput('')
+    setPickerTrackerId(undefined)
+    setPickerStatus('')
     setPickerQuery('')
-    setPickerIssues([])
-    setPickerTotal(0)
     setPickerFetchError(null)
     setShowPicker(true)
   }
@@ -547,12 +542,8 @@ export default function DeployRequestPage() {
                 <select
                   value={pickerTrackerId ?? ''}
                   onChange={e => {
-                    const val = e.target.value ? Number(e.target.value) : undefined
-                    setPickerTrackerId(val)
-                    const firstStatus = val
-                      ? (trackerConfigs.find(t => t.id === val)?.statuses[0]?.id)
-                      : undefined
-                    setPickerStatus(firstStatus ? String(firstStatus) : 'open')
+                    setPickerTrackerId(e.target.value ? Number(e.target.value) : undefined)
+                    setPickerStatus('')
                   }}
                   style={{ ...s.input, margin: 0, width: 'auto', minWidth: 100 }}
                 >
@@ -566,39 +557,32 @@ export default function DeployRequestPage() {
                   onChange={e => setPickerStatus(e.target.value)}
                   style={{ ...s.input, margin: 0, width: 'auto', minWidth: 100 }}
                 >
-                  {pickerTrackerId && pickerStatusOptions.length > 0 ? (
-                    pickerStatusOptions.map(st => (
-                      <option key={st.id} value={String(st.id)}>{st.name}</option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="open">진행중</option>
-                      <option value="closed">완료</option>
-                      <option value="*">전체</option>
-                    </>
-                  )}
+                  <option value="">전체 상태</option>
+                  {pickerStatusOptions.map(st => (
+                    <option key={st.id} value={String(st.id)}>{st.name}</option>
+                  ))}
                 </select>
                 <input
-                  value={pickerInput}
-                  onChange={e => handlePickerInput(e.target.value)}
+                  value={pickerQuery}
+                  onChange={e => setPickerQuery(e.target.value)}
                   placeholder="제목으로 검색..."
                   style={{ ...s.input, flex: 1, margin: 0 }}
                 />
               </div>
             </div>
             <div style={s.modalBody}>
-              {pickerIssues.length === 0 && pickerLoading ? (
+              {pickerAllIssues.length === 0 && pickerLoading ? (
                 <div style={s.modalEmpty}>불러오는 중...</div>
               ) : pickerFetchError ? (
                 <div style={{ ...s.modalEmpty, color: '#e53e3e' }}>오류: {pickerFetchError}</div>
-              ) : pickerIssues.length === 0 ? (
+              ) : filteredIssues.length === 0 ? (
                 <div style={s.modalEmpty}>일감이 없습니다</div>
               ) : (
                 <>
                   <div style={{ padding: '6px 20px', fontSize: 12, color: 'var(--c-text-muted)', background: 'var(--c-bg)', borderBottom: '1px solid var(--c-thead)' }}>
-                    전체 {pickerTotal}개 중 {pickerIssues.length}개 표시
+                    {filteredIssues.length}개 표시{pickerAllIssues.length < pickerAllTotal ? ` (서버 ${pickerAllTotal}개 중 ${pickerAllIssues.length}개 로드됨)` : ''}
                   </div>
-                  {pickerIssues.map(issue => {
+                  {filteredIssues.map(issue => {
                     const checked = pickerDraft.some(i => i.redmineIssueId === issue.id)
                     return (
                       <div key={issue.id} onClick={() => togglePickerIssue(issue)}
@@ -611,8 +595,11 @@ export default function DeployRequestPage() {
                           <span style={{ fontSize: 13 }}>{issue.subject}</span>
                         </div>
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                          {issue.status && (
-                            <span style={{ fontSize: 11, color: 'var(--c-text-sub)', background: 'var(--c-thead)', padding: '2px 6px', borderRadius: 3 }}>{issue.status}</span>
+                          {issue.trackerName && (
+                            <span style={{ fontSize: 11, color: '#1976d2', background: '#e3f2fd', padding: '2px 6px', borderRadius: 3 }}>{issue.trackerName}</span>
+                          )}
+                          {issue.statusName && (
+                            <span style={{ fontSize: 11, color: 'var(--c-text-sub)', background: 'var(--c-thead)', padding: '2px 6px', borderRadius: 3 }}>{issue.statusName}</span>
                           )}
                           {issue.assignedTo && (
                             <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{issue.assignedTo}</span>
@@ -621,10 +608,10 @@ export default function DeployRequestPage() {
                       </div>
                     )
                   })}
-                  {pickerIssues.length < pickerTotal && (
+                  {pickerAllIssues.length < pickerAllTotal && (
                     <div style={{ padding: '12px 20px', textAlign: 'center' }}>
-                      <button onClick={loadMore} disabled={pickerLoading} style={s.btnOutline}>
-                        {pickerLoading ? '불러오는 중...' : `더 보기 (${pickerTotal - pickerIssues.length}개 남음)`}
+                      <button onClick={loadMoreAllIssues} disabled={pickerLoading} style={s.btnOutline}>
+                        {pickerLoading ? '불러오는 중...' : `더 불러오기 (${pickerAllTotal - pickerAllIssues.length}개 남음)`}
                       </button>
                     </div>
                   )}
