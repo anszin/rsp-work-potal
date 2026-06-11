@@ -112,11 +112,14 @@ export default function DeployRequestPage() {
   }
 
   const filteredIssues = pickerAllIssues.filter(issue => {
-    if (!trackerConfigs.some(t => t.id === issue.trackerId)) return false
+    const trackerConfig = trackerConfigs.find(t => t.id === issue.trackerId)
+    if (!trackerConfig) return false
     if (pickerTrackerId && issue.trackerId !== pickerTrackerId) return false
     if (pickerStatus) {
       const n = Number(pickerStatus)
       if (!isNaN(n) && issue.statusId !== n) return false
+    } else {
+      if (!trackerConfig.statuses.some(s => s.id === issue.statusId)) return false
     }
     if (pickerQuery) {
       const q = pickerQuery.trim().toLowerCase()
