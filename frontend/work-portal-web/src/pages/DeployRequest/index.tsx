@@ -769,40 +769,120 @@ const s: Record<string, React.CSSProperties> = {
   modalFooter: { padding: '12px 20px', borderTop: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
 }
 
-function DeployDashboard({ requests }: { requests: import('../../api/deployRequests').DeployRequest[] }) {
-  const statuses: RequestStatus[] = ['DRAFT', 'REQUESTED', 'APPROVED', 'COMPLETED', 'REJECTED']
-  const statusLabels: Record<RequestStatus, string> = { DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려' }
-  const statusColors: Record<RequestStatus, string> = { DRAFT: '#718096', REQUESTED: '#3182ce', APPROVED: '#38a169', COMPLETED: '#285E61', REJECTED: '#e53e3e' }
-  const statusBg: Record<RequestStatus, string>    = { DRAFT: '#f7fafc', REQUESTED: '#ebf8ff', APPROVED: '#f0fff4', COMPLETED: '#e6fffa', REJECTED: '#fff5f5' }
+const MONTHS_KR = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
+const STATUSES: RequestStatus[] = ['DRAFT','REQUESTED','APPROVED','COMPLETED','REJECTED']
+const STATUS_LABELS: Record<RequestStatus, string> = { DRAFT:'임시저장', REQUESTED:'요청', APPROVED:'승인', COMPLETED:'완료', REJECTED:'반려' }
+const STATUS_COLORS: Record<RequestStatus, string> = { DRAFT:'#718096', REQUESTED:'#3182ce', APPROVED:'#38a169', COMPLETED:'#285E61', REJECTED:'#e53e3e' }
+const STATUS_BG: Record<RequestStatus, string>     = { DRAFT:'#f7fafc', REQUESTED:'#ebf8ff', APPROVED:'#f0fff4', COMPLETED:'#e6fffa', REJECTED:'#fff5f5' }
+const TYPE_LABELS: Record<string, string>  = { RELEASE:'릴리즈', HOTFIX:'핫픽스', ROLLBACK:'롤백', PATCH:'패치' }
+const TYPE_COLORS: Record<string, string>  = { RELEASE:'#3182ce', HOTFIX:'#e53e3e', ROLLBACK:'#d69e2e', PATCH:'#38a169' }
 
-  const byStatus = statuses.map(s => ({ status: s, count: requests.filter(r => r.status === s).length }))
-  const bySystem = Object.entries(
-    requests.reduce((acc, r) => { acc[r.systemName] = (acc[r.systemName] || 0) + 1; return acc }, {} as Record<string, number>)
-  ).sort((a, b) => b[1] - a[1])
-  const maxSys = Math.max(...bySystem.map(([, n]) => n), 1)
-  const byType = Object.entries(
-    requests.reduce((acc, r) => { if (r.deployType) { acc[r.deployType] = (acc[r.deployType] || 0) + 1 } return acc }, {} as Record<string, number>)
-  ).sort((a, b) => b[1] - a[1])
-  const typeLabels: Record<string, string> = { RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치' }
-  const typeColors: Record<string, string> = { RELEASE: '#3182ce', HOTFIX: '#e53e3e', ROLLBACK: '#d69e2e', PATCH: '#38a169' }
+function DeployDashboard({ requests }: { requests: import('../../api/deployRequests').DeployRequest[] }) {
+  const now = new Date()
+  const [selYear, setSelYear] = useState(now.getFullYear())
+  const [selMonth, setSelMonth] = useState<number | 'all'>('all')
+
+  const years = [...new Set([now.getFullYear(), ...requests.map(r => new Date(r.createdAt).getFullYear())])].sort((a, b) => b - a)
+
+  const inPeriod = (r: import('../../api/deployRequests').DeployRequest) => {
+    const d = new Date(r.createdAt)
+    if (d.getFullYear() !== selYear) return false
+    if (selMonth !== 'all' && d.getMonth() + 1 !== selMonth) return false
+    return true
+  }
+  const filtered = requests.filter(inPeriod)
+
+  const monthlyData = Array.from({ length: 12 }, (_, i) => {
+    const m = i + 1
+    const items = requests.filter(r => { const d = new Date(r.createdAt); return d.getFullYear() === selYear && d.getMonth() + 1 === m })
+    return { month: m, total: items.length, byStatus: STATUSES.reduce((acc, s) => { acc[s] = items.filter(r => r.status === s).length; return acc }, {} as Record<RequestStatus, number>) }
+  })
+  const maxMonthly = Math.max(...monthlyData.map(m => m.total), 1)
+
+  const bySystem = Object.entries(filtered.reduce((acc, r) => { acc[r.systemName] = (acc[r.systemName] || 0) + 1; return acc }, {} as Record<string, number>)).sort((a, b) => b[1] - a[1])
+  const maxSys   = Math.max(...bySystem.map(([, n]) => n), 1)
+  const byType   = Object.entries(filtered.reduce((acc, r) => { if (r.deployType) acc[r.deployType] = (acc[r.deployType] || 0) + 1; return acc }, {} as Record<string, number>)).sort((a, b) => b[1] - a[1])
+
+  const selectStyle: React.CSSProperties = { padding: '6px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, background: 'var(--c-input-bg)', color: 'var(--c-text)', cursor: 'pointer' }
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 16 }}>
+      {/* 필터 */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center' }}>
+        <select value={selYear} onChange={e => { setSelYear(Number(e.target.value)); setSelMonth('all') }} style={selectStyle}>
+          {years.map(y => <option key={y} value={y}>{y}년</option>)}
+        </select>
+        <select value={selMonth} onChange={e => setSelMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))} style={selectStyle}>
+          <option value="all">전체 월</option>
+          {MONTHS_KR.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
+        </select>
+        {selMonth !== 'all' && (
+          <button onClick={() => setSelMonth('all')} style={{ fontSize: 12, color: 'var(--c-text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px' }}>✕ 초기화</button>
+        )}
+        <span style={{ fontSize: 13, color: 'var(--c-text-muted)', marginLeft: 4 }}>총 {filtered.length}건</span>
+      </div>
+
+      {/* 상태 카드 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 20 }}>
         <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '16px 20px' }}>
           <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 6, fontWeight: 600 }}>전체</div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-text)' }}>{requests.length}</div>
+          <div style={{ fontSize: 28, fontWeight: 700 }}>{filtered.length}</div>
         </div>
-        {byStatus.map(({ status, count }) => (
-          <div key={status} style={{ background: statusBg[status], border: `1px solid ${statusColors[status]}44`, borderRadius: 8, padding: '16px 20px' }}>
-            <div style={{ fontSize: 11, color: statusColors[status], marginBottom: 6, fontWeight: 600 }}>{statusLabels[status]}</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: statusColors[status] }}>{count}</div>
+        {STATUSES.map(s => (
+          <div key={s} style={{ background: STATUS_BG[s], border: `1px solid ${STATUS_COLORS[s]}44`, borderRadius: 8, padding: '16px 20px' }}>
+            <div style={{ fontSize: 11, color: STATUS_COLORS[s], marginBottom: 6, fontWeight: 600 }}>{STATUS_LABELS[s]}</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: STATUS_COLORS[s] }}>{filtered.filter(r => r.status === s).length}</div>
           </div>
         ))}
       </div>
+
+      {/* 월별 누적 바 차트 */}
+      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20, marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 14 }}>
+          월별 배포 현황 ({selYear}년) — 클릭하여 필터
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
+          {monthlyData.map(({ month, total, byStatus: bs }) => {
+            const isSelected = selMonth === month
+            return (
+              <div key={month}
+                onClick={() => setSelMonth(isSelected ? 'all' : month)}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 8px', borderRadius: 6, cursor: 'pointer',
+                  background: isSelected ? 'var(--c-bg)' : 'transparent',
+                  border: `1px solid ${isSelected ? 'var(--c-border-in)' : 'transparent'}`,
+                  transition: 'background 0.15s',
+                }}>
+                <span style={{ fontSize: 12, color: 'var(--c-text-muted)', minWidth: 26, textAlign: 'right' as const }}>{month}월</span>
+                <div style={{ flex: 1, height: 20, borderRadius: 4, overflow: 'hidden', display: 'flex', background: 'var(--c-bg)', border: '1px solid var(--c-border-in)' }}>
+                  {total > 0 && STATUSES.map(s => {
+                    const c = bs[s]; if (!c) return null
+                    return <div key={s} style={{ width: `${(c / maxMonthly) * 100}%`, background: STATUS_COLORS[s], height: '100%', opacity: 0.85 }} title={`${STATUS_LABELS[s]}: ${c}`} />
+                  })}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, minWidth: 20, textAlign: 'right' as const, color: total > 0 ? 'var(--c-text)' : 'var(--c-text-muted)' }}>{total}</span>
+                <span style={{ fontSize: 11, color: 'var(--c-text-muted)', minWidth: 140 }}>
+                  {STATUSES.filter(s => bs[s] > 0).map(s => `${STATUS_LABELS[s]} ${bs[s]}`).join('  ')}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+        <div style={{ display: 'flex', gap: 14, marginTop: 12, flexWrap: 'wrap' as const }}>
+          {STATUSES.map(s => (
+            <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: STATUS_COLORS[s], display: 'inline-block', opacity: 0.85 }} />
+              {STATUS_LABELS[s]}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* 시스템별 + 유형별 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>시스템별</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>
+            시스템별{selMonth !== 'all' ? ` (${selMonth}월)` : ''}
+          </div>
           {bySystem.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
               {bySystem.map(([name, count]) => (
@@ -819,13 +899,15 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
           )}
         </div>
         <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>배포 유형별</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>
+            배포 유형별{selMonth !== 'all' ? ` (${selMonth}월)` : ''}
+          </div>
           {byType.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
               {byType.map(([type, count]) => (
                 <div key={type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 12, background: typeColors[type] + '22', color: typeColors[type], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>{typeLabels[type] ?? type}</span>
-                  <span style={{ fontWeight: 700, fontSize: 22, color: 'var(--c-text)' }}>{count}</span>
+                  <span style={{ fontSize: 12, background: TYPE_COLORS[type] + '22', color: TYPE_COLORS[type], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>{TYPE_LABELS[type] ?? type}</span>
+                  <span style={{ fontWeight: 700, fontSize: 22 }}>{count}</span>
                 </div>
               ))}
             </div>
