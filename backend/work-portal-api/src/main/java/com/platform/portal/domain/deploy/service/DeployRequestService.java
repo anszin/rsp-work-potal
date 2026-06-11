@@ -152,6 +152,15 @@ public class DeployRequestService {
             }
         }
 
+        if (newStatus == Status.COMPLETED) {
+            long total = deployStepRepository.countByDeployRequestId(id);
+            long done = deployStepRepository.countByDeployRequestIdAndStatus(id, DeployStep.StepStatus.DONE);
+            if (total > 0 && done < total) {
+                throw new IllegalStateException(
+                    String.format("미완료된 배포 단계가 있습니다. (%d/%d 완료)", done, total));
+            }
+        }
+
         dr.setStatus(newStatus);
         dr.setActionComment(req.getComment());
         switch (newStatus) {
