@@ -1,12 +1,14 @@
 package com.platform.portal.domain.request.dto;
 
 import com.platform.portal.domain.request.entity.ChangeRequest;
+import com.platform.portal.domain.request.entity.ChangeRequestIssue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Base64;
+import java.util.List;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -80,6 +82,17 @@ public class ChangeRequestDto {
     }
 
     @Getter
+    public static class RedmineIssueRef {
+        private final Integer redmineIssueId;
+        private final String redmineIssueTitle;
+
+        public RedmineIssueRef(ChangeRequestIssue issue) {
+            this.redmineIssueId = issue.getRedmineIssueId();
+            this.redmineIssueTitle = issue.getRedmineIssueTitle();
+        }
+    }
+
+    @Getter
     public static class Response {
         private final Long id;
         private final String requestNo;
@@ -104,6 +117,8 @@ public class ChangeRequestDto {
         private final LocalDateTime approvedAt;
         private final LocalDateTime completedAt;
         private final LocalDateTime createdAt;
+        private final List<RedmineIssueRef> redmineIssues;
+        private final ChangeRequest.RedmineSyncStatus redmineSyncStatus;
 
         public Response(ChangeRequest cr) {
             this.id = cr.getId();
@@ -129,6 +144,8 @@ public class ChangeRequestDto {
             this.approvedAt = cr.getApprovedAt();
             this.completedAt = cr.getCompletedAt();
             this.createdAt = cr.getCreatedAt();
+            this.redmineIssues = cr.getRedmineIssues().stream().map(RedmineIssueRef::new).toList();
+            this.redmineSyncStatus = cr.getRedmineSyncStatus();
         }
     }
 }

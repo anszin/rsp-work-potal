@@ -87,6 +87,11 @@ public class ChangeRequestController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/sync-redmine")
+    public ResponseEntity<ChangeRequestDto.Response> syncRedmine(@PathVariable Long id) {
+        return ResponseEntity.ok(service.syncRedmine(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id,
                                        @AuthenticationPrincipal UserDetails user) {

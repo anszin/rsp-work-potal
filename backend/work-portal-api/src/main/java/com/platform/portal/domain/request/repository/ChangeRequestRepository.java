@@ -10,13 +10,13 @@ import java.util.List;
 
 public interface ChangeRequestRepository extends JpaRepository<ChangeRequest, Long> {
 
-    @Query("SELECT c FROM ChangeRequest c JOIN FETCH c.system JOIN FETCH c.requester ORDER BY c.createdAt DESC")
+    @Query("SELECT DISTINCT c FROM ChangeRequest c JOIN FETCH c.system JOIN FETCH c.requester LEFT JOIN FETCH c.redmineIssues ORDER BY c.createdAt DESC")
     List<ChangeRequest> findAllWithDetails();
 
-    @Query("SELECT c FROM ChangeRequest c JOIN FETCH c.system JOIN FETCH c.requester WHERE c.system.id = :systemId ORDER BY c.createdAt DESC")
+    @Query("SELECT DISTINCT c FROM ChangeRequest c JOIN FETCH c.system JOIN FETCH c.requester LEFT JOIN FETCH c.redmineIssues WHERE c.system.id = :systemId ORDER BY c.createdAt DESC")
     List<ChangeRequest> findBySystemId(Long systemId);
 
-    @Query("SELECT c FROM ChangeRequest c JOIN FETCH c.system JOIN FETCH c.requester WHERE c.status = :status ORDER BY c.createdAt DESC")
+    @Query("SELECT DISTINCT c FROM ChangeRequest c JOIN FETCH c.system JOIN FETCH c.requester LEFT JOIN FETCH c.redmineIssues WHERE c.status = :status ORDER BY c.createdAt DESC")
     List<ChangeRequest> findByStatus(ChangeRequest.Status status);
 
     @Query("SELECT COUNT(c) FROM ChangeRequest c WHERE c.createdAt >= :start AND c.createdAt < :end")

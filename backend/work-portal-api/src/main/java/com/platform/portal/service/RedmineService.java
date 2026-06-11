@@ -96,6 +96,33 @@ public class RedmineService {
         }
     }
 
+    public Integer createIssue(String projectKey, String subject, String description, Integer trackerId) {
+        try {
+            java.net.URI uri = java.net.URI.create(baseUrl + "/issues.json?key=" + apiKey);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> issueBody = new HashMap<>();
+            issueBody.put("project_id", projectKey);
+            issueBody.put("subject", subject);
+            if (description != null && !description.isBlank()) {
+                issueBody.put("description", description);
+            }
+            if (trackerId != null) {
+                issueBody.put("tracker_id", trackerId);
+            }
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(Map.of("issue", issueBody), headers);
+            RedmineIssueCreateResponse resp = restTemplate.postForObject(uri, entity, RedmineIssueCreateResponse.class);
+            Integer issueId = resp != null && resp.getIssue() != null ? resp.getIssue().getId() : null;
+            log.info("Redmine issue created: #{} '{}' in project {}", issueId, subject, projectKey);
+            return issueId;
+        } catch (Exception e) {
+            log.error("Redmine issue creation failed: {}", e.getMessage());
+            throw new RuntimeException("레드마인 일감 생성 실패: " + e.getMessage(), e);
+        }
+    }
+
     public void updateIssueFixedVersion(Integer issueId, Integer versionId) {
         try {
             java.net.URI uri = java.net.URI.create(baseUrl + "/issues/" + issueId + ".json?key=" + apiKey);
@@ -108,6 +135,20 @@ public class RedmineService {
         } catch (Exception e) {
             log.error("Failed to update issue #{} fixed_version: {}", issueId, e.getMessage());
             throw new RuntimeException("레드마인 일감 버전 설정 실패: " + e.getMessage(), e);
+        }
+    }
+
+    @Getter
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class RedmineIssueCreateResponse {
+        @JsonProperty("issue")
+        private RedmineIssueDetail issue;
+
+        @Getter
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class RedmineIssueDetail {
+            private Integer id;
+            private String subject;
         }
     }
 

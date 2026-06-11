@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import {
   getChangeRequests, createChangeRequest, updateChangeRequest,
-  changeRequestStatus, deleteChangeRequest, buildPayload, downloadAttachment,
+  changeRequestStatus, deleteChangeRequest, buildPayload, downloadAttachment, syncRedmineForCR,
   type ChangeRequest, type RequestStatus, type CreateChangeRequest,
 } from '../../api/changeRequests'
 import { getActiveSystems, getManagedSystemIds, getActiveSubSystems } from '../../api/systems'
@@ -114,6 +114,11 @@ export default function ChangeRequestPage() {
     mutationFn: deleteChangeRequest,
     onSuccess: () => { invalidate(); setDetail(null) },
     onError: (e: unknown) => alert('삭제 실패: ' + apiError(e)),
+  })
+  const syncCRMut = useMutation({
+    mutationFn: syncRedmineForCR,
+    onSuccess: (updated) => { invalidate(); setDetail(updated) },
+    onError: (e: unknown) => alert('재동기화 실패: ' + apiError(e)),
   })
 
   const openCreate = () => {
@@ -445,6 +450,40 @@ export default function ChangeRequestPage() {
               )}
               {detail.attachmentLink && (
                 <a href={detail.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: '#7b1fa2' }}>🔗 링크 열기</a>
+              )}
+            </div>
+          )}
+
+          {/* 레드마인 일감 */}
+          {(detail.redmineIssues?.length > 0 || detail.redmineSyncStatus) && (
+            <div style={{ marginTop: 14 }}>
+              <div style={s.detailLabel}>레드마인 일감</div>
+              {detail.redmineIssues?.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6, marginBottom: detail.redmineSyncStatus ? 8 : 0 }}>
+                  {detail.redmineIssues.map(i => (
+                    <a key={i.redmineIssueId}
+                      href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
+                      target="_blank" rel="noreferrer"
+                      style={{ color: '#1976d2', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '3px 10px', borderRadius: 4 }}>
+                      #{i.redmineIssueId} {i.redmineIssueTitle}
+                    </a>
+                  ))}
+                </div>
+              )}
+              {detail.redmineSyncStatus && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {detail.redmineSyncStatus === 'SYNCED' && <span style={{ fontSize: 12, color: '#276749', background: '#F0FFF4', border: '1px solid #C6F6D5', padding: '2px 8px', borderRadius: 4 }}>일감 등록 완료</span>}
+                  {detail.redmineSyncStatus === 'FAILED' && (
+                    <>
+                      <span style={{ fontSize: 12, color: '#9B2C2C', background: '#FFF5F5', border: '1px solid #FED7D7', padding: '2px 8px', borderRadius: 4 }}>일감 등록 실패</span>
+                      <button style={{ ...s.btnSm, color: '#C05621', borderColor: '#C05621' }}
+                        onClick={() => syncCRMut.mutate(detail.id)} disabled={syncCRMut.isPending}>
+                        {syncCRMut.isPending ? '재시도 중...' : '재시도'}
+                      </button>
+                    </>
+                  )}
+                  {detail.redmineSyncStatus === 'SKIPPED' && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>미설정 (레드마인 프로젝트 없음)</span>}
+                </div>
               )}
             </div>
           )}

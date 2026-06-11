@@ -1,6 +1,12 @@
 import client from './client'
 
 export type RequestStatus = 'DRAFT' | 'REQUESTED' | 'APPROVED' | 'COMPLETED' | 'REJECTED'
+export type RedmineSyncStatus = 'SYNCED' | 'FAILED' | 'SKIPPED'
+
+export interface RedmineIssueRef {
+  redmineIssueId: number
+  redmineIssueTitle: string
+}
 
 export interface ChangeRequest {
   id: number
@@ -26,6 +32,8 @@ export interface ChangeRequest {
   approvedAt: string | null
   completedAt: string | null
   createdAt: string
+  redmineIssues: RedmineIssueRef[]
+  redmineSyncStatus: RedmineSyncStatus | null
 }
 
 export interface CreateChangeRequest {
@@ -75,6 +83,9 @@ export const changeRequestStatus = (id: number, status: RequestStatus, comment?:
 
 export const deleteChangeRequest = (id: number) =>
   client.delete(`/change-requests/${id}`)
+
+export const syncRedmineForCR = (id: number) =>
+  client.post<ChangeRequest>(`/change-requests/${id}/sync-redmine`).then(r => r.data)
 
 export const downloadAttachment = async (id: number, filename: string) => {
   const res = await client.get(`/change-requests/${id}/attachment`, { responseType: 'blob' })

@@ -3,15 +3,18 @@ package com.platform.portal.domain.request.service;
 import com.platform.portal.domain.request.dto.ChangeRequestDto;
 import com.platform.portal.domain.request.entity.ChangeRequest;
 import com.platform.portal.domain.request.entity.ChangeRequest.Status;
+import com.platform.portal.domain.request.entity.ChangeRequestIssue;
 import com.platform.portal.domain.request.repository.ChangeRequestRepository;
-import com.platform.portal.domain.system.entity.SubSystem;
 import com.platform.portal.domain.system.repository.OperationSystemRepository;
 import com.platform.portal.domain.system.repository.SubSystemRepository;
 import com.platform.portal.domain.system.repository.SystemManagerRepository;
 import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
 import com.platform.portal.service.FileStorageService;
+import com.platform.portal.service.RedmineService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,6 +38,10 @@ public class ChangeRequestService {
     private final UserRepository userRepository;
     private final SystemManagerRepository systemManagerRepository;
     private final FileStorageService fileStorageService;
+    private final RedmineService redmineService;
+
+    @Value("${redmine.cr-tracker-id:#{null}}")
+    private Integer crTrackerId;
 
     private static final Map<Status, Set<Status>> ALLOWED_TRANSITIONS = Map.of(
             Status.DRAFT,     Set.of(Status.REQUESTED),
@@ -89,7 +97,36 @@ public class ChangeRequestService {
                 saved.setAttachmentOriginalName(req.getAttachmentFilename());
             } catch (IOException e) { throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e); }
         }
+        createRedmineIssueIfPossible(saved);
         return new ChangeRequestDto.Response(saved);
+    }
+
+    @Transactional
+    public ChangeRequestDto.Response syncRedmine(Long id) {
+        ChangeRequest cr = getOrThrow(id);
+        createRedmineIssueIfPossible(cr);
+        return new ChangeRequestDto.Response(cr);
+    }
+
+    private void createRedmineIssueIfPossible(ChangeRequest cr) {
+        String projectKey = cr.getSystem().getRedmineProjectKey();
+        if (projectKey == null || projectKey.isBlank()) {
+            cr.setRedmineSyncStatus(ChangeRequest.RedmineSyncStatus.SKIPPED);
+            return;
+        }
+        String subject = cr.getSubSystem() != null
+                ? "[" + cr.getSubSystem().getName() + "] " + cr.getTitle()
+                : cr.getTitle();
+        try {
+            Integer issueId = redmineService.createIssue(projectKey, subject, cr.getContent(), crTrackerId);
+            if (issueId != null) {
+                cr.getRedmineIssues().add(new ChangeRequestIssue(cr, issueId, subject));
+            }
+            cr.setRedmineSyncStatus(ChangeRequest.RedmineSyncStatus.SYNCED);
+        } catch (Exception e) {
+            log.warn("Redmine issue creation failed for CR {}: {}", cr.getRequestNo(), e.getMessage());
+            cr.setRedmineSyncStatus(ChangeRequest.RedmineSyncStatus.FAILED);
+        }
     }
 
     @Transactional
