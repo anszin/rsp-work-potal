@@ -805,7 +805,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
     color: SYS_COLORS[si % SYS_COLORS.length],
     counts: Array.from({ length: 12 }, (_, i) => {
       const m = i + 1
-      return requests.filter(r => r.systemName === sysName && new Date(r.createdAt).getFullYear() === selYear && new Date(r.createdAt).getMonth() + 1 === m).length
+      return requests.filter(r => r.systemName === sysName && r.status === 'COMPLETED' && new Date(r.createdAt).getFullYear() === selYear && new Date(r.createdAt).getMonth() + 1 === m).length
     })
   }))
 
@@ -846,45 +846,11 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
         ))}
       </div>
 
-      {/* 월별 꺾은선 그래프 */}
-      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20, marginBottom: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 14 }}>
-          월별 배포 추이 ({selYear}년) — 점 클릭으로 월 필터
-        </div>
-        <MonthlyLineChart data={monthlyData} selMonth={selMonth} onClickMonth={m => setSelMonth(selMonth === m ? 'all' : m)} />
-        <div style={{ display: 'flex', gap: 14, marginTop: 10, flexWrap: 'wrap' as const }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
-            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#1a1a2e" strokeWidth="2.5" strokeLinecap="round" /></svg>
-            전체
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
-            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#285E61" strokeWidth="2" strokeDasharray="4,2" strokeLinecap="round" /></svg>
-            완료
-          </span>
-        </div>
-        {/* 월별 상세 요약 */}
-        <div style={{ display: 'flex', gap: 4, marginTop: 12, flexWrap: 'wrap' as const }}>
-          {monthlyData.filter(m => m.total > 0).map(({ month, total, byStatus: bs }) => (
-            <button key={month} onClick={() => setSelMonth(selMonth === month ? 'all' : month)}
-              style={{ padding: '4px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                background: selMonth === month ? '#1a1a2e' : 'var(--c-bg)',
-                color: selMonth === month ? '#fff' : 'var(--c-text-sub)',
-                border: `1px solid ${selMonth === month ? '#1a1a2e' : 'var(--c-border-in)'}`,
-              }}>
-              {month}월 <strong>{total}</strong>
-              <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.7 }}>
-                {STATUSES.filter(s => bs[s] > 0).map(s => `${STATUS_LABELS[s]}${bs[s]}`).join(' ')}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 월별 시스템별 꺾은선 */}
+      {/* 월별 시스템별 완료 현황 */}
       {systemMonthlyData.length > 0 && (
         <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20, marginBottom: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 14 }}>
-            월별 시스템별 배포 현황 ({selYear}년)
+            월별 시스템별 배포 완료 현황 ({selYear}년)
           </div>
           <SystemMonthlyLineChart systems={systemMonthlyData} selMonth={selMonth} onClickMonth={m => setSelMonth(selMonth === m ? 'all' : m)} />
         </div>
