@@ -31,6 +31,7 @@ public class ChangeRequestDto {
         private String attachmentFilename;
         private String attachmentContent; // base64
         private Integer redmineTrackerId;
+        private Integer redmineAssigneeId;
 
         public byte[] decodeAttachment() {
             if (attachmentContent == null) return null;
@@ -120,6 +121,8 @@ public class ChangeRequestDto {
         private final LocalDateTime createdAt;
         private final List<RedmineIssueRef> redmineIssues;
         private final ChangeRequest.RedmineSyncStatus redmineSyncStatus;
+        private final Integer redmineTrackerId;
+        private final Integer redmineAssigneeId;
 
         public Response(ChangeRequest cr) {
             this.id = cr.getId();
@@ -147,6 +150,8 @@ public class ChangeRequestDto {
             this.createdAt = cr.getCreatedAt();
             this.redmineIssues = cr.getRedmineIssues().stream().map(RedmineIssueRef::new).toList();
             this.redmineSyncStatus = cr.getRedmineSyncStatus();
+            this.redmineTrackerId = cr.getRedmineTrackerId();
+            this.redmineAssigneeId = cr.getRedmineAssigneeId();
         }
     }
 }

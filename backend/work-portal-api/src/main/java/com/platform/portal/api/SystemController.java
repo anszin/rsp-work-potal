@@ -62,7 +62,6 @@ public class SystemController {
     }
 
     @GetMapping("/{id}/managers")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<List<SystemDto.ManagerResponse>> listManagers(@PathVariable Long id) {
         return ResponseEntity.ok(systemService.findManagers(id));
     }

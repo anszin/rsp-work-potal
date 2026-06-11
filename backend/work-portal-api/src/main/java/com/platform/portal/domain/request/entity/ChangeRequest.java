@@ -71,6 +71,7 @@ public class ChangeRequest {
     private LocalDateTime createdAt;
 
     private Integer redmineTrackerId;
+    private Integer redmineAssigneeId;
 
     @OneToMany(mappedBy = "changeRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChangeRequestIssue> redmineIssues = new ArrayList<>();

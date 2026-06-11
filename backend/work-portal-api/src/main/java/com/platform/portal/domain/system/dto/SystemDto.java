@@ -137,12 +137,16 @@ public class SystemDto {
         private final Long id;
         private final Long userId;
         private final String username;
+        private final String name;
+        private final Integer redmineUserId;
         private final LocalDateTime assignedAt;
 
         public ManagerResponse(SystemManager sm) {
             this.id = sm.getId();
             this.userId = sm.getUser().getId();
             this.username = sm.getUser().getUsername();
+            this.name = sm.getUser().getName();
+            this.redmineUserId = sm.getUser().getRedmineUserId();
             this.assignedAt = sm.getAssignedAt();
         }
     }

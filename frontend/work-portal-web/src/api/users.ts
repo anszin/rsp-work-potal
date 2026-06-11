@@ -12,6 +12,7 @@ export interface UserSummary {
   active: boolean
   mustChangePassword: boolean
   tempPassword: string | null
+  redmineUserId: number | null
   createdAt: string
 }
 
@@ -29,6 +30,7 @@ export interface UpdateUserRequest {
   email?: string
   role?: UserRole
   active?: boolean
+  redmineUserId?: number | null
 }
 
 export const getUsers = () =>

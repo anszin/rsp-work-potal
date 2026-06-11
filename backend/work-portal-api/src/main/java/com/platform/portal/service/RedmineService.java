@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -96,7 +97,7 @@ public class RedmineService {
         }
     }
 
-    public Integer createIssue(String projectKey, String subject, String description, Integer trackerId) {
+    public Integer createIssue(String projectKey, String subject, String description, Integer trackerId, Integer assigneeId, LocalDate dueDate) {
         try {
             java.net.URI uri = java.net.URI.create(baseUrl + "/issues.json?key=" + apiKey);
             HttpHeaders headers = new HttpHeaders();
@@ -105,12 +106,10 @@ public class RedmineService {
             Map<String, Object> issueBody = new HashMap<>();
             issueBody.put("project_id", projectKey);
             issueBody.put("subject", subject);
-            if (description != null && !description.isBlank()) {
-                issueBody.put("description", description);
-            }
-            if (trackerId != null) {
-                issueBody.put("tracker_id", trackerId);
-            }
+            if (description != null && !description.isBlank()) issueBody.put("description", description);
+            if (trackerId != null) issueBody.put("tracker_id", trackerId);
+            if (assigneeId != null) issueBody.put("assigned_to_id", assigneeId);
+            if (dueDate != null) issueBody.put("due_date", dueDate.toString());
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(Map.of("issue", issueBody), headers);
             RedmineIssueCreateResponse resp = restTemplate.postForObject(uri, entity, RedmineIssueCreateResponse.class);

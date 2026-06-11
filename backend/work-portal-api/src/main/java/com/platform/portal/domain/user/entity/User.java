@@ -44,6 +44,8 @@ public class User {
     @Column(columnDefinition = "boolean default false")
     private Boolean mustChangePassword = false;
 
+    private Integer redmineUserId;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;

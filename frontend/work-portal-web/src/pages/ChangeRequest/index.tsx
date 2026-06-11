@@ -6,7 +6,7 @@ import {
   changeRequestStatus, deleteChangeRequest, buildPayload, downloadAttachment, syncRedmineForCR,
   type ChangeRequest, type RequestStatus, type CreateChangeRequest,
 } from '../../api/changeRequests'
-import { getActiveSystems, getManagedSystemIds, getActiveSubSystems } from '../../api/systems'
+import { getActiveSystems, getManagedSystemIds, getActiveSubSystems, getSystemManagers, type SystemManager } from '../../api/systems'
 import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
@@ -30,7 +30,7 @@ const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '반려', value: 'REJECTED' },
 ]
 
-const emptyForm: CreateChangeRequest = { systemId: 0, subSystemId: null, title: '', content: '', requesterDept: '', requesterName: '', targetDate: '', attachmentLink: '', redmineTrackerId: null }
+const emptyForm: CreateChangeRequest = { systemId: 0, subSystemId: null, title: '', content: '', requesterDept: '', requesterName: '', targetDate: '', attachmentLink: '', redmineTrackerId: null, redmineAssigneeId: null }
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -97,6 +97,11 @@ export default function ChangeRequestPage() {
     queryFn: fetchRedmineTrackers,
   })
   const selectedSystem = systems.find(s => s.id === form.systemId)
+  const { data: systemManagers = [] } = useQuery<SystemManager[]>({
+    queryKey: ['system-managers', form.systemId],
+    queryFn: () => getSystemManagers(form.systemId),
+    enabled: showForm && form.systemId > 0,
+  })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['change-requests'] })
 
@@ -251,7 +256,7 @@ export default function ChangeRequestPage() {
             <label style={s.label}>운영시스템 *</label>
             <select style={s.input} value={form.systemId} onChange={(e) => {
               const sysId = Number(e.target.value)
-              setForm({ ...form, systemId: sysId, subSystemId: null, redmineTrackerId: defaultTrackerId(sysId) })
+              setForm({ ...form, systemId: sysId, subSystemId: null, redmineTrackerId: defaultTrackerId(sysId), redmineAssigneeId: null })
             }}>
               <option value={0}>선택</option>
               {systems.map((sys) => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
@@ -277,6 +282,20 @@ export default function ChangeRequestPage() {
                 <select style={s.input} value={form.redmineTrackerId ?? ''} onChange={e => setForm({ ...form, redmineTrackerId: e.target.value ? Number(e.target.value) : null })}>
                   <option value="" disabled>선택하세요</option>
                   {trackerConfigs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <label style={s.label}>메인 담당자</label>
+                <select style={s.input} value={form.redmineAssigneeId ?? ''} onChange={e => setForm({ ...form, redmineAssigneeId: e.target.value ? Number(e.target.value) : null })}>
+                  <option value="">선택 안함</option>
+                  {systemManagers.filter(m => m.redmineUserId != null).map(m => (
+                    <option key={m.userId} value={m.redmineUserId!}>{m.name ?? m.username}</option>
+                  ))}
+                  {systemManagers.filter(m => m.redmineUserId == null).length > 0 && (
+                    <optgroup label="레드마인 ID 미설정">
+                      {systemManagers.filter(m => m.redmineUserId == null).map(m => (
+                        <option key={m.userId} disabled>{m.name ?? m.username} (ID 없음)</option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </>
             )}

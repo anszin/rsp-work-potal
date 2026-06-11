@@ -34,6 +34,8 @@ export interface SystemManager {
   id: number
   userId: number
   username: string
+  name: string | null
+  redmineUserId: number | null
   assignedAt: string
 }
 

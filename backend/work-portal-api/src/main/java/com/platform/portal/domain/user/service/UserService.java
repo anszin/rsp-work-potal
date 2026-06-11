@@ -83,6 +83,7 @@ public class UserService {
             user.setRole(req.getRole());
         }
         if (req.isActive() != user.isActive()) user.setActive(req.isActive());
+        user.setRedmineUserId(req.getRedmineUserId());
         return new UserDto.Summary(user, null);
     }
 

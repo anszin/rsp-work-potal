@@ -28,6 +28,7 @@ public class UserDto {
         private String email;
         private User.Role role;
         private boolean active = true;
+        private Integer redmineUserId;
     }
 
     @Getter @Setter
@@ -49,6 +50,7 @@ public class UserDto {
         private final boolean active;
         private final boolean mustChangePassword;
         private final String tempPassword; // 최초 생성 시에만 포함, 이후 null
+        private final Integer redmineUserId;
         private final LocalDateTime createdAt;
 
         public Summary(User u, String tempPassword) {
@@ -61,6 +63,7 @@ public class UserDto {
             this.active = u.isActive();
             this.mustChangePassword = Boolean.TRUE.equals(u.getMustChangePassword());
             this.tempPassword = tempPassword;
+            this.redmineUserId = u.getRedmineUserId();
             this.createdAt = u.getCreatedAt();
         }
     }

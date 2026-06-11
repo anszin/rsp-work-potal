@@ -20,7 +20,7 @@ const ROLES: UserRole[] = ['ADMIN', 'MANAGER', 'MEMBER', 'EXTERNAL']
 const CREATABLE_ROLES: UserRole[] = ['MANAGER', 'MEMBER', 'EXTERNAL']
 const MENU_KEYS = Object.keys(MENU_LABELS)
 
-const emptyForm = { username: '', name: '', dept: '', email: '', role: 'MEMBER' as UserRole }
+const emptyForm = { username: '', name: '', dept: '', email: '', role: 'MEMBER' as UserRole, redmineUserId: '' }
 
 export default function UserManagementPage() {
   const { user } = useAuth()
@@ -86,14 +86,15 @@ export default function UserManagementPage() {
   }
   const openEdit = (u: UserSummary) => {
     setEditing(u)
-    setForm({ username: u.username, name: u.name ?? '', dept: u.dept ?? '', email: u.email ?? '', role: u.role })
+    setForm({ username: u.username, name: u.name ?? '', dept: u.dept ?? '', email: u.email ?? '', role: u.role, redmineUserId: u.redmineUserId != null ? String(u.redmineUserId) : '' })
     setShowForm(true)
   }
 
   const submit = () => {
     if (!form.username) return
     if (editing) {
-      updateMut.mutate({ id: editing.id, data: { name: form.name, dept: form.dept, email: form.email, role: form.role } })
+      const redmineUserId = form.redmineUserId !== '' ? Number(form.redmineUserId) : null
+      updateMut.mutate({ id: editing.id, data: { name: form.name, dept: form.dept, email: form.email, role: form.role, redmineUserId } })
     } else {
       createMut.mutate({ username: form.username, name: form.name, dept: form.dept, email: form.email, role: form.role })
     }
@@ -202,6 +203,8 @@ export default function UserManagementPage() {
                 <input style={s.input} value={form.dept} onChange={e => setForm({ ...form, dept: e.target.value })} placeholder="소속 부서" />
                 <label style={s.label}>이메일</label>
                 <input style={s.input} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="이메일 (임시 비밀번호 발송)" />
+                <label style={s.label}>레드마인 ID</label>
+                <input style={s.input} type="number" value={form.redmineUserId} onChange={e => setForm({ ...form, redmineUserId: e.target.value })} placeholder="레드마인 사용자 ID (숫자)" />
                 {editing && (
                   <>
                     <label style={s.label}>역할</label>
@@ -233,6 +236,7 @@ export default function UserManagementPage() {
                   <th style={s.th}>이름</th>
                   <th style={s.th}>부서</th>
                   <th style={s.th}>이메일</th>
+                  <th style={s.th}>레드마인ID</th>
                   <th style={s.th}>역할</th>
                   <th style={s.th}>상태</th>
                   <th style={s.th}>가입일</th>
@@ -247,6 +251,7 @@ export default function UserManagementPage() {
                     <td style={s.td}>{u.name ?? '-'}</td>
                     <td style={s.td}>{u.dept ?? '-'}</td>
                     <td style={s.td}>{u.email ?? '-'}</td>
+                    <td style={{ ...s.td, color: u.redmineUserId ? 'var(--c-text)' : 'var(--c-text-muted)', fontSize: 12 }}>{u.redmineUserId ?? '-'}</td>
                     <td style={s.td}><span style={{ ...s.roleTag, ...roleStyle(u.role) }}>{ROLE_LABELS[u.role]}</span></td>
                     <td style={s.td}>
                       <span style={{ color: u.active ? '#276749' : '#e53e3e', fontSize: 12 }}>
