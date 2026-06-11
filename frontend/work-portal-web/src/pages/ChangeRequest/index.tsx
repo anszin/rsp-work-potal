@@ -154,7 +154,7 @@ export default function ChangeRequestPage() {
 
   const openEdit = (r: ChangeRequest) => {
     setEditing(r)
-    setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, content: r.content ?? '', requesterDept: r.requesterDept ?? '', requesterName: r.requesterName ?? '', targetDate: r.targetDate ?? '', attachmentLink: r.attachmentLink ?? '' })
+    setForm({ systemId: r.systemId, subSystemId: r.subSystemId, title: r.title, content: r.content ?? '', requesterDept: r.requesterDept ?? '', requesterName: r.requesterName ?? '', targetDate: r.targetDate ?? '', attachmentLink: r.attachmentLink ?? '', redmineTrackerId: r.redmineTrackerId ?? null, redmineAssigneeId: r.redmineAssigneeId ?? null })
     setPendingFile(null)
     setShowForm(true)
     setDetail(null)

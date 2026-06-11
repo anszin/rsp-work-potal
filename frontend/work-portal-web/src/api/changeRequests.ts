@@ -34,6 +34,8 @@ export interface ChangeRequest {
   createdAt: string
   redmineIssues: RedmineIssueRef[]
   redmineSyncStatus: RedmineSyncStatus | null
+  redmineTrackerId: number | null
+  redmineAssigneeId: number | null
 }
 
 export interface CreateChangeRequest {
