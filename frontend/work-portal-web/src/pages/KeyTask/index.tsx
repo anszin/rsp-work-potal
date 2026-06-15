@@ -7,7 +7,6 @@ import {
 } from '../../api/keyTasks'
 
 const QUARTERS = [1, 2, 3, 4] as const
-type Q = typeof QUARTERS[number]
 
 type FormData = Omit<SaveKeyTaskRequest, 'year'>
 
