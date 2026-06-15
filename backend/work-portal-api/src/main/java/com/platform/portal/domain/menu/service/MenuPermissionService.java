@@ -26,6 +26,7 @@ public class MenuPermissionService {
         new Object[]{"weekly_report",   Map.of(User.Role.ADMIN, true, User.Role.MANAGER, true, User.Role.MEMBER, true,  User.Role.EXTERNAL, false)},
         new Object[]{"daily_check",     Map.of(User.Role.ADMIN, true, User.Role.MANAGER, true, User.Role.MEMBER, true,  User.Role.EXTERNAL, false)},
         new Object[]{"finance",         Map.of(User.Role.ADMIN, true, User.Role.MANAGER, true, User.Role.MEMBER, true,  User.Role.EXTERNAL, false)},
+        new Object[]{"key_tasks",        Map.of(User.Role.ADMIN, true, User.Role.MANAGER, true, User.Role.MEMBER, false, User.Role.EXTERNAL, false)},
         new Object[]{"system_mgmt",     Map.of(User.Role.ADMIN, true, User.Role.MANAGER, true, User.Role.MEMBER, false, User.Role.EXTERNAL, false)},
         new Object[]{"user_mgmt",       Map.of(User.Role.ADMIN, true, User.Role.MANAGER, true, User.Role.MEMBER, false, User.Role.EXTERNAL, false)}
     );

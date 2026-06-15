@@ -11,6 +11,7 @@ const MENU_ITEMS = [
   { key: 'weekly_report',   to: '/reports/weekly',  label: '주간보고' },
   { key: 'daily_check',     to: '/reports/daily',   label: '일일점검' },
   { key: 'finance',         to: '/finance',         label: '손익 관리' },
+  { key: 'key_tasks',      to: '/key-tasks',       label: '중점과제' },
 ]
 
 const SETTINGS_ITEMS = [
