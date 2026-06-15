@@ -211,7 +211,7 @@ export default function KeyTaskPage() {
               <>
                 <tr style={{ background: 'var(--c-thead)' }}>
                   <th style={s.th} rowSpan={2}>KPI</th>
-                  <th style={{ ...s.th, minWidth: 180 }} rowSpan={2}>과제명</th>
+                  <th style={{ ...s.th, minWidth: 280 }} rowSpan={2}>과제명</th>
                   <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>분기 목표/계획</th>
                   <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>분기별 수행내역</th>
                   <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>달성도</th>
@@ -227,7 +227,7 @@ export default function KeyTaskPage() {
             ) : (
               <tr style={{ background: 'var(--c-thead)' }}>
                 <th style={s.th}>KPI</th>
-                <th style={{ ...s.th, minWidth: 180 }}>과제명</th>
+                <th style={{ ...s.th, minWidth: 280 }}>과제명</th>
                 <th style={{ ...s.th, minWidth: 160 }}>{selQuarter}분기 목표/계획</th>
                 <th style={{ ...s.th, minWidth: 160 }}>{selQuarter}분기 수행내역</th>
                 <th style={{ ...s.th, minWidth: 80 }}>달성도</th>
@@ -244,7 +244,7 @@ export default function KeyTaskPage() {
             {tasks.map(t => (
               <tr key={t.id} style={s.tr}>
                 <td style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{t.kpi ?? '-'}</td>
-                <td style={{ ...s.td, fontWeight: 500, minWidth: 180, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</td>
+                <td style={{ ...s.td, fontWeight: 500, minWidth: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</td>
                 {visibleQs.map(q => <td key={`plan-${q}`} style={s.td}><pre style={s.cell}>{truncate(t[qKey(q, 'Plan')] as string)}</pre></td>)}
                 {visibleQs.map(q => <td key={`result-${q}`} style={s.td}><pre style={s.cell}>{truncate(t[qKey(q, 'Result')] as string)}</pre></td>)}
                 {visibleQs.map(q => (
