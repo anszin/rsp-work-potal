@@ -215,15 +215,15 @@ export default function KeyTaskPage() {
                 <tr style={{ background: 'var(--c-thead)' }}>
                   <th style={s.th} rowSpan={2}>KPI</th>
                   <th style={{ ...s.th, minWidth: 280 }} rowSpan={2}>과제명</th>
-                  <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>분기 목표/계획</th>
-                  <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>분기별 수행내역</th>
-                  <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>달성도</th>
-                  <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>미진사유</th>
+                  <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>분기 목표/계획</th>
+                  <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>분기별 수행내역</th>
+                  <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>달성도</th>
+                  <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>미진사유</th>
                   <th style={s.th} rowSpan={2}>액션</th>
                 </tr>
                 <tr style={{ background: 'var(--c-thead)' }}>
                   {[...QUARTERS, ...QUARTERS, ...QUARTERS, ...QUARTERS].map((q, i) => (
-                    <th key={i} style={{ ...s.th, fontWeight: 400, fontSize: 11, color: 'var(--c-text-muted)', minWidth: 110 }}>{q}분기</th>
+                    <th key={i} style={{ ...s.th, fontWeight: 400, fontSize: 11, color: 'var(--c-text-muted)', minWidth: 110, ...(q === 1 ? { borderLeft: s.sep.borderLeft } : {}) }}>{q}분기</th>
                   ))}
                 </tr>
               </>
@@ -231,10 +231,10 @@ export default function KeyTaskPage() {
               <tr style={{ background: 'var(--c-thead)' }}>
                 <th style={s.th}>KPI</th>
                 <th style={{ ...s.th, minWidth: 280 }}>과제명</th>
-                <th style={{ ...s.th, minWidth: 160 }}>{selQuarter}분기 목표/계획</th>
-                <th style={{ ...s.th, minWidth: 160 }}>{selQuarter}분기 수행내역</th>
-                <th style={{ ...s.th, minWidth: 80 }}>달성도</th>
-                <th style={{ ...s.th, minWidth: 160 }}>미진사유</th>
+                <th style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>{selQuarter}분기 목표/계획</th>
+                <th style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>{selQuarter}분기 수행내역</th>
+                <th style={{ ...s.th, minWidth: 80, borderLeft: s.sep.borderLeft }}>달성도</th>
+                <th style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>미진사유</th>
                 <th style={s.th}>액션</th>
               </tr>
             )}
@@ -248,16 +248,16 @@ export default function KeyTaskPage() {
               <tr key={t.id} style={s.tr}>
                 <td style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{t.kpi ?? '-'}</td>
                 <td style={{ ...s.td, fontWeight: 500, minWidth: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</td>
-                {visibleQs.map(q => <td key={`plan-${q}`} style={s.td}><pre style={s.cell}>{truncate(t[qKey(q, 'Plan')] as string)}</pre></td>)}
-                {visibleQs.map(q => <td key={`result-${q}`} style={s.td}><pre style={s.cell}>{truncate(t[qKey(q, 'Result')] as string)}</pre></td>)}
-                {visibleQs.map(q => (
-                  <td key={`ach-${q}`} style={{ ...s.td, textAlign: 'center' }}>
+                {visibleQs.map((q, i) => <td key={`plan-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Plan')] as string)}</pre></td>)}
+                {visibleQs.map((q, i) => <td key={`result-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Result')] as string)}</pre></td>)}
+                {visibleQs.map((q, i) => (
+                  <td key={`ach-${q}`} style={{ ...s.td, textAlign: 'center', ...(i === 0 ? s.sep : {}) }}>
                     {t[qKey(q, 'Achievement')]
                       ? <span style={s.achBadge}>{t[qKey(q, 'Achievement')] as string}%</span>
                       : <span style={{ color: 'var(--c-text-muted)', fontSize: 12 }}>-</span>}
                   </td>
                 ))}
-                {visibleQs.map(q => <td key={`reason-${q}`} style={s.td}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></td>)}
+                {visibleQs.map((q, i) => <td key={`reason-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></td>)}
                 <td style={s.td}>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button style={s.btnSm} onClick={() => openEdit(t)}>수정</button>
@@ -291,4 +291,5 @@ const s: Record<string, React.CSSProperties> = {
   cell: { margin: 0, fontFamily: 'inherit', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: 'var(--c-text)' },
   achBadge: { fontSize: 12, background: '#EBF8FF', color: '#2B6CB0', padding: '2px 8px', borderRadius: 4, fontWeight: 600 },
   empty: { padding: 40, textAlign: 'center', color: 'var(--c-text-muted)', fontSize: 13 },
+  sep: { borderLeft: '2px solid #94a3b8' },
 }
