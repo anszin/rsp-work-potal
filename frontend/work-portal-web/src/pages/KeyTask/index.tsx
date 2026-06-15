@@ -115,7 +115,7 @@ export default function KeyTaskPage() {
               </div>
               <div>
                 <label style={s.label}>과제명 *</label>
-                <input style={s.input} value={f('taskName')} onChange={e => setF('taskName', e.target.value)} placeholder="과제명을 입력하세요" />
+                <textarea rows={5} style={{ ...s.input, resize: 'vertical' }} value={f('taskName')} onChange={e => setF('taskName', e.target.value)} placeholder="과제명을 입력하세요" />
               </div>
             </div>
 
@@ -210,7 +210,7 @@ export default function KeyTaskPage() {
             {tasks.map(t => (
               <tr key={t.id} style={s.tr}>
                 <td style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{t.kpi ?? '-'}</td>
-                <td style={{ ...s.td, fontWeight: 500 }}>{t.taskName}</td>
+                <td style={{ ...s.td, fontWeight: 500, minWidth: 180, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</td>
                 {QUARTERS.map(q => <td key={q} style={s.td}><pre style={s.cell}>{truncate(t[`q${q}Plan` as keyof KeyTask] as string)}</pre></td>)}
                 {QUARTERS.map(q => <td key={q} style={s.td}><pre style={s.cell}>{truncate(t[`q${q}Result` as keyof KeyTask] as string)}</pre></td>)}
                 {QUARTERS.map(q => (
