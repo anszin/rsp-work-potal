@@ -291,5 +291,5 @@ const s: Record<string, React.CSSProperties> = {
   cell: { margin: 0, fontFamily: 'inherit', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: 'var(--c-text)' },
   achBadge: { fontSize: 12, background: '#EBF8FF', color: '#2B6CB0', padding: '2px 8px', borderRadius: 4, fontWeight: 600 },
   empty: { padding: 40, textAlign: 'center', color: 'var(--c-text-muted)', fontSize: 13 },
-  sep: { borderLeft: '2px solid var(--c-border)' },
+  sep: { borderLeft: '1px solid var(--c-border)' },
 }
