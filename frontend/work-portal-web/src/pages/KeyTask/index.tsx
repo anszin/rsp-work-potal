@@ -7,6 +7,8 @@ import {
 } from '../../api/keyTasks'
 
 const QUARTERS = [1, 2, 3, 4] as const
+type Quarter = typeof QUARTERS[number]
+type SelQuarter = Quarter | 'all'
 
 type FormData = Omit<SaveKeyTaskRequest, 'year'>
 
@@ -18,14 +20,26 @@ const emptyForm: FormData = {
   q1Reason: '', q2Reason: '', q3Reason: '', q4Reason: '',
 }
 
+function currentQuarter(): Quarter {
+  const m = new Date().getMonth() + 1
+  if (m <= 3) return 1
+  if (m <= 6) return 2
+  if (m <= 9) return 3
+  return 4
+}
+
 function apiError(e: unknown) {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
   return e instanceof Error ? e.message : String(e)
 }
 
-function truncate(s: string | null | undefined, n = 30) {
+function truncate(s: string | null | undefined, n = 40) {
   if (!s) return '-'
   return s.length > n ? s.slice(0, n) + '…' : s
+}
+
+function qKey(q: Quarter, suffix: string): keyof KeyTask {
+  return `q${q}${suffix}` as keyof KeyTask
 }
 
 export default function KeyTaskPage() {
@@ -34,6 +48,7 @@ export default function KeyTaskPage() {
 
   const { data: years = [] } = useQuery({ queryKey: ['key-task-years'], queryFn: getKeyTaskYears })
   const [selYear, setSelYear] = useState(now)
+  const [selQuarter, setSelQuarter] = useState<SelQuarter>(currentQuarter())
   const displayYears = years.includes(selYear) ? years : [selYear, ...years].sort((a, b) => b - a)
 
   const { data: tasks = [], isLoading } = useQuery({
@@ -66,11 +81,7 @@ export default function KeyTaskPage() {
     onError: (e) => alert('삭제 실패: ' + apiError(e)),
   })
 
-  const openCreate = () => {
-    setEditing(null)
-    setForm(emptyForm)
-    setShowModal(true)
-  }
+  const openCreate = () => { setEditing(null); setForm(emptyForm); setShowModal(true) }
   const openEdit = (t: KeyTask) => {
     setEditing(t)
     setForm({
@@ -95,6 +106,16 @@ export default function KeyTaskPage() {
   }
 
   const isPending = createMut.isPending || updateMut.isPending
+  const visibleQs: Quarter[] = selQuarter === 'all' ? [...QUARTERS] : [selQuarter]
+  const totalCols = 2 + visibleQs.length * 4 + 1 // KPI + 과제명 + (plan+result+ach+reason)*Q + 액션
+
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    padding: '4px 0', border: 'none',
+    borderBottom: `2px solid ${active ? '#1a1a2e' : 'transparent'}`,
+    background: 'none', cursor: 'pointer', fontSize: 13,
+    fontWeight: active ? 600 : 400,
+    color: active ? 'var(--c-text)' : 'var(--c-text-muted)',
+  })
 
   return (
     <div style={s.page}>
@@ -106,8 +127,6 @@ export default function KeyTaskPage() {
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{editing ? '중점과제 수정' : '중점과제 추가'} — {selYear}년</h3>
               <button style={s.btnSecondary} onClick={closeModal}>✕</button>
             </div>
-
-            {/* KPI / 과제명 */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginBottom: 20 }}>
               <div>
                 <label style={s.label}>KPI</label>
@@ -118,8 +137,6 @@ export default function KeyTaskPage() {
                 <textarea rows={5} style={{ ...s.input, resize: 'vertical' }} value={f('taskName')} onChange={e => setF('taskName', e.target.value)} placeholder="과제명을 입력하세요" />
               </div>
             </div>
-
-            {/* 분기별 그리드 */}
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                 <thead>
@@ -129,12 +146,12 @@ export default function KeyTaskPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { label: '목표/계획', prefix: 'q', suffix: 'Plan', multiline: true },
-                    { label: '수행내역', prefix: 'q', suffix: 'Result', multiline: true },
-                    { label: '달성도', prefix: 'q', suffix: 'Achievement', multiline: false },
-                    { label: '미진사유', prefix: 'q', suffix: 'Reason', multiline: true },
-                  ].map(({ label, suffix, multiline }) => (
+                  {([
+                    { label: '목표/계획', suffix: 'Plan', multiline: true },
+                    { label: '수행내역', suffix: 'Result', multiline: true },
+                    { label: '달성도', suffix: 'Achievement', multiline: false },
+                    { label: '미진사유', suffix: 'Reason', multiline: true },
+                  ] as const).map(({ label, suffix, multiline }) => (
                     <tr key={suffix}>
                       <td style={{ ...s.mtd, fontWeight: 500, fontSize: 12, color: 'var(--c-text-sub)', whiteSpace: 'nowrap', paddingRight: 12 }}>{label}</td>
                       {QUARTERS.map(q => {
@@ -153,7 +170,6 @@ export default function KeyTaskPage() {
                 </tbody>
               </table>
             </div>
-
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 20 }}>
               <button style={s.btnSecondary} onClick={closeModal} disabled={isPending}>취소</button>
               <button style={{ ...s.btn, opacity: isPending ? 0.6 : 1 }} onClick={submit} disabled={isPending}>
@@ -165,69 +181,85 @@ export default function KeyTaskPage() {
       )}
 
       {/* 헤더 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>중점과제</h2>
-          {/* 연도 탭 */}
           <div style={{ display: 'flex', gap: 16 }}>
             {displayYears.map(y => (
-              <button key={y} onClick={() => setSelYear(y)}
-                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${selYear === y ? '#1a1a2e' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: selYear === y ? 600 : 400, color: selYear === y ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
-                {y}년
-              </button>
+              <button key={y} onClick={() => setSelYear(y)} style={tabStyle(selYear === y)}>{y}년</button>
             ))}
           </div>
         </div>
         <button style={s.btn} onClick={openCreate}>+ 행 추가</button>
       </div>
 
+      {/* 분기 탭 */}
+      <div style={{ display: 'flex', gap: 20, marginBottom: 16, borderBottom: '1px solid var(--c-border)' }}>
+        <button onClick={() => setSelQuarter('all')} style={tabStyle(selQuarter === 'all')}>전체</button>
+        {QUARTERS.map(q => (
+          <button key={q} onClick={() => setSelQuarter(q)} style={tabStyle(selQuarter === q)}>
+            {q}분기{selQuarter !== 'all' && q === currentQuarter() ? ' ●' : ''}
+          </button>
+        ))}
+      </div>
+
       {/* 테이블 */}
       <div style={{ overflowX: 'auto', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1400 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: selQuarter === 'all' ? 1400 : 700 }}>
           <thead>
-            <tr style={{ background: 'var(--c-thead)' }}>
-              <th style={s.th} rowSpan={2}>KPI</th>
-              <th style={{ ...s.th, minWidth: 160 }} rowSpan={2}>과제명</th>
-              <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>분기 목표/계획</th>
-              <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>분기별 수행내역</th>
-              <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>달성도</th>
-              <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>미진사유</th>
-              <th style={s.th} rowSpan={2}>액션</th>
-            </tr>
-            <tr style={{ background: 'var(--c-thead)' }}>
-              {[...QUARTERS, ...QUARTERS, ...QUARTERS, ...QUARTERS].map((q, i) => (
-                <th key={i} style={{ ...s.th, fontWeight: 400, fontSize: 11, color: 'var(--c-text-muted)', minWidth: 110 }}>{q}분기</th>
-              ))}
-            </tr>
+            {selQuarter === 'all' ? (
+              <>
+                <tr style={{ background: 'var(--c-thead)' }}>
+                  <th style={s.th} rowSpan={2}>KPI</th>
+                  <th style={{ ...s.th, minWidth: 180 }} rowSpan={2}>과제명</th>
+                  <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>분기 목표/계획</th>
+                  <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>분기별 수행내역</th>
+                  <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>달성도</th>
+                  <th style={{ ...s.th, textAlign: 'center' }} colSpan={4}>미진사유</th>
+                  <th style={s.th} rowSpan={2}>액션</th>
+                </tr>
+                <tr style={{ background: 'var(--c-thead)' }}>
+                  {[...QUARTERS, ...QUARTERS, ...QUARTERS, ...QUARTERS].map((q, i) => (
+                    <th key={i} style={{ ...s.th, fontWeight: 400, fontSize: 11, color: 'var(--c-text-muted)', minWidth: 110 }}>{q}분기</th>
+                  ))}
+                </tr>
+              </>
+            ) : (
+              <tr style={{ background: 'var(--c-thead)' }}>
+                <th style={s.th}>KPI</th>
+                <th style={{ ...s.th, minWidth: 180 }}>과제명</th>
+                <th style={{ ...s.th, minWidth: 160 }}>{selQuarter}분기 목표/계획</th>
+                <th style={{ ...s.th, minWidth: 160 }}>{selQuarter}분기 수행내역</th>
+                <th style={{ ...s.th, minWidth: 80 }}>달성도</th>
+                <th style={{ ...s.th, minWidth: 160 }}>미진사유</th>
+                <th style={s.th}>액션</th>
+              </tr>
+            )}
           </thead>
           <tbody>
-            {isLoading && (
-              <tr><td colSpan={19} style={s.empty}>로딩 중...</td></tr>
-            )}
+            {isLoading && <tr><td colSpan={totalCols} style={s.empty}>로딩 중...</td></tr>}
             {!isLoading && tasks.length === 0 && (
-              <tr><td colSpan={19} style={s.empty}>등록된 과제가 없습니다. 행 추가 버튼으로 추가하세요.</td></tr>
+              <tr><td colSpan={totalCols} style={s.empty}>등록된 과제가 없습니다.</td></tr>
             )}
             {tasks.map(t => (
               <tr key={t.id} style={s.tr}>
                 <td style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{t.kpi ?? '-'}</td>
                 <td style={{ ...s.td, fontWeight: 500, minWidth: 180, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</td>
-                {QUARTERS.map(q => <td key={q} style={s.td}><pre style={s.cell}>{truncate(t[`q${q}Plan` as keyof KeyTask] as string)}</pre></td>)}
-                {QUARTERS.map(q => <td key={q} style={s.td}><pre style={s.cell}>{truncate(t[`q${q}Result` as keyof KeyTask] as string)}</pre></td>)}
-                {QUARTERS.map(q => (
-                  <td key={q} style={{ ...s.td, textAlign: 'center' }}>
-                    {t[`q${q}Achievement` as keyof KeyTask]
-                      ? <span style={s.achBadge}>{t[`q${q}Achievement` as keyof KeyTask] as string}</span>
+                {visibleQs.map(q => <td key={`plan-${q}`} style={s.td}><pre style={s.cell}>{truncate(t[qKey(q, 'Plan')] as string)}</pre></td>)}
+                {visibleQs.map(q => <td key={`result-${q}`} style={s.td}><pre style={s.cell}>{truncate(t[qKey(q, 'Result')] as string)}</pre></td>)}
+                {visibleQs.map(q => (
+                  <td key={`ach-${q}`} style={{ ...s.td, textAlign: 'center' }}>
+                    {t[qKey(q, 'Achievement')]
+                      ? <span style={s.achBadge}>{t[qKey(q, 'Achievement')] as string}</span>
                       : <span style={{ color: 'var(--c-text-muted)', fontSize: 12 }}>-</span>}
                   </td>
                 ))}
-                {QUARTERS.map(q => <td key={q} style={s.td}><pre style={s.cell}>{truncate(t[`q${q}Reason` as keyof KeyTask] as string)}</pre></td>)}
+                {visibleQs.map(q => <td key={`reason-${q}`} style={s.td}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></td>)}
                 <td style={s.td}>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <button style={s.btnSm} onClick={() => openEdit(t)}>수정</button>
                     <button style={{ ...s.btnSm, color: '#e53e3e' }}
-                      onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>
-                      삭제
-                    </button>
+                      onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</button>
                   </div>
                 </td>
               </tr>
