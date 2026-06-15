@@ -160,7 +160,10 @@ export default function KeyTaskPage() {
                           <td key={q} style={s.mtd}>
                             {multiline
                               ? <textarea style={{ ...s.input, height: 72, resize: 'vertical', fontSize: 12 }} value={f(key)} onChange={e => setF(key, e.target.value)} />
-                              : <input style={{ ...s.input, fontSize: 12 }} value={f(key)} onChange={e => setF(key, e.target.value)} placeholder="예: 100%" />
+                              : <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <input type="number" min={0} max={100} style={{ ...s.input, fontSize: 12, width: '70px' }} value={f(key)} onChange={e => setF(key, e.target.value)} placeholder="0~100" />
+                                  <span style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>%</span>
+                                </div>
                             }
                           </td>
                         )
@@ -250,7 +253,7 @@ export default function KeyTaskPage() {
                 {visibleQs.map(q => (
                   <td key={`ach-${q}`} style={{ ...s.td, textAlign: 'center' }}>
                     {t[qKey(q, 'Achievement')]
-                      ? <span style={s.achBadge}>{t[qKey(q, 'Achievement')] as string}</span>
+                      ? <span style={s.achBadge}>{t[qKey(q, 'Achievement')] as string}%</span>
                       : <span style={{ color: 'var(--c-text-muted)', fontSize: 12 }}>-</span>}
                   </td>
                 ))}
