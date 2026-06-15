@@ -104,5 +104,5 @@ const styles: Record<string, React.CSSProperties> = {
   userSection: { padding: '16px 20px', borderTop: '1px solid #2d3748', display: 'flex', flexDirection: 'column', gap: 4 },
   themeBtn: { background: 'transparent', border: '1px solid #4a5568', borderRadius: 4, padding: '5px 8px', cursor: 'pointer', fontSize: 14 },
   logoutBtn: { flex: 1, background: 'transparent', border: '1px solid #4a5568', color: '#a0aec0', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
-  main: { flex: 1, marginLeft: 220, minHeight: '100vh', background: 'var(--c-bg)', transition: 'background 0.15s' },
+  main: { flex: 1, minWidth: 0, marginLeft: 220, minHeight: '100vh', background: 'var(--c-bg)', transition: 'background 0.15s', overflow: 'hidden' },
 }
