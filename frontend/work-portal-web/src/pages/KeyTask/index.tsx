@@ -19,10 +19,6 @@ const emptyForm: FormData = {
   q1Reason: '', q2Reason: '', q3Reason: '', q4Reason: '',
 }
 
-function qField<T extends string>(prefix: T, q: Q) {
-  return `${prefix}${q}` as keyof FormData
-}
-
 function apiError(e: unknown) {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
   return e instanceof Error ? e.message : String(e)
