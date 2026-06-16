@@ -84,6 +84,7 @@ public class DeployRequestService {
         dr.setDeployTarget(req.getDeployScope() == DeployRequest.DeployScope.PARTIAL ? req.getDeployTarget() : null);
         dr.setContent(req.getContent());
         dr.setScheduledAt(req.getScheduledAt());
+        dr.setParentDrId(req.getParentDrId());
         if (req.getRedmineIssues() != null) {
             req.getRedmineIssues().forEach(ref ->
                 dr.getRedmineIssues().add(new DeployRequestIssue(dr, ref.getRedmineIssueId(), ref.getRedmineIssueTitle())));

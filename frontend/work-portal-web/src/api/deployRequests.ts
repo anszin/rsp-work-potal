@@ -35,6 +35,7 @@ export interface DeployRequest {
   approvedAt: string | null
   deployedAt: string | null
   redmineSyncStatus: RedmineSyncStatus | null
+  parentDrId: number | null
   createdAt: string
 }
 
@@ -48,6 +49,7 @@ export interface CreateDeployRequest {
   deployTarget?: string
   content?: string
   scheduledAt?: string
+  parentDrId?: number | null
   redmineIssues?: RedmineIssueRef[]
 }
 

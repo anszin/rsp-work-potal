@@ -40,6 +40,7 @@ public class DeployRequestDto {
         private String deployTarget;
         private String content;
         private LocalDateTime scheduledAt;
+        private Long parentDrId;
         private List<IssueRef> redmineIssues = new ArrayList<>();
     }
 
@@ -94,6 +95,7 @@ public class DeployRequestDto {
         private final LocalDateTime approvedAt;
         private final LocalDateTime deployedAt;
         private final DeployRequest.RedmineSyncStatus redmineSyncStatus;
+        private final Long parentDrId;
         private final LocalDateTime createdAt;
 
         public Response(DeployRequest dr) {
@@ -123,6 +125,7 @@ public class DeployRequestDto {
             this.approvedAt = dr.getApprovedAt();
             this.deployedAt = dr.getDeployedAt();
             this.redmineSyncStatus = dr.getRedmineSyncStatus();
+            this.parentDrId = dr.getParentDrId();
             this.createdAt = dr.getCreatedAt();
         }
     }

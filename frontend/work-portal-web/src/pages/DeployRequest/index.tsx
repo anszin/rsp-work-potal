@@ -194,10 +194,10 @@ export default function DeployRequestPage() {
     onError: (e) => alert('재동기화 실패: ' + apiError(e)),
   })
 
-  const openCreate = () => {
+  const openCreate = (prefill?: Partial<CreateDeployRequest>) => {
     setEditing(null)
-    setForm({ ...emptyForm, systemId: systems[0]?.id ?? 0, subSystemId: null })
-    setSelectedIssues([])
+    setForm({ ...emptyForm, systemId: systems[0]?.id ?? 0, subSystemId: null, ...prefill })
+    setSelectedIssues(prefill?.redmineIssues ?? [])
     setShowForm(true)
     setDetail(null)
   }
@@ -283,7 +283,7 @@ export default function DeployRequestPage() {
             ))}
           </div>
         </div>
-        {tab === 'list' && <button style={s.btn} onClick={openCreate}>+ 새 배포 요청</button>}
+        {tab === 'list' && <button style={s.btn} onClick={() => openCreate()}>+ 새 배포 요청</button>}
       </div>
 
       {tab === 'dashboard' && <DeployDashboard requests={requests} />}
@@ -406,7 +406,10 @@ export default function DeployRequestPage() {
               {filtered.map((r) => (
                 <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
-                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>{r.deployNo ?? '-'}</td>
+                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>
+                    {r.parentDrId && <span style={{ color: 'var(--c-text-muted)', marginRight: 4 }}>↳</span>}
+                    {r.deployNo ?? '-'}
+                  </td>
                   <td style={s.td}>
                     <span style={s.sysTag}>{r.systemName}</span>
                     {r.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{r.subSystemName}</span>}
@@ -446,6 +449,12 @@ export default function DeployRequestPage() {
                           </button>
                         )
                       })}
+                      {r.status === 'COMPLETED' && r.deployScope === 'PARTIAL' && !requests.some(x => x.parentDrId === r.id) && (
+                        <button style={{ ...s.btnSm, color: '#285E61', borderColor: '#285E61' }}
+                          onClick={() => openCreate({ systemId: r.systemId, subSystemId: r.subSystemId ?? undefined, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', deployScope: 'FULL', content: r.content ?? '', redmineIssues: r.redmineIssues, parentDrId: r.id })}>
+                          전점 배포
+                        </button>
+                      )}
                       {(r.status === 'DRAFT' || isAdmin) && (
                         <button style={{ ...s.btnSm, color: '#e53e3e' }}
                           onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
@@ -503,6 +512,20 @@ export default function DeployRequestPage() {
                 ) : '-'
               } />
               <InfoRow label="예정일시" value={detail.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'} />
+              {detail.parentDrId && (() => {
+                const parent = requests.find(r => r.id === detail.parentDrId)
+                return (
+                  <InfoRow label="상위 DR" value={
+                    parent ? (
+                      <button style={{ background: 'none', border: 'none', color: '#1976d2', cursor: 'pointer', padding: 0, fontSize: 13, textDecoration: 'underline' }}
+                        onClick={() => setDetail(parent)}>
+                        {parent.deployNo ?? `DR#${parent.id}`}
+                        {parent.deployTarget && <span style={{ marginLeft: 6, color: 'var(--c-text-muted)', fontSize: 12 }}>({parent.deployTarget})</span>}
+                      </button>
+                    ) : `DR#${detail.parentDrId}`
+                  } />
+                )
+              })()}
             </div>
             <div style={s.infoSection}>
               <div style={s.infoSectionTitle}>담당자 · 일정</div>

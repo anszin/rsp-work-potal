@@ -76,6 +76,8 @@ public class DeployRequest {
     @Column(columnDefinition = "TEXT")
     private String actionComment;
 
+    private Long parentDrId;
+
     private LocalDateTime scheduledAt;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;
