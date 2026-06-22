@@ -347,7 +347,7 @@ export default function DeployRequestPage() {
               )}
             </div>
             <label style={s.label}>예정일시</label>
-            <input style={{ ...s.input, width: 'auto' }} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
+            <input style={{ ...s.input, width: 210 }} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
             <label style={s.label}>레드마인 일감</label>
             <div>
               {selectedSystem?.redmineProjectKey ? (
