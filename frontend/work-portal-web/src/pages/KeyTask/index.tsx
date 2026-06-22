@@ -13,7 +13,7 @@ type SelQuarter = Quarter | 'all'
 type FormData = Omit<SaveKeyTaskRequest, 'year'>
 
 const emptyForm: FormData = {
-  kpi: '', taskName: '',
+  teamName: '', assigneeName: '', kpi: '', taskName: '',
   q1Plan: '', q2Plan: '', q3Plan: '', q4Plan: '',
   q1Result: '', q2Result: '', q3Result: '', q4Result: '',
   q1Achievement: '', q2Achievement: '', q3Achievement: '', q4Achievement: '',
@@ -56,6 +56,7 @@ export default function KeyTaskPage() {
     queryFn: () => getKeyTasks(selYear),
   })
 
+  const [selAssignee, setSelAssignee] = useState<string>('all')
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<KeyTask | null>(null)
   const [form, setForm] = useState<FormData>(emptyForm)
@@ -85,6 +86,7 @@ export default function KeyTaskPage() {
   const openEdit = (t: KeyTask) => {
     setEditing(t)
     setForm({
+      teamName: t.teamName ?? '', assigneeName: t.assigneeName ?? '',
       kpi: t.kpi ?? '', taskName: t.taskName,
       q1Plan: t.q1Plan ?? '', q2Plan: t.q2Plan ?? '', q3Plan: t.q3Plan ?? '', q4Plan: t.q4Plan ?? '',
       q1Result: t.q1Result ?? '', q2Result: t.q2Result ?? '', q3Result: t.q3Result ?? '', q4Result: t.q4Result ?? '',
@@ -106,8 +108,11 @@ export default function KeyTaskPage() {
   }
 
   const isPending = createMut.isPending || updateMut.isPending
+  const assignees = [...new Set(tasks.map(t => t.assigneeName).filter(Boolean) as string[])].sort()
+  const teams = [...new Set(tasks.map(t => t.teamName).filter(Boolean) as string[])].sort()
+  const displayTasks = selAssignee === 'all' ? tasks : tasks.filter(t => t.assigneeName === selAssignee)
   const visibleQs: Quarter[] = selQuarter === 'all' ? [...QUARTERS] : [selQuarter]
-  const totalCols = 2 + visibleQs.length * 4 + 1 // KPI + 과제명 + (plan+result+ach+reason)*Q + 액션
+  const totalCols = 3 + visibleQs.length * 4 + 1 // 담당자 + KPI + 과제명 + (plan+result+ach+reason)*Q + 액션
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: '4px 0', border: 'none',
@@ -127,7 +132,17 @@ export default function KeyTaskPage() {
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{editing ? '중점과제 수정' : '중점과제 추가'} — {selYear}년</h3>
               <button style={s.btnSecondary} onClick={closeModal}>✕</button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12, marginBottom: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 2fr', gap: 12, marginBottom: 20 }}>
+              <div>
+                <label style={s.label}>팀명</label>
+                <input style={s.input} list="team-list" value={f('teamName')} onChange={e => setF('teamName', e.target.value)} placeholder="팀명" />
+                <datalist id="team-list">{teams.map(t => <option key={t} value={t} />)}</datalist>
+              </div>
+              <div>
+                <label style={s.label}>담당자</label>
+                <input style={s.input} list="assignee-list" value={f('assigneeName')} onChange={e => setF('assigneeName', e.target.value)} placeholder="담당자명" />
+                <datalist id="assignee-list">{assignees.map(a => <option key={a} value={a} />)}</datalist>
+              </div>
               <div>
                 <label style={s.label}>KPI</label>
                 <input style={s.input} value={f('kpi')} onChange={e => setF('kpi', e.target.value)} placeholder="KPI 분류" />
@@ -196,6 +211,16 @@ export default function KeyTaskPage() {
         <button style={s.btn} onClick={openCreate}>+ 행 추가</button>
       </div>
 
+      {/* 담당자 필터 탭 */}
+      {assignees.length > 0 && (
+        <div style={{ display: 'flex', gap: 20, marginBottom: 12 }}>
+          <button onClick={() => setSelAssignee('all')} style={tabStyle(selAssignee === 'all')}>전체</button>
+          {assignees.map(a => (
+            <button key={a} onClick={() => setSelAssignee(a)} style={tabStyle(selAssignee === a)}>{a}</button>
+          ))}
+        </div>
+      )}
+
       {/* 분기 탭 */}
       <div style={{ display: 'flex', gap: 20, marginBottom: 16, borderBottom: '1px solid var(--c-border)' }}>
         <button onClick={() => setSelQuarter('all')} style={tabStyle(selQuarter === 'all')}>전체</button>
@@ -213,6 +238,7 @@ export default function KeyTaskPage() {
             {selQuarter === 'all' ? (
               <>
                 <tr style={{ background: 'var(--c-thead)' }}>
+                  <th style={s.th} rowSpan={2}>담당자</th>
                   <th style={s.th} rowSpan={2}>KPI</th>
                   <th style={{ ...s.th, minWidth: 280 }} rowSpan={2}>과제명</th>
                   <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>분기 목표/계획</th>
@@ -229,6 +255,7 @@ export default function KeyTaskPage() {
               </>
             ) : (
               <tr style={{ background: 'var(--c-thead)' }}>
+                <th style={s.th}>담당자</th>
                 <th style={s.th}>KPI</th>
                 <th style={{ ...s.th, minWidth: 280 }}>과제명</th>
                 <th style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>{selQuarter}분기 목표/계획</th>
@@ -244,8 +271,13 @@ export default function KeyTaskPage() {
             {!isLoading && tasks.length === 0 && (
               <tr><td colSpan={totalCols} style={s.empty}>등록된 과제가 없습니다.</td></tr>
             )}
-            {tasks.map(t => (
+            {displayTasks.map(t => (
               <tr key={t.id} style={s.tr}>
+                <td style={{ ...s.td, fontSize: 12 }}>
+                  {t.assigneeName && <div style={{ fontWeight: 500 }}>{t.assigneeName}</div>}
+                  {t.teamName && <div style={{ color: 'var(--c-text-muted)', fontSize: 11 }}>{t.teamName}</div>}
+                  {!t.assigneeName && <span style={{ color: 'var(--c-text-muted)' }}>-</span>}
+                </td>
                 <td style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{t.kpi ?? '-'}</td>
                 <td style={{ ...s.td, fontWeight: 500, minWidth: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</td>
                 {visibleQs.map((q, i) => <td key={`plan-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Plan')] as string)}</pre></td>)}

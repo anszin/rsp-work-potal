@@ -22,6 +22,9 @@ public class KeyTask {
     @Column(nullable = false)
     private Integer year;
 
+    private String teamName;
+    private String assigneeName;
+
     private String kpi;
 
     @Column(nullable = false)

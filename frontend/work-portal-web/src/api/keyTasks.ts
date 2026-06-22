@@ -3,6 +3,8 @@ import client from './client'
 export interface KeyTask {
   id: number
   year: number
+  teamName: string | null
+  assigneeName: string | null
   kpi: string | null
   taskName: string
   q1Plan: string | null; q2Plan: string | null; q3Plan: string | null; q4Plan: string | null
@@ -16,6 +18,8 @@ export interface KeyTask {
 
 export interface SaveKeyTaskRequest {
   year: number
+  teamName?: string
+  assigneeName?: string
   kpi?: string
   taskName: string
   q1Plan?: string; q2Plan?: string; q3Plan?: string; q4Plan?: string

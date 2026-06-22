@@ -13,6 +13,8 @@ public class KeyTaskDto {
     @Getter @Setter
     public static class SaveRequest {
         @NotNull private Integer year;
+        private String teamName;
+        private String assigneeName;
         private String kpi;
         @NotBlank private String taskName;
         private String q1Plan, q2Plan, q3Plan, q4Plan;
@@ -26,6 +28,8 @@ public class KeyTaskDto {
     public static class Response {
         private final Long id;
         private final Integer year;
+        private final String teamName;
+        private final String assigneeName;
         private final String kpi;
         private final String taskName;
         private final String q1Plan, q2Plan, q3Plan, q4Plan;
@@ -39,6 +43,8 @@ public class KeyTaskDto {
         public Response(KeyTask k) {
             this.id = k.getId();
             this.year = k.getYear();
+            this.teamName = k.getTeamName();
+            this.assigneeName = k.getAssigneeName();
             this.kpi = k.getKpi();
             this.taskName = k.getTaskName();
             this.q1Plan = k.getQ1Plan(); this.q2Plan = k.getQ2Plan();

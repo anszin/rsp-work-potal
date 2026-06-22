@@ -47,6 +47,8 @@ public class KeyTaskService {
 
     private void apply(KeyTask kt, KeyTaskDto.SaveRequest req) {
         kt.setYear(req.getYear());
+        kt.setTeamName(req.getTeamName());
+        kt.setAssigneeName(req.getAssigneeName());
         kt.setKpi(req.getKpi());
         kt.setTaskName(req.getTaskName());
         kt.setQ1Plan(req.getQ1Plan()); kt.setQ2Plan(req.getQ2Plan());
