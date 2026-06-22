@@ -94,10 +94,13 @@ public class DeployRequestService {
     }
 
     @Transactional
-    public DeployRequestDto.Response update(Long id, DeployRequestDto.UpdateRequest req) {
+    public DeployRequestDto.Response update(Long id, DeployRequestDto.UpdateRequest req, String username) {
         DeployRequest dr = getOrThrow(id);
-        if (dr.getStatus() != Status.DRAFT) {
-            throw new IllegalStateException("DRAFT 상태에서만 수정 가능합니다.");
+        User actor = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+        boolean isAdminOrManager = actor.getRole() == User.Role.ADMIN || actor.getRole() == User.Role.MANAGER;
+        if (dr.getStatus() != Status.DRAFT && !(dr.getStatus() == Status.COMPLETED && isAdminOrManager)) {
+            throw new IllegalStateException("DRAFT 상태이거나 완료 건에 대한 매니저 권한이 필요합니다.");
         }
         dr.setSystem(systemRepository.findById(req.getSystemId())
                 .orElseThrow(() -> new IllegalArgumentException("System not found")));

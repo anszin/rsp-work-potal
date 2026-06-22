@@ -43,8 +43,9 @@ public class DeployRequestController {
     @PutMapping("/{id}")
     public ResponseEntity<DeployRequestDto.Response> update(
             @PathVariable Long id,
-            @Valid @RequestBody DeployRequestDto.UpdateRequest req) {
-        return ResponseEntity.ok(service.update(id, req));
+            @Valid @RequestBody DeployRequestDto.UpdateRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(service.update(id, req, user.getUsername()));
     }
 
     @PatchMapping("/{id}/status")

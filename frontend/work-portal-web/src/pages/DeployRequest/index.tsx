@@ -431,7 +431,7 @@ export default function DeployRequestPage() {
                     </td>
                     <td style={s.td}>
                       <span style={s.sysTag}>{row.systemName}</span>
-                      {row.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{row.subSystemName}</span>}
+                      {row.subSystemName && <span style={s.subTag}>{row.subSystemName}</span>}
                     </td>
                     <td style={s.td}>{row.title}</td>
                     <td style={s.td}>{row.version ?? '-'}</td>
@@ -451,7 +451,7 @@ export default function DeployRequestPage() {
                     <td style={s.td}>{row.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'}</td>
                     <td style={s.td} onClick={e => e.stopPropagation()}>
                       <div style={s.actions}>
-                        {row.status === 'DRAFT' && (
+                        {(row.status === 'DRAFT' || (row.status === 'COMPLETED' && isAdmin)) && (
                           <button style={s.btnSm} onClick={() => openEdit(row)}>수정</button>
                         )}
                         {NEXT_STATUS[row.status]?.map(({ label, next }) => {
@@ -504,7 +504,7 @@ export default function DeployRequestPage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
                 <span style={s.sysTag}>{detail.systemName}</span>
-                {detail.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' }}>{detail.subSystemName}</span>}
+                {detail.subSystemName && <span style={s.subTag}>{detail.subSystemName}</span>}
                 {detail.deployNo && <span style={{ fontSize: 12, color: 'var(--c-text-muted)', fontWeight: 500 }}>{detail.deployNo}</span>}
                 {detail.deployType && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>{DEPLOY_TYPE_LABELS[detail.deployType]}</span>}
                 {detail.deployScope && (
@@ -797,6 +797,7 @@ const s: Record<string, React.CSSProperties> = {
   tr: { borderBottom: '1px solid var(--c-thead)' },
   td: { padding: '10px 14px', fontSize: 13 },
   sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
+  subTag: { background: 'transparent', color: 'var(--c-tag-sys-t)', border: '1px solid var(--c-tag-sys-t)', padding: '1px 7px', borderRadius: 4, fontSize: 11, marginLeft: 4, opacity: 0.75 },
   actions: { display: 'flex', alignItems: 'center' },
   empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
