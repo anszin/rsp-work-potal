@@ -431,7 +431,7 @@ export default function DeployRequestPage() {
                     </td>
                     <td style={s.td}>
                       <span style={s.sysTag}>{row.systemName}</span>
-                      {row.subSystemName && <span style={s.subTag}>{row.subSystemName}</span>}
+                      {row.subSystemName && <span style={subTagStyle(row.subSystemName)}>{row.subSystemName}</span>}
                     </td>
                     <td style={s.td}>{row.title}</td>
                     <td style={s.td}>{row.version ?? '-'}</td>
@@ -504,7 +504,7 @@ export default function DeployRequestPage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
                 <span style={s.sysTag}>{detail.systemName}</span>
-                {detail.subSystemName && <span style={s.subTag}>{detail.subSystemName}</span>}
+                {detail.subSystemName && <span style={subTagStyle(detail.subSystemName)}>{detail.subSystemName}</span>}
                 {detail.deployNo && <span style={{ fontSize: 12, color: 'var(--c-text-muted)', fontWeight: 500 }}>{detail.deployNo}</span>}
                 {detail.deployType && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>{DEPLOY_TYPE_LABELS[detail.deployType]}</span>}
                 {detail.deployScope && (
@@ -766,6 +766,23 @@ export default function DeployRequestPage() {
   )
 }
 
+const SUB_COLORS = [
+  { bg: '#dbeafe', text: '#1e40af' },
+  { bg: '#ede9fe', text: '#5b21b6' },
+  { bg: '#dcfce7', text: '#15803d' },
+  { bg: '#fed7aa', text: '#c2410c' },
+  { bg: '#fce7f3', text: '#be185d' },
+  { bg: '#ccfbf1', text: '#0f766e' },
+  { bg: '#fef9c3', text: '#a16207' },
+  { bg: '#e0e7ff', text: '#3730a3' },
+]
+function subTagStyle(name: string): React.CSSProperties {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  const { bg, text } = SUB_COLORS[Math.abs(hash) % SUB_COLORS.length]
+  return { background: bg, color: text, padding: '2px 8px', borderRadius: 4, fontSize: 11, marginLeft: 4, fontWeight: 500 }
+}
+
 function actionStyle(status: RequestStatus): React.CSSProperties {
   if (status === 'APPROVED') return { color: '#276749', borderColor: '#276749' }
   if (status === 'REJECTED') return { color: '#9B2C2C', borderColor: '#9B2C2C' }
@@ -797,7 +814,6 @@ const s: Record<string, React.CSSProperties> = {
   tr: { borderBottom: '1px solid var(--c-thead)' },
   td: { padding: '10px 14px', fontSize: 13 },
   sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
-  subTag: { background: 'transparent', color: 'var(--c-tag-sys-t)', border: '1px solid var(--c-tag-sys-t)', padding: '1px 7px', borderRadius: 4, fontSize: 11, marginLeft: 4, opacity: 0.75 },
   actions: { display: 'flex', alignItems: 'center' },
   empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
