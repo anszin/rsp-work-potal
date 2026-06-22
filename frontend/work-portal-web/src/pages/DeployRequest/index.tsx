@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import {
@@ -241,6 +241,8 @@ export default function DeployRequestPage() {
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER'
   const filtered = statusFilter === 'ALL' ? requests : requests.filter(r => r.status === statusFilter)
+  const topLevelFiltered = filtered.filter(r => !r.parentDrId)
+  const childrenOf = (id: number) => requests.filter(r => r.parentDrId === id)
 
   return (
     <div style={s.page}>
@@ -368,7 +370,8 @@ export default function DeployRequestPage() {
       {/* 상태 필터 탭 */}
       <div style={s.filterRow}>
         {STATUS_FILTERS.map(({ label, value }) => {
-          const count = value === 'ALL' ? requests.length : requests.filter(r => r.status === value).length
+          const topLevel = requests.filter(r => !r.parentDrId)
+          const count = value === 'ALL' ? topLevel.length : topLevel.filter(r => r.status === value).length
           return (
             <button key={value} style={{ ...s.filterBtn, ...(statusFilter === value ? s.filterBtnActive : {}) }}
               onClick={() => setStatusFilter(value)}>
@@ -400,71 +403,81 @@ export default function DeployRequestPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 && (
+              {topLevelFiltered.length === 0 && (
                 <tr><td colSpan={11} style={s.empty}>등록된 배포 요청이 없습니다</td></tr>
               )}
-              {filtered.map((r) => (
-                <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
-                  onClick={() => setDetail(detail?.id === r.id ? null : r)}>
-                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>
-                    {r.parentDrId && <span style={{ color: 'var(--c-text-muted)', marginRight: 4 }}>↳</span>}
-                    {r.deployNo ?? '-'}
-                  </td>
-                  <td style={s.td}>
-                    <span style={s.sysTag}>{r.systemName}</span>
-                    {r.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{r.subSystemName}</span>}
-                  </td>
-                  <td style={s.td}>{r.title}</td>
-                  <td style={s.td}>{r.version ?? '-'}</td>
-                  <td style={s.td}>{r.deployType ? DEPLOY_TYPE_LABELS[r.deployType] : '-'}</td>
-                  <td style={s.td}>
-                    {r.deployScope ? (
-                      <span style={{
-                        fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 10,
-                        background: r.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
-                        color: r.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)',
-                      }}>{DEPLOY_SCOPE_LABELS[r.deployScope]}</span>
-                    ) : '-'}
-                  </td>
-                  <td style={s.td}>{r.requesterUsername}</td>
-                  <td style={s.td}>{r.approverUsername ?? '-'}</td>
-                  <td style={s.td}><StatusBadge status={r.status} /></td>
-                  <td style={s.td}>{r.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'}</td>
-                  <td style={s.td} onClick={e => e.stopPropagation()}>
-                    <div style={s.actions}>
-                      {r.status === 'DRAFT' && (
-                        <button style={s.btnSm} onClick={() => openEdit(r)}>수정</button>
-                      )}
-                      {NEXT_STATUS[r.status]?.map(({ label, next }) => {
-                        const isManagedSystem = managedSystemIds.includes(r.systemId)
-                        const isRelease = r.deployType === 'RELEASE'
-                        const canAct =
-                          (next === 'APPROVED' || next === 'REJECTED') ? (isAdmin || (!isRelease && isManagedSystem)) :
-                          (next === 'REQUESTED' || next === 'COMPLETED') ? (isManagedSystem || isAdmin) :
-                          false
-                        return canAct && (
-                          <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
-                            onClick={() => handleStatus(r.id, next)}>
-                            {label}
+              {topLevelFiltered.map((r) => {
+                const children = childrenOf(r.id)
+                const renderRow = (row: DeployRequest, isChild: boolean) => (
+                  <tr key={row.id}
+                    style={{ ...s.tr, cursor: 'pointer', background: detail?.id === row.id ? 'var(--c-row-sel)' : isChild ? 'var(--c-bg)' : undefined }}
+                    onClick={() => setDetail(detail?.id === row.id ? null : row)}>
+                    <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap', paddingLeft: isChild ? 32 : undefined }}>
+                      {isChild && <span style={{ color: 'var(--c-text-muted)', marginRight: 4 }}>↳</span>}
+                      {row.deployNo ?? '-'}
+                    </td>
+                    <td style={s.td}>
+                      <span style={s.sysTag}>{row.systemName}</span>
+                      {row.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{row.subSystemName}</span>}
+                    </td>
+                    <td style={s.td}>{row.title}</td>
+                    <td style={s.td}>{row.version ?? '-'}</td>
+                    <td style={s.td}>{row.deployType ? DEPLOY_TYPE_LABELS[row.deployType] : '-'}</td>
+                    <td style={s.td}>
+                      {row.deployScope ? (
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 10,
+                          background: row.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
+                          color: row.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)',
+                        }}>{DEPLOY_SCOPE_LABELS[row.deployScope]}</span>
+                      ) : '-'}
+                    </td>
+                    <td style={s.td}>{row.requesterUsername}</td>
+                    <td style={s.td}>{row.approverUsername ?? '-'}</td>
+                    <td style={s.td}><StatusBadge status={row.status} /></td>
+                    <td style={s.td}>{row.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'}</td>
+                    <td style={s.td} onClick={e => e.stopPropagation()}>
+                      <div style={s.actions}>
+                        {row.status === 'DRAFT' && (
+                          <button style={s.btnSm} onClick={() => openEdit(row)}>수정</button>
+                        )}
+                        {NEXT_STATUS[row.status]?.map(({ label, next }) => {
+                          const isManagedSystem = managedSystemIds.includes(row.systemId)
+                          const isRelease = row.deployType === 'RELEASE'
+                          const canAct =
+                            (next === 'APPROVED' || next === 'REJECTED') ? (isAdmin || (!isRelease && isManagedSystem)) :
+                            (next === 'REQUESTED' || next === 'COMPLETED') ? (isManagedSystem || isAdmin) :
+                            false
+                          return canAct && (
+                            <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
+                              onClick={() => handleStatus(row.id, next)}>
+                              {label}
+                            </button>
+                          )
+                        })}
+                        {row.status === 'COMPLETED' && row.deployScope === 'PARTIAL' && !requests.some(x => x.parentDrId === row.id) && (
+                          <button style={{ ...s.btnSm, color: '#285E61', borderColor: '#285E61' }}
+                            onClick={() => openCreate({ systemId: row.systemId, subSystemId: row.subSystemId ?? undefined, title: row.title, version: row.version ?? '', deployType: row.deployType ?? 'RELEASE', deployScope: 'FULL', content: row.content ?? '', redmineIssues: row.redmineIssues, parentDrId: row.id })}>
+                            전점 배포
                           </button>
-                        )
-                      })}
-                      {r.status === 'COMPLETED' && r.deployScope === 'PARTIAL' && !requests.some(x => x.parentDrId === r.id) && (
-                        <button style={{ ...s.btnSm, color: '#285E61', borderColor: '#285E61' }}
-                          onClick={() => openCreate({ systemId: r.systemId, subSystemId: r.subSystemId ?? undefined, title: r.title, version: r.version ?? '', deployType: r.deployType ?? 'RELEASE', deployScope: 'FULL', content: r.content ?? '', redmineIssues: r.redmineIssues, parentDrId: r.id })}>
-                          전점 배포
-                        </button>
-                      )}
-                      {(r.status === 'DRAFT' || isAdmin) && (
-                        <button style={{ ...s.btnSm, color: '#e53e3e' }}
-                          onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
-                          삭제
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        )}
+                        {(row.status === 'DRAFT' || isAdmin) && (
+                          <button style={{ ...s.btnSm, color: '#e53e3e' }}
+                            onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(row.id) }}>
+                            삭제
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+                return (
+                  <Fragment key={r.id}>
+                    {renderRow(r, false)}
+                    {children.map(child => renderRow(child, true))}
+                  </Fragment>
+                )
+              })}
             </tbody>
           </table>
         </div>
