@@ -317,7 +317,13 @@ export default function DeployRequestPage() {
               </>
             )}
             <label style={s.label}>제목 *</label>
-            <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="배포 요청 제목" />
+            <div>
+              <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="예: [릴리즈] POS v1.2.3 · [핫픽스] 주문 오류 긴급수정" />
+              <div style={{ marginTop: 4, fontSize: 11, color: 'var(--c-text-muted)', lineHeight: 1.6 }}>
+                권장 형식: <code style={{ background: 'var(--c-bg)', padding: '1px 5px', borderRadius: 3 }}>[유형] 시스템 버전 · 변경내용</code>
+              </div>
+            </div>
             <label style={s.label}>버전</label>
             <input style={s.input} value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} placeholder="예: v1.2.3" />
             <label style={s.label}>배포 유형</label>
