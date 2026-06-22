@@ -18,6 +18,12 @@ const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
 const DEPLOY_SCOPE_LABELS: Record<DeployScope, string> = {
   FULL: '전점', PARTIAL: '일부점',
 }
+const DEPLOY_TYPE_GUIDE: Record<DeployType, string> = {
+  RELEASE: '정기 계획 배포. 신규 기능·개선사항이 포함된 버전을 배포할 때 사용합니다.',
+  HOTFIX:  '장애·긴급 버그 수정 배포. 운영 중 발생한 문제를 즉시 수정할 때 사용합니다.',
+  ROLLBACK: '이전 버전으로 되돌리기. 배포 후 문제 발생 시 직전 안정 버전으로 복구할 때 사용합니다.',
+  PATCH:   '소규모 수정 배포. 설정 변경·데이터 픽스 등 코드 변경이 최소한인 경우 사용합니다.',
+}
 const NEXT_STATUS: Partial<Record<RequestStatus, { label: string; next: RequestStatus }[]>> = {
   DRAFT:     [{ label: '제출', next: 'REQUESTED' }],
   REQUESTED: [{ label: '승인', next: 'APPROVED' }, { label: '반려', next: 'REJECTED' }],
@@ -315,9 +321,16 @@ export default function DeployRequestPage() {
             <label style={s.label}>버전</label>
             <input style={s.input} value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} placeholder="예: v1.2.3" />
             <label style={s.label}>배포 유형</label>
-            <select style={s.input} value={form.deployType} onChange={(e) => setForm({ ...form, deployType: e.target.value as DeployType })}>
-              {Object.entries(DEPLOY_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
+            <div>
+              <select style={s.input} value={form.deployType} onChange={(e) => setForm({ ...form, deployType: e.target.value as DeployType })}>
+                {Object.entries(DEPLOY_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+              {form.deployType && (
+                <div style={{ marginTop: 5, fontSize: 12, color: 'var(--c-text-muted)', lineHeight: 1.5 }}>
+                  {DEPLOY_TYPE_GUIDE[form.deployType as DeployType]}
+                </div>
+              )}
+            </div>
             <label style={s.label}>배포 범위</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <select style={{ ...s.input, width: 'auto' }} value={form.deployScope ?? 'FULL'} onChange={(e) => setForm({ ...form, deployScope: e.target.value as DeployScope, deployTarget: e.target.value === 'FULL' ? '' : form.deployTarget })}>
