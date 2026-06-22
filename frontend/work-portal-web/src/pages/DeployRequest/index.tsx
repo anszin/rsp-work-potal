@@ -544,20 +544,6 @@ export default function DeployRequestPage() {
                 ) : '-'
               } />
               <InfoRow label="예정일시" value={detail.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'} />
-              {detail.parentDrId && (() => {
-                const parent = requests.find(r => r.id === detail.parentDrId)
-                return (
-                  <InfoRow label="상위 DR" value={
-                    parent ? (
-                      <button style={{ background: 'none', border: 'none', color: '#1976d2', cursor: 'pointer', padding: 0, fontSize: 13, textDecoration: 'underline' }}
-                        onClick={() => setDetail(parent)}>
-                        {parent.deployNo ?? `DR#${parent.id}`}
-                        {parent.deployTarget && <span style={{ marginLeft: 6, color: 'var(--c-text-muted)', fontSize: 12 }}>({parent.deployTarget})</span>}
-                      </button>
-                    ) : `DR#${detail.parentDrId}`
-                  } />
-                )
-              })()}
             </div>
             <div style={s.infoSection}>
               <div style={s.infoSectionTitle}>담당자 · 일정</div>
@@ -566,6 +552,58 @@ export default function DeployRequestPage() {
               <InfoRow label="등록일" value={detail.createdAt?.slice(0, 10)} />
             </div>
           </div>
+
+          {/* 배포 경로 */}
+          {(() => {
+            const parent = detail.parentDrId ? requests.find(r => r.id === detail.parentDrId) : null
+            const children = requests.filter(r => r.parentDrId === detail.id)
+            if (!parent && children.length === 0) return null
+            const chain: { dr: DeployRequest; isCurrent: boolean }[] = [
+              ...(parent ? [{ dr: parent, isCurrent: false }] : []),
+              { dr: detail, isCurrent: true },
+              ...children.map(c => ({ dr: c, isCurrent: false })),
+            ]
+            return (
+              <div style={{ marginTop: 14 }}>
+                <div style={s.infoSectionTitle}>배포 경로</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginTop: 8, flexWrap: 'wrap' }}>
+                  {chain.map(({ dr, isCurrent }, idx) => (
+                    <Fragment key={dr.id}>
+                      {idx > 0 && (
+                        <div style={{ padding: '0 10px', color: 'var(--c-text-muted)', fontSize: 16, flexShrink: 0 }}>→</div>
+                      )}
+                      <div
+                        onClick={() => !isCurrent && setDetail(dr)}
+                        style={{
+                          padding: '8px 14px', borderRadius: 8, flexShrink: 0,
+                          border: `2px solid ${isCurrent ? '#1a1a2e' : 'var(--c-border-in)'}`,
+                          background: isCurrent ? 'var(--c-thead)' : 'var(--c-bg)',
+                          cursor: isCurrent ? 'default' : 'pointer',
+                        }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: isCurrent ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
+                            {dr.deployNo ?? `DR#${dr.id}`}
+                          </span>
+                          {isCurrent && <span style={{ fontSize: 10, background: '#1a1a2e', color: '#fff', borderRadius: 3, padding: '1px 5px' }}>현재</span>}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                          {dr.deployScope && (
+                            <span style={{
+                              fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 8,
+                              background: dr.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
+                              color: dr.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)',
+                            }}>{DEPLOY_SCOPE_LABELS[dr.deployScope]}</span>
+                          )}
+                          {dr.deployTarget && <span style={{ fontSize: 10, color: 'var(--c-text-muted)' }}>{dr.deployTarget}</span>}
+                          <StatusBadge status={dr.status} />
+                        </div>
+                      </div>
+                    </Fragment>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
 
           {/* 첨언 / 반려 사유 */}
           {(detail.actionComment || detail.rejectionReason) && (
