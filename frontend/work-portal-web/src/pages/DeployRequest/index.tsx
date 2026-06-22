@@ -294,7 +294,7 @@ export default function DeployRequestPage() {
         {tab === 'list' && <button style={s.btn} onClick={() => openCreate()}>+ 새 배포 요청</button>}
       </div>
 
-      {tab === 'dashboard' && <DeployDashboard requests={requests} />}
+      {tab === 'dashboard' && <DeployDashboard requests={requests.filter(r => !r.parentDrId)} />}
 
       {tab === 'list' && <>
       {/* 등록/수정 폼 */}
