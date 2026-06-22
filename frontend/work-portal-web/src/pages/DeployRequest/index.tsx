@@ -402,7 +402,7 @@ export default function DeployRequestPage() {
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
-                <th style={s.th}>번호</th>
+                <th style={{ ...s.th, paddingLeft: 20 }}>번호</th>
                 <th style={s.th}>시스템</th>
                 <th style={{ ...s.th, width: '20%' }}>제목</th>
                 <th style={s.th}>버전</th>
@@ -425,7 +425,7 @@ export default function DeployRequestPage() {
                   <tr key={row.id}
                     style={{ ...s.tr, cursor: 'pointer', background: detail?.id === row.id ? 'var(--c-row-sel)' : isChild ? 'var(--c-bg)' : undefined }}
                     onClick={() => setDetail(detail?.id === row.id ? null : row)}>
-                    <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap', paddingLeft: isChild ? 32 : undefined }}>
+                    <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap', paddingLeft: isChild ? 36 : 20 }}>
                       {isChild && <span style={{ color: 'var(--c-text-muted)', marginRight: 4 }}>↳</span>}
                       {row.deployNo ?? '-'}
                     </td>
