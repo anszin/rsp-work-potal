@@ -347,40 +347,7 @@ export default function DeployRequestPage() {
               )}
             </div>
             <label style={s.label}>예정일시</label>
-            <div>
-              <div style={{ display: 'flex', gap: 5, marginBottom: 6, flexWrap: 'wrap' }}>
-                {[
-                  { label: '오늘 22:00', day: 0, h: 22 },
-                  { label: '오늘 23:00', day: 0, h: 23 },
-                  { label: '내일 00:00', day: 1, h: 0  },
-                  { label: '내일 02:00', day: 1, h: 2  },
-                  { label: '내일 06:00', day: 1, h: 6  },
-                ].map(({ label, day, h }) => {
-                  const pad = (n: number) => String(n).padStart(2, '0')
-                  const d = new Date(); d.setDate(d.getDate() + day)
-                  const val = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(h)}:00`
-                  const active = form.scheduledAt?.slice(0, 16) === val
-                  return (
-                    <button key={label} type="button"
-                      style={{ fontSize: 12, padding: '3px 10px', borderRadius: 4, cursor: 'pointer',
-                        border: `1px solid ${active ? '#1a1a2e' : 'var(--c-border-in)'}`,
-                        background: active ? '#1a1a2e' : 'var(--c-card)',
-                        color: active ? '#fff' : 'var(--c-text-sub)' }}
-                      onClick={() => setForm({ ...form, scheduledAt: val + ':00' })}>
-                      {label}
-                    </button>
-                  )
-                })}
-                {form.scheduledAt && (
-                  <button type="button"
-                    style={{ fontSize: 12, padding: '3px 8px', borderRadius: 4, cursor: 'pointer', border: '1px solid var(--c-border-in)', background: 'none', color: 'var(--c-text-muted)' }}
-                    onClick={() => setForm({ ...form, scheduledAt: undefined })}>
-                    ✕
-                  </button>
-                )}
-              </div>
-              <input style={{ ...s.input, width: 'auto' }} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
-            </div>
+            <input style={{ ...s.input, width: 'auto' }} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
             <label style={s.label}>레드마인 일감</label>
             <div>
               {selectedSystem?.redmineProjectKey ? (
