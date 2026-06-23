@@ -47,7 +47,7 @@ public class KeyTaskService {
 
     private void apply(KeyTask kt, KeyTaskDto.SaveRequest req) {
         kt.setYear(req.getYear());
-        kt.setParentId(req.getParentId());
+        kt.setTaskLevel(req.getTaskLevel());
         kt.setTeamName(req.getTeamName());
         kt.setAssigneeName(req.getAssigneeName());
         kt.setKpi(req.getKpi());

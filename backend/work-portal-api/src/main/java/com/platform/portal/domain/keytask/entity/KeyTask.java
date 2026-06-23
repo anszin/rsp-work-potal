@@ -22,7 +22,7 @@ public class KeyTask {
     @Column(nullable = false)
     private Integer year;
 
-    private Long parentId;
+    private String taskLevel; // "팀" | "담당부서" | "담당자"
     private String teamName;
     private String assigneeName;
 

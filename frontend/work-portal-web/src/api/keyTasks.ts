@@ -3,7 +3,7 @@ import client from './client'
 export interface KeyTask {
   id: number
   year: number
-  parentId: number | null
+  taskLevel: string | null
   teamName: string | null
   assigneeName: string | null
   kpi: string | null
@@ -19,7 +19,7 @@ export interface KeyTask {
 
 export interface SaveKeyTaskRequest {
   year: number
-  parentId?: number | null
+  taskLevel?: string
   teamName?: string
   assigneeName?: string
   kpi?: string
