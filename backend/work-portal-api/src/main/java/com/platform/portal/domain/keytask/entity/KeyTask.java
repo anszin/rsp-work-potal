@@ -22,6 +22,7 @@ public class KeyTask {
     @Column(nullable = false)
     private Integer year;
 
+    private Long parentId;
     private String teamName;
     private String assigneeName;
 

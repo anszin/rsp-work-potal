@@ -13,6 +13,7 @@ public class KeyTaskDto {
     @Getter @Setter
     public static class SaveRequest {
         @NotNull private Integer year;
+        private Long parentId;
         private String teamName;
         private String assigneeName;
         private String kpi;
@@ -28,6 +29,7 @@ public class KeyTaskDto {
     public static class Response {
         private final Long id;
         private final Integer year;
+        private final Long parentId;
         private final String teamName;
         private final String assigneeName;
         private final String kpi;
@@ -43,6 +45,7 @@ public class KeyTaskDto {
         public Response(KeyTask k) {
             this.id = k.getId();
             this.year = k.getYear();
+            this.parentId = k.getParentId();
             this.teamName = k.getTeamName();
             this.assigneeName = k.getAssigneeName();
             this.kpi = k.getKpi();

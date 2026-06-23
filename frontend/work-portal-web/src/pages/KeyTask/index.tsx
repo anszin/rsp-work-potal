@@ -13,11 +13,37 @@ type SelQuarter = Quarter | 'all'
 type FormData = Omit<SaveKeyTaskRequest, 'year'>
 
 const emptyForm: FormData = {
+  parentId: null,
   teamName: '', assigneeName: '', kpi: '', taskName: '',
   q1Plan: '', q2Plan: '', q3Plan: '', q4Plan: '',
   q1Result: '', q2Result: '', q3Result: '', q4Result: '',
   q1Achievement: '', q2Achievement: '', q3Achievement: '', q4Achievement: '',
   q1Reason: '', q2Reason: '', q3Reason: '', q4Reason: '',
+}
+
+type TreeNode = KeyTask & { children: TreeNode[]; depth: number }
+
+function buildTree(tasks: KeyTask[]): TreeNode[] {
+  const map = new Map<number, TreeNode>()
+  tasks.forEach(t => map.set(t.id, { ...t, children: [], depth: 0 }))
+  const roots: TreeNode[] = []
+  map.forEach(node => {
+    if (node.parentId != null && map.has(node.parentId)) {
+      map.get(node.parentId)!.children.push(node)
+    } else {
+      roots.push(node)
+    }
+  })
+  function setDepth(n: TreeNode, d: number) { n.depth = d; n.children.forEach(c => setDepth(c, d + 1)) }
+  roots.forEach(r => setDepth(r, 0))
+  return roots
+}
+
+function flattenTree(nodes: TreeNode[]): TreeNode[] {
+  const result: TreeNode[] = []
+  function dfs(n: TreeNode) { result.push(n); n.children.forEach(dfs) }
+  nodes.forEach(dfs)
+  return result
 }
 
 function currentQuarter(): Quarter {
@@ -41,6 +67,13 @@ function truncate(s: string | null | undefined, n = 40) {
 function qKey(q: Quarter, suffix: string): keyof KeyTask {
   return `q${q}${suffix}` as keyof KeyTask
 }
+
+const DEPTH_BG = ['transparent', '#f8fafc', '#f0f4f8']
+const DEPTH_LEFT: React.CSSProperties[] = [
+  {},
+  { borderLeft: '3px solid #bee3f8' },
+  { borderLeft: '3px solid #c6f6d5' },
+]
 
 export default function KeyTaskPage() {
   const qc = useQueryClient()
@@ -86,6 +119,7 @@ export default function KeyTaskPage() {
   const openEdit = (t: KeyTask) => {
     setEditing(t)
     setForm({
+      parentId: t.parentId,
       teamName: t.teamName ?? '', assigneeName: t.assigneeName ?? '',
       kpi: t.kpi ?? '', taskName: t.taskName,
       q1Plan: t.q1Plan ?? '', q2Plan: t.q2Plan ?? '', q3Plan: t.q3Plan ?? '', q4Plan: t.q4Plan ?? '',
@@ -93,6 +127,11 @@ export default function KeyTaskPage() {
       q1Achievement: t.q1Achievement ?? '', q2Achievement: t.q2Achievement ?? '', q3Achievement: t.q3Achievement ?? '', q4Achievement: t.q4Achievement ?? '',
       q1Reason: t.q1Reason ?? '', q2Reason: t.q2Reason ?? '', q3Reason: t.q3Reason ?? '', q4Reason: t.q4Reason ?? '',
     })
+    setShowModal(true)
+  }
+  const openCreateChild = (parent: KeyTask) => {
+    setEditing(null)
+    setForm({ ...emptyForm, parentId: parent.id })
     setShowModal(true)
   }
   const closeModal = () => { setShowModal(false); setEditing(null); setForm(emptyForm) }
@@ -108,11 +147,16 @@ export default function KeyTaskPage() {
   }
 
   const isPending = createMut.isPending || updateMut.isPending
+
+  const treeRoots = buildTree(tasks)
+  const treeRows = flattenTree(treeRoots)
   const assignees = [...new Set(tasks.map(t => t.assigneeName).filter(Boolean) as string[])].sort()
   const teams = [...new Set(tasks.map(t => t.teamName).filter(Boolean) as string[])].sort()
-  const displayTasks = selAssignee === 'all' ? tasks : tasks.filter(t => t.assigneeName === selAssignee)
+  const displayRows: TreeNode[] = selAssignee === 'all'
+    ? treeRows
+    : tasks.filter(t => t.assigneeName === selAssignee).map(t => ({ ...t, children: [] as TreeNode[], depth: 0 }))
   const visibleQs: Quarter[] = selQuarter === 'all' ? [...QUARTERS] : [selQuarter]
-  const totalCols = 3 + visibleQs.length * 4 + 1 // 담당자 + KPI + 과제명 + (plan+result+ach+reason)*Q + 액션
+  const totalCols = 3 + visibleQs.length * 4 + 1
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: '4px 0', border: 'none',
@@ -121,6 +165,9 @@ export default function KeyTaskPage() {
     fontWeight: active ? 600 : 400,
     color: active ? 'var(--c-text)' : 'var(--c-text-muted)',
   })
+
+  // 모달에서 보여줄 상위 과제 목록 (자기 자신 제외)
+  const parentOptions = flattenTree(buildTree(tasks.filter(t => editing == null || t.id !== editing.id)))
 
   return (
     <div style={s.page}>
@@ -133,6 +180,22 @@ export default function KeyTaskPage() {
               <button style={s.btnSecondary} onClick={closeModal}>✕</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 2fr', gap: 12, marginBottom: 20 }}>
+              {/* 상위 과제 (전체 너비) */}
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={s.label}>상위 과제 <span style={{ fontWeight: 400, color: 'var(--c-text-muted)' }}>(선택 사항 — 없으면 최상위 과제)</span></label>
+                <select
+                  style={s.input}
+                  value={form.parentId ?? ''}
+                  onChange={e => setForm(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
+                >
+                  <option value="">없음 (최상위)</option>
+                  {parentOptions.map(node => (
+                    <option key={node.id} value={node.id}>
+                      {'　'.repeat(node.depth)}{node.depth > 0 ? '└ ' : ''}{truncate(node.taskName, 60)}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <label style={s.label}>팀명</label>
                 <input style={s.input} list="team-list" value={f('teamName')} onChange={e => setF('teamName', e.target.value)} placeholder="팀명" />
@@ -271,15 +334,27 @@ export default function KeyTaskPage() {
             {!isLoading && tasks.length === 0 && (
               <tr><td colSpan={totalCols} style={s.empty}>등록된 과제가 없습니다.</td></tr>
             )}
-            {displayTasks.map(t => (
-              <tr key={t.id} style={s.tr}>
+            {displayRows.map(t => (
+              <tr key={t.id} style={{ ...s.tr, background: DEPTH_BG[Math.min(t.depth, 2)] }}>
                 <td style={{ ...s.td, fontSize: 12 }}>
                   {t.assigneeName && <div style={{ fontWeight: 500 }}>{t.assigneeName}</div>}
                   {t.teamName && <div style={{ color: 'var(--c-text-muted)', fontSize: 11 }}>{t.teamName}</div>}
                   {!t.assigneeName && <span style={{ color: 'var(--c-text-muted)' }}>-</span>}
                 </td>
                 <td style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{t.kpi ?? '-'}</td>
-                <td style={{ ...s.td, fontWeight: 500, minWidth: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</td>
+                <td style={{
+                  ...s.td,
+                  fontWeight: t.depth === 0 ? 600 : 500,
+                  minWidth: 280,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  lineHeight: 1.6,
+                  paddingLeft: 12 + t.depth * 16,
+                  ...DEPTH_LEFT[Math.min(t.depth, 2)],
+                }}>
+                  {t.depth > 0 && <span style={{ color: 'var(--c-text-muted)', marginRight: 4, userSelect: 'none' }}>└</span>}
+                  {t.taskName}
+                </td>
                 {visibleQs.map((q, i) => <td key={`plan-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Plan')] as string)}</pre></td>)}
                 {visibleQs.map((q, i) => <td key={`result-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Result')] as string)}</pre></td>)}
                 {visibleQs.map((q, i) => (
@@ -291,8 +366,9 @@ export default function KeyTaskPage() {
                 ))}
                 {visibleQs.map((q, i) => <td key={`reason-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></td>)}
                 <td style={s.td}>
-                  <div style={{ display: 'flex', gap: 4 }}>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     <button style={s.btnSm} onClick={() => openEdit(t)}>수정</button>
+                    <button style={s.btnSm} onClick={() => openCreateChild(t)}>+ 하위</button>
                     <button style={{ ...s.btnSm, color: '#e53e3e' }}
                       onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</button>
                   </div>
