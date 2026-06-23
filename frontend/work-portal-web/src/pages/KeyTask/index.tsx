@@ -31,11 +31,6 @@ const LEVEL_COLOR: Record<TaskLevel, { bg: string; color: string; border: string
   '담당자':  { bg: '#FFF5F5', color: '#9B2C2C', border: '#FED7D7' },
 }
 
-const LEVEL_LABEL: Record<TaskLevel, string> = {
-  '팀': '팀명',
-  '담당부서': '부서명',
-  '담당자': '담당자',
-}
 
 function currentQuarter(): Quarter {
   const m = new Date().getMonth() + 1
