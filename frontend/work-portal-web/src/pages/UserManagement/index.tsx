@@ -120,7 +120,7 @@ export default function UserManagementPage() {
   }
 
   return (
-    <div style={s.page}>
+    <div className="page-wrap">
       {createdInfo && (
         <div style={s.overlay}>
           <div style={s.modal}>
@@ -162,6 +162,7 @@ export default function UserManagementPage() {
               </button>
             </div>
           </div>
+          <div className="table-scroll">
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -187,6 +188,7 @@ export default function UserManagementPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       ) : (
         <>
@@ -229,6 +231,7 @@ export default function UserManagementPage() {
           )}
 
           <div style={s.card}>
+            <div className="table-scroll">
             <table style={s.table}>
               <thead>
                 <tr style={s.thead}>
@@ -277,6 +280,7 @@ export default function UserManagementPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </>
       )}
@@ -292,7 +296,6 @@ function roleStyle(role: string): React.CSSProperties {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  page: { padding: '32px 40px' },
   card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },

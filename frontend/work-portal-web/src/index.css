@@ -184,3 +184,28 @@ input, textarea, select {
   .deploy-info-grid  { grid-template-columns: 1fr; }
   .deploy-chart-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== 범용 반응형 그리드 ===== */
+.grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.grid-4col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+/* ===== 마스터-디테일 패널 (회의록/주간보고) ===== */
+.master-detail { display: flex; gap: 20px; }
+.master-panel  { flex-shrink: 0; }
+.detail-panel  {
+  flex: 1; background: var(--c-card); border-radius: 8px;
+  padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow-y: auto;
+}
+
+/* ===== 변경관리 상세 그리드 ===== */
+.cr-detail-grid { display: grid; grid-template-columns: 80px 1fr 80px 1fr; gap: 10px 16px; font-size: 13px; }
+
+@media (max-width: 768px) {
+  .grid-2col      { grid-template-columns: 1fr; }
+  .grid-3col      { grid-template-columns: repeat(2, 1fr); }
+  .grid-4col      { grid-template-columns: repeat(2, 1fr); }
+  .master-detail  { flex-direction: column; }
+  .master-panel   { width: 100% !important; }
+  .cr-detail-grid { grid-template-columns: 80px 1fr; }
+}

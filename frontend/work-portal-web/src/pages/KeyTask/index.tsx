@@ -162,7 +162,7 @@ export default function KeyTaskPage() {
   const assigneeSuggestions = [...new Set(tasks.filter(t => t.taskLevel === '담당자').map(t => t.assigneeName).filter(Boolean) as string[])].sort()
 
   return (
-    <div style={s.page}>
+    <div className="page-wrap">
       {/* 모달 */}
       {showModal && (
         <div style={s.overlay}>
@@ -270,7 +270,7 @@ export default function KeyTaskPage() {
       )}
 
       {/* 헤더 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div className="deploy-header" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>중점과제</h2>
           <div style={{ display: 'flex', gap: 16 }}>
@@ -403,7 +403,6 @@ export default function KeyTaskPage() {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  page: { padding: '32px 40px' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: 'var(--c-card)', borderRadius: 10, padding: 28, width: '90vw', maxWidth: 920, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.25)' },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },

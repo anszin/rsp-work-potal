@@ -144,7 +144,7 @@ export default function SystemManagementPage() {
   const availableUsers = users.filter(u => !assignedUserIds.has(u.id))
 
   return (
-    <div style={s.page}>
+    <div className="page-wrap">
       <PageHeader
         title="시스템 관리"
         action={<button onClick={() => { reset(); setShowForm(true) }} style={s.btn}>+ 시스템 등록</button>}
@@ -188,6 +188,7 @@ export default function SystemManagementPage() {
 
       {isLoading ? <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p> : (
         <div style={s.card}>
+          <div className="table-scroll">
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -229,6 +230,7 @@ export default function SystemManagementPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -403,7 +405,6 @@ export default function SystemManagementPage() {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  page: { padding: '32px 40px' },
   card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },

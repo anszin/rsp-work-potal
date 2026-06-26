@@ -61,9 +61,9 @@ export default function MeetingMinutesPage() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 20, height: '100%' }}>
+    <div className="master-detail page-wrap">
       {/* 목록 패널 */}
-      <div style={{ width: 320, flexShrink: 0 }}>
+      <div className="master-panel" style={{ width: 320 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h2 style={{ margin: 0, fontSize: 18 }}>회의록</h2>
           <button onClick={() => { resetForm(); setShowForm(true); setSelected(null) }}
@@ -95,7 +95,7 @@ export default function MeetingMinutesPage() {
       </div>
 
       {/* 상세/작성 패널 */}
-      <div style={{ flex: 1, background: 'var(--c-card)', borderRadius: 8, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowY: 'auto' }}>
+      <div className="detail-panel">
         {showForm ? (
           <>
             <h3 style={{ margin: '0 0 20px' }}>{editing ? '회의록 수정' : '새 회의록 작성'}</h3>

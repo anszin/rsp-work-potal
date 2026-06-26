@@ -75,8 +75,8 @@ export default function InventoryPage() {
   const allItems = useQuery({ queryKey: ['inventory', ''], queryFn: () => inventoryApi.list(undefined).then(r => r.data) })
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+    <div className="page-wrap">
+      <div className="deploy-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ margin: 0 }}>인벤토리 (수주/제안)</h2>
           <div style={{ display: 'flex', gap: 20 }}>
@@ -115,7 +115,7 @@ export default function InventoryPage() {
         <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '항목 수정' : '새 항목 추가'}</h3>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="grid-2col">
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>구분 *</span>
                 <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as ItemType }))}
@@ -181,6 +181,7 @@ export default function InventoryPage() {
       {isLoading ? (
         <p>로딩 중...</p>
       ) : (
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <thead>
             <tr style={{ background: 'var(--c-thead)' }}>
@@ -225,6 +226,7 @@ export default function InventoryPage() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
       </>}
     </div>
@@ -244,7 +246,7 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div className="grid-2col" style={{ gap: 16, marginBottom: 16 }}>
         {types.map(t => {
           const typeItems = items.filter(i => i.type === t)
           return (
@@ -272,7 +274,7 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
       </div>
       <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>상태별 현황</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        <div className="grid-4col">
           {statuses.map(st => (
             <div key={st} style={{ background: statusColors[st] + '11', border: `1px solid ${statusColors[st]}44`, borderRadius: 8, padding: '14px 18px' }}>
               <div style={{ fontSize: 11, color: statusColors[st], fontWeight: 600, marginBottom: 6 }}>{STATUS_LABEL[st]}</div>

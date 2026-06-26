@@ -76,8 +76,8 @@ export default function FinancePage() {
   const currentSummary = summary.find(s => s.month === selectedMonth)
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+    <div className="page-wrap">
+      <div className="deploy-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ margin: 0 }}>손익 관리</h2>
           <div style={{ display: 'flex', gap: 20 }}>
@@ -123,7 +123,7 @@ export default function FinancePage() {
 
       {/* 선택 월 요약 카드 */}
       {currentSummary && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+        <div className="grid-3col" style={{ marginBottom: 20 }}>
           {[
             { label: '매출', value: currentSummary.revenue, color: '#1976d2' },
             { label: '지출', value: currentSummary.expense, color: '#f44336' },
@@ -140,8 +140,8 @@ export default function FinancePage() {
       )}
 
       {/* 상세 내역 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <div style={{ display: 'flex', gap: 4 }}>
+      <div className="deploy-header" style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {MONTHS.map((m, i) => (
             <button key={i + 1} onClick={() => setSelectedMonth(i + 1)}
               style={{
@@ -163,7 +163,7 @@ export default function FinancePage() {
         <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '내역 수정' : '새 내역 추가'}</h3>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="grid-2col">
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>구분 *</span>
                 <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as FinanceCategory }))}
@@ -203,6 +203,7 @@ export default function FinancePage() {
       )}
 
       {isLoading ? <p>로딩 중...</p> : (
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <thead>
             <tr style={{ background: 'var(--c-thead)' }}>
@@ -246,6 +247,7 @@ export default function FinancePage() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
       </>}
     </div>
@@ -261,7 +263,7 @@ function FinanceDashboard({ summary, year }: { summary: import('../../api/financ
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 16 }}>
+      <div className="grid-3col" style={{ gap: 16, marginBottom: 16 }}>
         {[
           { label: `${year}년 총 매출`, value: totalRevenue, color: '#1976d2' },
           { label: `${year}년 총 지출`, value: totalExpense, color: '#f44336' },

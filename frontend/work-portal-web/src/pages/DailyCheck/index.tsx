@@ -65,8 +65,8 @@ export default function DailyCheckPage() {
   const hasWarning = reports.some(r => r.status === 'WARNING')
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+    <div className="page-wrap">
+      <div className="deploy-header">
         <h2 style={{ margin: 0 }}>일일 점검</h2>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)}
@@ -100,7 +100,7 @@ export default function DailyCheckPage() {
         <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '점검 수정' : '점검 등록'}</h3>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="grid-2col">
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 13 }}>시스템 *</span>
                 <select value={form.systemId} onChange={e => setForm(f => ({ ...f, systemId: +e.target.value }))}
@@ -144,6 +144,7 @@ export default function DailyCheckPage() {
       )}
 
       {isLoading ? <p>로딩 중...</p> : (
+        <div className="table-scroll">
         <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <thead>
             <tr style={{ background: 'var(--c-thead)' }}>
@@ -188,6 +189,7 @@ export default function DailyCheckPage() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   )

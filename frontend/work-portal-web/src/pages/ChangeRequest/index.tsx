@@ -202,7 +202,7 @@ export default function ChangeRequestPage() {
   const filtered = statusFilter === 'ALL' ? requests : requests.filter(r => r.status === statusFilter)
 
   return (
-    <div style={s.page}>
+    <div className="page-wrap">
       {/* 액션 코멘트 모달 */}
       {actionModal && (() => {
         const cfg = ACTION_MODAL_CONFIG[actionModal.next]!
@@ -230,7 +230,7 @@ export default function ChangeRequestPage() {
         )
       })()}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div className="deploy-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>변경 관리</h2>
           <div style={{ display: 'flex', gap: 20 }}>
@@ -368,6 +368,7 @@ export default function ChangeRequestPage() {
         <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p>
       ) : (
         <div style={s.tableWrap}>
+          <div className="table-scroll">
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -450,6 +451,7 @@ export default function ChangeRequestPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -465,7 +467,7 @@ export default function ChangeRequestPage() {
             </div>
             <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
           </div>
-          <div style={s.detailGrid}>
+          <div className="cr-detail-grid">
             <span style={s.detailLabel}>상태</span><span>{STATUS_LABELS[detail.status]}</span>
             <span style={s.detailLabel}>요청부서</span><span>{detail.requesterDept ?? '-'}</span>
             <span style={s.detailLabel}>요청자</span><span>{detail.requesterName ?? detail.requesterUsername}</span>
@@ -556,7 +558,7 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 16 }}>
+      <div className="deploy-stat-grid" style={{ marginBottom: 16 }}>
         <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '16px 20px' }}>
           <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 6, fontWeight: 600 }}>전체</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-text)' }}>{requests.length}</div>
@@ -597,7 +599,6 @@ function actionStyle(status: RequestStatus): React.CSSProperties {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  page: { padding: '32px 40px' },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
@@ -607,7 +608,7 @@ const s: Record<string, React.CSSProperties> = {
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
   input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
-  filterRow: { display: 'flex', gap: 6, marginBottom: 12 },
+  filterRow: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
   filterBtn: { padding: '5px 12px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-sub)', display: 'flex', alignItems: 'center', gap: 4 },
   filterBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
   badge: { background: 'rgba(255,255,255,0.25)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
@@ -622,7 +623,6 @@ const s: Record<string, React.CSSProperties> = {
   empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: 'var(--c-card)', borderRadius: 8, padding: 24, width: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
-  detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
   detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
   contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
 }
