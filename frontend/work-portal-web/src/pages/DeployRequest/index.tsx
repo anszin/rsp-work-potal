@@ -251,7 +251,7 @@ export default function DeployRequestPage() {
   const childrenOf = (id: number) => requests.filter(r => r.parentDrId === id)
 
   return (
-    <div style={s.page}>
+    <div className="page-wrap">
       {/* 액션 코멘트 모달 */}
       {actionModal && (() => {
         const cfg = ACTION_MODAL_CONFIG[actionModal.next]!
@@ -279,7 +279,7 @@ export default function DeployRequestPage() {
         )
       })()}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div className="deploy-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>배포 관리</h2>
           <div style={{ display: 'flex', gap: 20 }}>
@@ -405,6 +405,7 @@ export default function DeployRequestPage() {
         <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p>
       ) : (
         <div style={s.tableWrap}>
+          <div className="table-scroll">
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -499,6 +500,7 @@ export default function DeployRequestPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -533,7 +535,7 @@ export default function DeployRequestPage() {
           <DeployTimeline detail={detail} />
 
           {/* 정보 섹션 2열 */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+          <div className="deploy-info-grid">
             <div style={s.infoSection}>
               <div style={s.infoSectionTitle}>배포 정보</div>
               <InfoRow label="버전" value={detail.version ?? '-'} />
@@ -835,7 +837,6 @@ function actionStyle(status: RequestStatus): React.CSSProperties {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  page: { padding: '32px 40px' },
   btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnOutline: { padding: '6px 14px', background: 'var(--c-card)', color: '#1976d2', border: '1px dashed #1976d2', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
@@ -847,7 +848,7 @@ const s: Record<string, React.CSSProperties> = {
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)', paddingTop: 8 },
   input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   issueBadge: { display: 'flex', alignItems: 'center', gap: 4, background: '#f0fdf4', border: '1px solid #c6f6d5', borderRadius: 4, padding: '3px 8px', fontSize: 12 },
-  filterRow: { display: 'flex', gap: 6, marginBottom: 12 },
+  filterRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   filterBtn: { padding: '5px 12px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-sub)', display: 'flex', alignItems: 'center', gap: 4 },
   filterBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
   badge: { background: 'rgba(255,255,255,0.25)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
@@ -937,7 +938,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
       </div>
 
       {/* 상태 카드 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div className="deploy-stat-grid">
         <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '16px 20px' }}>
           <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 6, fontWeight: 600 }}>전체</div>
           <div style={{ fontSize: 28, fontWeight: 700 }}>{filtered.length}</div>
@@ -961,7 +962,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
       )}
 
       {/* 시스템별 + 유형별 */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="deploy-chart-grid">
         <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>
             시스템별{selMonth !== 'all' ? ` (${selMonth}월)` : ''}

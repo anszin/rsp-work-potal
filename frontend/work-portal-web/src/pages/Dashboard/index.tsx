@@ -116,7 +116,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ padding: '28px 36px', background: 'var(--c-bg)', minHeight: '100vh' }}>
+    <div className="page-wrap" style={{ background: 'var(--c-bg)', minHeight: '100vh' }}>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>종합 대시보드</h2>
         <div style={{ fontSize: 13, color: 'var(--c-text-muted)', marginTop: 4 }}>
@@ -125,7 +125,7 @@ export default function DashboardPage() {
       </div>
 
       {/* 요약 카드 */}
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${[can('finance'), can('inventory'), can('change_requests'), can('deploys')].filter(Boolean).length}, 1fr)`, gap: 14, marginBottom: 20 }}>
+      <div className="dash-summary-grid">
         {can('finance') && (
           <StatCard
             label={`${currentMonth}월 손익`}
@@ -167,7 +167,7 @@ export default function DashboardPage() {
 
       {/* 중단: 차트 + 일일점검 */}
       {(can('finance') || can('daily_check')) && (
-      <div style={{ display: 'grid', gridTemplateColumns: can('finance') && can('daily_check') ? '1fr 380px' : '1fr', gap: 14, marginBottom: 20 }}>
+      <div className={`dash-mid-grid${can('finance') && can('daily_check') ? ' both' : ''}`}>
         {/* 월별 손익 차트 */}
         {can('finance') && (
           <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
@@ -335,7 +335,7 @@ export default function DashboardPage() {
 
       {/* 하단: 최근 요청 + 최근 회의록 */}
       {(can('change_requests') || can('deploys') || can('meeting_minutes') || can('inventory')) && (
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div className="dash-bottom-grid">
         {/* 최근 변경/배포 요청 */}
         {(can('change_requests') || can('deploys')) && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
