@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
 import { financeApi, FinanceCategory, SaveFinanceRequest, FinanceRecord } from '../../api/finance'
+
+function apiError(e: unknown): string {
+  if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
+  if (axios.isAxiosError(e) && e.response?.data?.message) return e.response.data.message
+  return e instanceof Error ? e.message : String(e)
+}
 
 const CATEGORY_LABEL: Record<FinanceCategory, string> = { REVENUE: '매출', EXPENSE: '지출' }
 const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
@@ -45,15 +52,18 @@ export default function FinancePage() {
   const createMut = useMutation({
     mutationFn: (data: SaveFinanceRequest) => financeApi.create(data),
     onSuccess: () => { invalidate(); resetForm() },
+    onError: (e: unknown) => alert('저장 실패: ' + apiError(e)),
   })
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: SaveFinanceRequest }) =>
       financeApi.update(id, data),
     onSuccess: () => { invalidate(); resetForm() },
+    onError: (e: unknown) => alert('수정 실패: ' + apiError(e)),
   })
   const deleteMut = useMutation({
     mutationFn: (id: number) => financeApi.delete(id),
     onSuccess: invalidate,
+    onError: (e: unknown) => alert('삭제 실패: ' + apiError(e)),
   })
 
   const resetForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm(selectedYear, selectedMonth)) }
@@ -179,7 +189,7 @@ export default function FinancePage() {
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>금액 (원) *</span>
-                <input type="number" min={0} value={form.amount || ''} onChange={e => setForm(f => ({ ...f, amount: +e.target.value }))}
+                <input type="number" min={0} step={1} value={form.amount || ''} onChange={e => setForm(f => ({ ...f, amount: Math.floor(+e.target.value) }))}
                   required style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
