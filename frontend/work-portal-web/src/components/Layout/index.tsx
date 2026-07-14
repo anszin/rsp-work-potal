@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import { useTheme } from '../../context/useTheme'
+import AiGate from '../ai/AiGate'
 
 const MENU_ITEMS = [
   { key: 'change_requests', to: '/requests',       label: '변경 관리' },
@@ -29,6 +30,9 @@ export default function Layout() {
   const isInSettings = SETTINGS_ITEMS.some(item => location.pathname.startsWith(item.to))
   const [settingsOpen, setSettingsOpen] = useState(isInSettings)
 
+  const isInAi = location.pathname.startsWith('/ai')
+  const [aiOpen, setAiOpen] = useState(isInAi)
+
   const visibleSettings = SETTINGS_ITEMS.filter(({ key }) => menuPermissions[key] !== false)
   const handleLogout = () => { logout(); navigate('/login') }
   const closeSidebar = () => setSidebarOpen(false)
@@ -44,6 +48,20 @@ export default function Layout() {
           {MENU_ITEMS.map(({ key, to, label }) =>
             menuPermissions[key] !== false && <NavItem key={key} to={to} onClick={closeSidebar}>{label}</NavItem>
           )}
+          <AiGate>
+            <button style={styles.groupHeader} onClick={() => setAiOpen(o => !o)}>
+              <span>AI 기능</span>
+              <span style={{ fontSize: 10, opacity: 0.7 }}>{aiOpen ? '▲' : '▼'}</span>
+            </button>
+            {aiOpen && (
+              <>
+                <NavItem to="/ai" indent onClick={closeSidebar}>AI 어시스턴트</NavItem>
+                <NavItem to="/ai/documents" indent onClick={closeSidebar}>RAG 문서</NavItem>
+                <NavItem to="/ai/knowledge" indent onClick={closeSidebar}>지식베이스 현황</NavItem>
+                <NavItem to="/ai/prompts" indent onClick={closeSidebar}>프롬프트 관리</NavItem>
+              </>
+            )}
+          </AiGate>
           {visibleSettings.length > 0 && (
             <>
               <button style={styles.groupHeader} onClick={() => setSettingsOpen(o => !o)}>

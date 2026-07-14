@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { useAuth } from './context/useAuth'
+import { aiConfig } from './config/aiConfig'
 import LoginPage from './pages/Login'
 import ChangePasswordPage from './pages/ChangePassword'
 import DashboardPage from './pages/Dashboard'
@@ -16,6 +17,10 @@ import SystemManagementPage from './pages/SystemManagement'
 import UserManagementPage from './pages/UserManagement'
 import KeyTaskPage from './pages/KeyTask'
 import Layout from './components/Layout'
+import AiChatPage from './pages/AiChat'
+import AiDocumentsPage from './pages/AiDocuments'
+import AiPromptsPage from './pages/AiPrompts'
+import AiKnowledgePage from './pages/AiKnowledge'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth()
@@ -45,6 +50,18 @@ export default function App() {
             <Route path="key-tasks" element={<KeyTaskPage />} />
             <Route path="admin/systems" element={<SystemManagementPage />} />
             <Route path="admin/users" element={<UserManagementPage />} />
+            {aiConfig.enabled && (
+              <Route path="ai" element={<AiChatPage />} />
+            )}
+            {aiConfig.enabled && (
+              <Route path="ai/documents" element={<AiDocumentsPage />} />
+            )}
+            {aiConfig.enabled && (
+              <Route path="ai/prompts" element={<AiPromptsPage />} />
+            )}
+            {aiConfig.enabled && (
+              <Route path="ai/knowledge" element={<AiKnowledgePage />} />
+            )}
           </Route>
         </Routes>
       </AuthProvider>

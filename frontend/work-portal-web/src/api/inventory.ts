@@ -29,10 +29,10 @@ export interface SaveInventoryRequest {
 
 export const inventoryApi = {
   list: (type?: ItemType) =>
-    client.get<InventoryItem[]>('/api/inventory', { params: type ? { type } : {} }),
-  get: (id: number) => client.get<InventoryItem>(`/api/inventory/${id}`),
-  create: (data: SaveInventoryRequest) => client.post<InventoryItem>('/api/inventory', data),
+    client.get<InventoryItem[]>('/inventory', { params: type ? { type } : {} }),
+  get: (id: number) => client.get<InventoryItem>(`/inventory/${id}`),
+  create: (data: SaveInventoryRequest) => client.post<InventoryItem>('/inventory', data),
   update: (id: number, data: SaveInventoryRequest) =>
-    client.put<InventoryItem>(`/api/inventory/${id}`, data),
-  delete: (id: number) => client.delete(`/api/inventory/${id}`),
+    client.put<InventoryItem>(`/inventory/${id}`, data),
+  delete: (id: number) => client.delete(`/inventory/${id}`),
 }

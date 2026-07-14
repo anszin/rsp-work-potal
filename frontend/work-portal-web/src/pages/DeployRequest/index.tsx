@@ -38,6 +38,8 @@ const STATUS_FILTERS: { label: string; value: RequestStatus | 'ALL' }[] = [
   { label: '반려', value: 'REJECTED' },
 ]
 
+const PAGE_SIZES = [10, 20, 50]
+
 const emptyForm: CreateDeployRequest = { systemId: 0, subSystemId: null, title: '', version: '', deployType: 'RELEASE', deployScope: 'FULL', deployTarget: '', content: '' }
 
 function apiError(e: unknown): string {
@@ -53,6 +55,8 @@ export default function DeployRequestPage() {
   const [showForm, setShowForm] = useState(false)
   const [detail, setDetail] = useState<DeployRequest | null>(null)
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const [form, setForm] = useState<CreateDeployRequest>(emptyForm)
   const [selectedIssues, setSelectedIssues] = useState<RedmineIssueRef[]>([])
 
@@ -250,6 +254,13 @@ export default function DeployRequestPage() {
   const topLevelFiltered = filtered.filter(r => !r.parentDrId)
   const childrenOf = (id: number) => requests.filter(r => r.parentDrId === id)
 
+  const totalPages = Math.max(1, Math.ceil(topLevelFiltered.length / pageSize))
+  const safePage = Math.min(page, totalPages)
+  const pagedTopLevel = topLevelFiltered.slice((safePage - 1) * pageSize, safePage * pageSize)
+
+  // 필터/페이지 크기 변경 시 1페이지로 리셋
+  useEffect(() => { setPage(1) }, [statusFilter, pageSize])
+
   return (
     <div className="page-wrap">
       {/* 액션 코멘트 모달 */}
@@ -423,10 +434,10 @@ export default function DeployRequestPage() {
               </tr>
             </thead>
             <tbody>
-              {topLevelFiltered.length === 0 && (
+              {pagedTopLevel.length === 0 && (
                 <tr><td colSpan={11} style={s.empty}>등록된 배포 요청이 없습니다</td></tr>
               )}
-              {topLevelFiltered.map((r) => {
+              {pagedTopLevel.map((r) => {
                 const children = childrenOf(r.id)
                 const renderRow = (row: DeployRequest, isChild: boolean) => (
                   <tr key={row.id}
@@ -501,7 +512,46 @@ export default function DeployRequestPage() {
             </tbody>
           </table>
           </div>
-        </div>
+
+        {/* 페이지네이션 바 */}
+        {topLevelFiltered.length > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '10px 16px', borderTop: '1px solid var(--c-border)',
+            background: 'var(--c-card)', flexWrap: 'wrap', gap: 8,
+          }}>
+            {/* 좌측: 건수 + 페이지 크기 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--c-text-muted)' }}>
+              <span>총 {topLevelFiltered.length}건</span>
+              <span style={{ color: 'var(--c-border)' }}>|</span>
+              <span>페이지당</span>
+              <select
+                value={pageSize}
+                onChange={e => setPageSize(Number(e.target.value))}
+                style={{
+                  padding: '3px 6px', border: '1px solid var(--c-border-in)', borderRadius: 4,
+                  fontSize: 12, background: 'var(--c-input-bg)', color: 'var(--c-text)', cursor: 'pointer',
+                }}
+              >
+                {PAGE_SIZES.map(n => <option key={n} value={n}>{n}건</option>)}
+              </select>
+            </div>
+
+            {/* 우측: 페이지 버튼 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <PageBtn label="‹" disabled={safePage === 1} onClick={() => setPage(p => p - 1)} />
+              {buildPageNums(safePage, totalPages).map((item, i) =>
+                item === '...' ? (
+                  <span key={`ellipsis-${i}`} style={{ padding: '0 4px', fontSize: 12, color: 'var(--c-text-muted)' }}>…</span>
+                ) : (
+                  <PageBtn key={item} label={String(item)} active={item === safePage} onClick={() => setPage(item as number)} />
+                )
+              )}
+              <PageBtn label="›" disabled={safePage === totalPages} onClick={() => setPage(p => p + 1)} />
+            </div>
+          </div>
+        )}
+      </div>
       )}
 
       {/* 상세 패널 */}
@@ -809,6 +859,40 @@ export default function DeployRequestPage() {
         </div>
       )}
     </div>
+  )
+}
+
+// ── 페이지네이션 헬퍼 ────────────────────────────────────────────────────────
+
+function buildPageNums(current: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages: (number | '...')[] = [1]
+  if (current > 3) pages.push('...')
+  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) pages.push(p)
+  if (current < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+}
+
+function PageBtn({ label, active, disabled, onClick }: {
+  label: string; active?: boolean; disabled?: boolean; onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        minWidth: 30, height: 28, padding: '0 6px', borderRadius: 4, fontSize: 12,
+        cursor: disabled ? 'default' : 'pointer',
+        border: `1px solid ${active ? '#1a1a2e' : 'var(--c-border-in)'}`,
+        background: active ? '#1a1a2e' : 'var(--c-card)',
+        color: active ? '#fff' : disabled ? 'var(--c-text-muted)' : 'var(--c-text-sub)',
+        fontWeight: active ? 600 : 400,
+        opacity: disabled ? 0.4 : 1,
+      }}
+    >
+      {label}
+    </button>
   )
 }
 

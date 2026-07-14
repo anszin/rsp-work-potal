@@ -209,3 +209,77 @@ input, textarea, select {
   .master-panel   { width: 100% !important; }
   .cr-detail-grid { grid-template-columns: 80px 1fr; }
 }
+
+/* ===== AI 채팅 커서 애니메이션 ===== */
+@keyframes ai-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.ai-cursor {
+  animation: ai-blink 0.8s step-end infinite;
+}
+
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ai-toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* AI 위젯 모바일 */
+@media (max-width: 768px) {
+  .ai-widget-popup {
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    bottom: 72px !important;
+  }
+}
+
+/* ===== AI 마크다운 렌더링 ===== */
+.ai-markdown { line-height: 1.75; }
+.ai-markdown p { margin: 0 0 8px; }
+.ai-markdown p:last-child { margin-bottom: 0; }
+.ai-markdown h1 { font-size: 1.15em; font-weight: 700; margin: 14px 0 6px; }
+.ai-markdown h2 { font-size: 1.08em; font-weight: 700; margin: 12px 0 5px; }
+.ai-markdown h3 { font-size: 1em;    font-weight: 700; margin: 10px 0 4px; }
+.ai-markdown ul, .ai-markdown ol { padding-left: 22px; margin: 4px 0; }
+.ai-markdown li { margin: 3px 0; }
+.ai-markdown blockquote {
+  border-left: 3px solid var(--c-border);
+  padding-left: 12px; margin: 8px 0;
+  color: var(--c-text-muted);
+}
+.ai-markdown a { color: #1976d2; text-decoration: none; }
+.ai-markdown a:hover { text-decoration: underline; }
+.ai-markdown hr { border: none; border-top: 1px solid var(--c-border); margin: 8px 0; }
+.ai-markdown table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+.ai-markdown th, .ai-markdown td { border: 1px solid var(--c-border); padding: 5px 10px; }
+.ai-markdown th { background: var(--c-thead); font-weight: 600; }
+/* hljs 배경은 CodeBlockWrapper 배경에 맞게 투명 처리 */
+.ai-markdown .hljs { background: transparent; }
+
+/* ===== AI 대화 이력 드로어 ===== */
+.ai-conv-drawer {
+  position: fixed;
+  top: 0;
+  left: 220px;
+  height: 100vh;
+  width: 260px;
+  z-index: 300;
+  transform: translateX(calc(-100% - 220px));
+  transition: transform 0.24s ease;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-card);
+  border-right: 1px solid var(--c-border);
+  box-shadow: 4px 0 20px rgba(0,0,0,0.18);
+}
+.ai-conv-drawer.open { transform: translateX(0); }
+.ai-conv-backdrop { position: fixed; inset: 0; z-index: 299; background: rgba(0,0,0,0.35); }
+@media (max-width: 768px) {
+  .ai-conv-drawer { left: 0; }
+}
