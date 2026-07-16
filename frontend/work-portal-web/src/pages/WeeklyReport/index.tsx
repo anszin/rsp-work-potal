@@ -159,11 +159,17 @@ function WorkSectionForm({ label, sectionColor, items, onChange }: WorkSectionFo
               >
                 {WORK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
-              <input
+              <textarea
                 value={item.content}
-                onChange={e => update(i, { ...item, content: e.target.value })}
+                onChange={e => {
+                  update(i, { ...item, content: e.target.value })
+                  e.target.style.height = 'auto'
+                  e.target.style.height = e.target.scrollHeight + 'px'
+                }}
+                onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                 placeholder="업무 내용 입력..."
-                style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none' }}
+                rows={1}
+                style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }}
               />
               <button
                 type="button" onClick={() => remove(i)}
