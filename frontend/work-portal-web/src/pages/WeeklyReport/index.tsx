@@ -78,6 +78,29 @@ function fmtWeek(start: string, end: string) {
   return `${s.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} ~ ${e.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}`
 }
 
+function weekLabel(weekStart: string) {
+  const d = new Date(weekStart)
+  return `${d.getMonth() + 1}월 ${Math.ceil(d.getDate() / 7)}주차`
+}
+
+interface WeekGroup {
+  weekStart: string
+  weekEnd: string
+  label: string
+  reports: WeeklyReport[]
+}
+
+function groupByWeek(items: WeeklyReport[]): WeekGroup[] {
+  const map = new Map<string, WeekGroup>()
+  for (const item of items) {
+    if (!map.has(item.weekStart)) {
+      map.set(item.weekStart, { weekStart: item.weekStart, weekEnd: item.weekEnd, label: weekLabel(item.weekStart), reports: [] })
+    }
+    map.get(item.weekStart)!.reports.push(item)
+  }
+  return Array.from(map.values()).sort((a, b) => b.weekStart.localeCompare(a.weekStart))
+}
+
 function emptyFormState(): WeeklyFormState {
   const { weekStart, weekEnd, label } = currentWeekRange()
   return {
@@ -356,6 +379,13 @@ export default function WeeklyReportPage() {
 
   const { weekStart: thisWeekStart } = currentWeekRange()
   const thisWeekItems = items.filter(i => i.weekStart === thisWeekStart)
+  const weekGroups = groupByWeek(items)
+  const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(() => new Set([thisWeekStart]))
+  const toggleWeek = (ws: string) => setExpandedWeeks(prev => {
+    const next = new Set(prev)
+    if (next.has(ws)) next.delete(ws); else next.add(ws)
+    return next
+  })
 
   return (
     <div className="master-detail page-wrap">
@@ -445,21 +475,47 @@ export default function WeeklyReportPage() {
         </div>
 
         {isLoading ? <p>로딩 중...</p> : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {items.length === 0
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {weekGroups.length === 0
               ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 주간보고가 없습니다.</p>
-              : items.map(item => {
-                const isMine = item.author === user?.username
-                const isSelected = selected?.id === item.id
+              : weekGroups.map(group => {
+                const isThisWeek = group.weekStart === thisWeekStart
+                const expanded = expandedWeeks.has(group.weekStart)
                 return (
-                  <div key={item.id} onClick={() => { setSelected(item); setShowForm(false) }}
-                    style={{ padding: '10px 14px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${isSelected ? '#1976d2' : 'var(--c-border)'}`, background: isSelected ? '#e3f2fd' : 'var(--c-card)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{item.title}</div>
-                      {isMine && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: '#1976d222', color: '#1976d2', fontWeight: 700, flexShrink: 0, marginLeft: 4 }}>내것</span>}
+                  <div key={group.weekStart}>
+                    {/* 주차 헤더 */}
+                    <div
+                      onClick={() => toggleWeek(group.weekStart)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 7, cursor: 'pointer', background: isThisWeek ? '#1976d210' : 'var(--c-thead)', marginBottom: expanded ? 4 : 0, userSelect: 'none' }}
+                    >
+                      <span style={{ fontSize: 12, fontWeight: 700, color: isThisWeek ? '#1976d2' : 'var(--c-text-sub)', flex: 1 }}>
+                        {group.label}
+                        {isThisWeek && <span style={{ fontSize: 10, marginLeft: 5, opacity: 0.7 }}>이번 주</span>}
+                      </span>
+                      <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: isThisWeek ? '#1976d225' : 'var(--c-border)', color: isThisWeek ? '#1976d2' : 'var(--c-text-muted)', fontWeight: 600 }}>
+                        {group.reports.length}명
+                      </span>
+                      <span style={{ fontSize: 10, color: 'var(--c-text-muted)', opacity: 0.6 }}>{expanded ? '▲' : '▼'}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--c-text-sub)', marginTop: 2 }}>{fmtWeek(item.weekStart, item.weekEnd)}</div>
-                    <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{item.author}</div>
+                    {/* 해당 주 보고서 목록 */}
+                    {expanded && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 4, marginBottom: 6 }}>
+                        {group.reports.map(item => {
+                          const isMine = item.author === user?.username
+                          const isSelected = selected?.id === item.id
+                          return (
+                            <div key={item.id} onClick={() => { setSelected(item); setShowForm(false) }}
+                              style={{ padding: '8px 12px', borderRadius: 7, cursor: 'pointer', border: `1px solid ${isSelected ? '#1976d2' : 'var(--c-border)'}`, background: isSelected ? '#e3f2fd' : 'var(--c-card)' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{item.author}</div>
+                                {isMine && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: '#1976d222', color: '#1976d2', fontWeight: 700, flexShrink: 0, marginLeft: 4 }}>내것</span>}
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )
               })}
