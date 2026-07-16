@@ -59,6 +59,16 @@ export default defineConfig({
           })
         },
       },
+      '/api/agent': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('origin')
+            proxyReq.removeHeader('referer')
+          })
+        },
+      },
       // 포탈 백엔드 — 나머지 /api/*
       '/api': {
         target: 'http://54.180.246.95:36016',

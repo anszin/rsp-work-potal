@@ -52,8 +52,11 @@ public class WeeklyReportService {
         r.setTitle(req.getTitle());
         r.setWeekStart(req.getWeekStart());
         r.setWeekEnd(req.getWeekEnd());
-        r.setAccomplishments(req.getAccomplishments());
-        r.setPlans(req.getPlans());
-        r.setIssues(req.getIssues());
+        r.setThisWeekWork(req.getThisWeekWork());
+        r.setThisWeekProposal(req.getThisWeekProposal());
+        r.setThisWeekEtc(req.getThisWeekEtc());
+        r.setNextWeekWork(req.getNextWeekWork());
+        r.setNextWeekProposal(req.getNextWeekProposal());
+        r.setNextWeekEtc(req.getNextWeekEtc());
     }
 }

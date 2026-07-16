@@ -976,6 +976,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
   const now = new Date()
   const [selYear, setSelYear] = useState(now.getFullYear())
   const [selMonth, setSelMonth] = useState<number | 'all'>('all')
+  const [selSystem, setSelSystem] = useState<string | null>(null)
 
   const years = [...new Set([now.getFullYear(), ...requests.map(r => new Date(r.createdAt).getFullYear())])].sort((a, b) => b - a)
 
@@ -999,8 +1000,22 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
   }))
 
   const bySystem = Object.entries(filtered.reduce((acc, r) => { acc[r.systemName] = (acc[r.systemName] || 0) + 1; return acc }, {} as Record<string, number>)).sort((a, b) => b[1] - a[1])
-  const maxSys   = Math.max(...bySystem.map(([, n]) => n), 1)
   const byType   = Object.entries(filtered.reduce((acc, r) => { if (r.deployType) acc[r.deployType] = (acc[r.deployType] || 0) + 1; return acc }, {} as Record<string, number>)).sort((a, b) => b[1] - a[1])
+
+  // 시스템 선택 시 하위 시스템별 드릴다운
+  const bySubSystem = selSystem
+    ? Object.entries(
+        filtered
+          .filter(r => r.systemName === selSystem)
+          .reduce((acc, r) => {
+            const key = r.subSystemName ?? '(공통)'
+            acc[key] = (acc[key] || 0) + 1
+            return acc
+          }, {} as Record<string, number>)
+      ).sort((a, b) => b[1] - a[1])
+    : []
+  const drillData = selSystem ? bySubSystem : bySystem
+  const maxDrill  = Math.max(...drillData.map(([, n]) => n), 1)
 
   const selectStyle: React.CSSProperties = { padding: '6px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, background: 'var(--c-input-bg)', color: 'var(--c-text)', cursor: 'pointer' }
 
@@ -1048,21 +1063,62 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
       {/* 시스템별 + 유형별 */}
       <div className="deploy-chart-grid">
         <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>
-            시스템별{selMonth !== 'all' ? ` (${selMonth}월)` : ''}
-          </div>
-          {bySystem.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
-            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
-              {bySystem.map(([name, count]) => (
-                <div key={name}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 13 }}>
-                    <span>{name}</span><span style={{ fontWeight: 600 }}>{count}건</span>
-                  </div>
-                  <div style={{ height: 6, borderRadius: 3, background: 'var(--c-bg)' }}>
-                    <div style={{ height: '100%', borderRadius: 3, background: '#1a1a2e', width: `${(count / maxSys) * 100}%` }} />
-                  </div>
-                </div>
+          {/* 헤더 */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {selSystem && (
+                <button
+                  onClick={() => setSelSystem(null)}
+                  style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid var(--c-border-in)', background: 'var(--c-bg)', color: 'var(--c-text-sub)', cursor: 'pointer' }}
+                >← 전체</button>
+              )}
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>
+                {selSystem ? `${selSystem} · 하위 시스템` : `시스템별`}
+                {selMonth !== 'all' ? ` (${selMonth}월)` : ''}
+              </span>
+            </div>
+            {/* 시스템 선택 드롭다운 */}
+            <select
+              value={selSystem ?? ''}
+              onChange={e => setSelSystem(e.target.value || null)}
+              style={{ ...selectStyle, fontSize: 12, padding: '4px 8px' }}
+            >
+              <option value="">전체 시스템</option>
+              {bySystem.map(([name]) => (
+                <option key={name} value={name}>{name}</option>
               ))}
+            </select>
+          </div>
+
+          {drillData.length === 0 ? (
+            <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
+              {drillData.map(([name, count], i) => {
+                const barColor = selSystem
+                  ? SYS_COLORS[i % SYS_COLORS.length]
+                  : '#1a1a2e'
+                const isClickable = !selSystem
+                return (
+                  <div
+                    key={name}
+                    onClick={() => isClickable && setSelSystem(name)}
+                    style={{ cursor: isClickable ? 'pointer' : 'default' }}
+                    title={isClickable ? `${name} 하위 시스템 보기` : undefined}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 13 }}>
+                      <span style={{ color: isClickable ? 'var(--c-text)' : 'var(--c-text-sub)' }}>
+                        {name}
+                        {isClickable && <span style={{ fontSize: 10, color: 'var(--c-text-muted)', marginLeft: 5 }}>▶</span>}
+                      </span>
+                      <span style={{ fontWeight: 600 }}>{count}건</span>
+                    </div>
+                    <div style={{ height: 6, borderRadius: 3, background: 'var(--c-bg)' }}>
+                      <div style={{ height: '100%', borderRadius: 3, background: barColor, width: `${(count / maxDrill) * 100}%`, transition: 'width 0.3s' }} />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

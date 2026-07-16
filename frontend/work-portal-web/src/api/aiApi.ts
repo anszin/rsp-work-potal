@@ -25,6 +25,96 @@ export interface ConversationMessage {
   createdAt: string
 }
 
+export interface AgentStep {
+  tool: string
+  input?: string
+  status: 'running' | 'done' | 'error'
+  summary?: string
+}
+
+export function agentChat(
+  message: string,
+  role: string,
+  memberId: string,
+  conversationId: number | null,
+  onStep: (step: AgentStep) => void,
+  onAnswer: (markdown: string) => void,
+  onDone: (conversationId: number) => void,
+  onError?: (err: Error) => void,
+): AbortController {
+  const ctrl = new AbortController()
+
+  ;(async () => {
+    try {
+      const res = await fetch(`${aiConfig.apiUrl}/api/agent/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, role, memberId, conversationId }),
+        signal: ctrl.signal,
+      })
+      if (!res.ok) throw new Error(`AI 에이전트 오류: ${res.status}`)
+
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error('스트림을 읽을 수 없습니다')
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let eventType = ''
+      let dataLines: string[] = []
+
+      const dispatch = () => {
+        if (!dataLines.length) return
+        const raw = dataLines.join('\n')
+        const data = raw.startsWith(' ') ? raw.slice(1) : raw
+        const type = eventType
+        dataLines = []
+        eventType = ''
+
+        if (!data || data === '[DONE]') return
+
+        try {
+          const json = JSON.parse(data)
+          const resolvedType = type || String(json?.type ?? '')
+
+          if (resolvedType === 'step') {
+            onStep({ tool: json.tool, input: json.input, status: json.status, summary: json.summary })
+          } else if (resolvedType === 'answer') {
+            onAnswer(String(json.data ?? ''))
+          } else if (resolvedType === 'done') {
+            if (json.conversationId != null) onDone(Number(json.conversationId))
+          }
+        } catch { /* JSON 파싱 실패 무시 */ }
+      }
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          const trimmed = line.trimEnd()
+          if (!trimmed) { dispatch(); continue }
+          if (trimmed.startsWith('event:')) {
+            eventType = trimmed.slice(6).trim()
+          } else if (trimmed.startsWith('data:')) {
+            dataLines.push(trimmed.slice(5))
+          }
+        }
+      }
+      dispatch()
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        onError?.(err as Error)
+      }
+    }
+  })()
+
+  return ctrl
+}
+
 export function chat(
   message: string,
   role: string,

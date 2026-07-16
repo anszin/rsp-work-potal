@@ -32,13 +32,22 @@ public class WeeklyReport {
     private LocalDate weekEnd;
 
     @Column(columnDefinition = "TEXT")
-    private String accomplishments;
+    private String thisWeekWork;
 
     @Column(columnDefinition = "TEXT")
-    private String plans;
+    private String thisWeekProposal;
 
     @Column(columnDefinition = "TEXT")
-    private String issues;
+    private String thisWeekEtc;
+
+    @Column(columnDefinition = "TEXT")
+    private String nextWeekWork;
+
+    @Column(columnDefinition = "TEXT")
+    private String nextWeekProposal;
+
+    @Column(columnDefinition = "TEXT")
+    private String nextWeekEtc;
 
     @Column(nullable = false)
     private String author;

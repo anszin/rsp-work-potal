@@ -20,9 +20,12 @@ public class WeeklyReportDto {
         private LocalDate weekStart;
         @NotNull
         private LocalDate weekEnd;
-        private String accomplishments;
-        private String plans;
-        private String issues;
+        private String thisWeekWork;
+        private String thisWeekProposal;
+        private String thisWeekEtc;
+        private String nextWeekWork;
+        private String nextWeekProposal;
+        private String nextWeekEtc;
     }
 
     @Getter
@@ -31,9 +34,12 @@ public class WeeklyReportDto {
         private final String title;
         private final LocalDate weekStart;
         private final LocalDate weekEnd;
-        private final String accomplishments;
-        private final String plans;
-        private final String issues;
+        private final String thisWeekWork;
+        private final String thisWeekProposal;
+        private final String thisWeekEtc;
+        private final String nextWeekWork;
+        private final String nextWeekProposal;
+        private final String nextWeekEtc;
         private final String author;
         private final LocalDateTime createdAt;
 
@@ -42,9 +48,12 @@ public class WeeklyReportDto {
             this.title = r.getTitle();
             this.weekStart = r.getWeekStart();
             this.weekEnd = r.getWeekEnd();
-            this.accomplishments = r.getAccomplishments();
-            this.plans = r.getPlans();
-            this.issues = r.getIssues();
+            this.thisWeekWork = r.getThisWeekWork();
+            this.thisWeekProposal = r.getThisWeekProposal();
+            this.thisWeekEtc = r.getThisWeekEtc();
+            this.nextWeekWork = r.getNextWeekWork();
+            this.nextWeekProposal = r.getNextWeekProposal();
+            this.nextWeekEtc = r.getNextWeekEtc();
             this.author = r.getAuthor();
             this.createdAt = r.getCreatedAt();
         }

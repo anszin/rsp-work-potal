@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
-  chat,
+  chat, agentChat,
   getConversations, getMessages, deleteConversation, getDocuments, getPrompts,
-  RagSource, ConversationSummary, ConversationMessage,
+  RagSource, ConversationSummary, ConversationMessage, AgentStep,
 } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
 
@@ -45,6 +45,96 @@ interface Message {
   streaming?: boolean
   error?: boolean
   createdAt?: string
+  steps?: AgentStep[]
+}
+
+// ── 에이전트 스텝 타임라인 ─────────────────────────────────────────────────────
+
+const TOOL_META: Record<string, { icon: string; label: string }> = {
+  search_code:      { icon: '🔍', label: '코드 검색' },
+  read_file:        { icon: '📄', label: '파일 읽기' },
+  list_files:       { icon: '📁', label: '파일 목록' },
+  search_documents: { icon: '📚', label: '문서 검색' },
+}
+
+function getToolMeta(tool: string) {
+  return TOOL_META[tool] ?? { icon: '🔧', label: tool }
+}
+
+function StepRow({ step }: { step: AgentStep }) {
+  const [open, setOpen] = useState(false)
+  const { icon, label } = getToolMeta(step.tool)
+  const canExpand = step.status === 'done' && !!step.summary
+
+  return (
+    <div>
+      <div
+        onClick={() => canExpand && setOpen(v => !v)}
+        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 0', cursor: canExpand ? 'pointer' : 'default', fontSize: 12 }}
+      >
+        <span style={{ flexShrink: 0, width: 17, textAlign: 'center', fontSize: 13 }}>{icon}</span>
+        <span style={{ flexShrink: 0, fontWeight: 600, color: 'var(--c-text-sub)', minWidth: 72 }}>{label}</span>
+        <span style={{ flex: 1, color: 'var(--c-text-muted)', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          title={step.status === 'running' ? step.input : step.summary}>
+          {step.status === 'running' ? step.input : (step.summary ?? '')}
+        </span>
+        {canExpand && (
+          <span style={{ flexShrink: 0, fontSize: 9, color: 'var(--c-text-muted)', opacity: 0.6 }}>{open ? '▲' : '▼'}</span>
+        )}
+        <span style={{ flexShrink: 0, width: 18, textAlign: 'center' }}>
+          {step.status === 'running' ? (
+            <span style={{ display: 'inline-block', width: 11, height: 11, border: '2px solid var(--c-border)', borderTopColor: '#1976d2', borderRadius: '50%', animation: 'ai-spin 0.7s linear infinite' }} />
+          ) : step.status === 'done' ? (
+            <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 13 }}>✓</span>
+          ) : (
+            <span style={{ color: '#f44336', fontSize: 13 }}>✗</span>
+          )}
+        </span>
+      </div>
+      {open && step.summary && (
+        <div style={{ margin: '2px 0 4px 24px', padding: '5px 8px', background: 'var(--c-bg)', borderRadius: 6, fontSize: 11, color: 'var(--c-text-sub)', lineHeight: 1.6, borderLeft: '2px solid var(--c-border)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+          {step.summary}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StepTimeline({ steps }: { steps: AgentStep[] }) {
+  const [collapsed, setCollapsed] = useState(false)
+  if (!steps.length) return null
+
+  const running = steps.some(s => s.status === 'running')
+  const doneCount = steps.filter(s => s.status === 'done').length
+  const headerText = running
+    ? `분석 중... (${doneCount}/${steps.length}단계)`
+    : `${steps.length}단계 완료`
+
+  return (
+    <div style={{ marginBottom: 10, borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden' }}>
+      <button
+        onClick={() => setCollapsed(v => !v)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px',
+          background: 'var(--c-thead)', border: 'none', cursor: 'pointer',
+          color: 'var(--c-text-muted)', fontSize: 11, fontWeight: 600, letterSpacing: '0.02em',
+        }}
+      >
+        {running ? (
+          <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid var(--c-border)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'ai-spin 0.7s linear infinite', flexShrink: 0 }} />
+        ) : (
+          <span style={{ color: '#4caf50', fontSize: 12 }}>✓</span>
+        )}
+        <span style={{ flex: 1, textAlign: 'left' }}>⚡ 에이전트 실행 — {headerText}</span>
+        <span style={{ fontSize: 10, opacity: 0.55 }}>{collapsed ? '펼치기 ▼' : '접기 ▲'}</span>
+      </button>
+      {!collapsed && (
+        <div style={{ padding: '4px 10px 8px', background: 'var(--c-thead)' }}>
+          {steps.map((step, i) => <StepRow key={i} step={step} />)}
+        </div>
+      )}
+    </div>
+  )
 }
 
 let _seq = 0
@@ -85,30 +175,50 @@ function CodeBlockWrapper({ lang, children }: { lang: string; children: React.Re
           {copied ? '✓ 복사됨' : '복사'}
         </button>
       </div>
-      <pre ref={preRef} style={{ margin: 0, padding: '12px 16px', overflowX: 'auto', background: '#1a1a2e', fontFamily: 'monospace', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' }}>
+      <pre ref={preRef} style={{ margin: 0, padding: '12px 16px', overflowX: 'auto', background: '#1a1a2e', fontFamily: "'D2Coding', 'Consolas', 'Courier New', monospace", fontSize: 13, lineHeight: 1.5, color: '#e2e8f0', whiteSpace: 'pre' }}>
         {children}
       </pre>
     </div>
   )
 }
 
+const CODE_FONT = "'D2Coding', 'Consolas', 'Courier New', monospace"
+
 const MD_COMPONENTS = {
   pre({ children }: any) {
     const child = children as React.ReactElement
     const cls: string = child?.props?.className ?? ''
     const lang = /language-(\w+)/.exec(cls)?.[1] ?? ''
+
+    // 언어 미지정: code 컴포넌트를 거치지 않고 plain <pre>로 렌더링
+    // (박스 문자 ├──└── 등이 토큰화·inline 스타일에 의해 깨지는 것을 방지)
+    if (!lang) {
+      const rawText = child?.props?.children ?? ''
+      return (
+        <pre style={{
+          margin: '10px 0', padding: '12px 16px',
+          overflowX: 'auto', whiteSpace: 'pre',
+          background: '#1a1a2e', borderRadius: 8, border: '1px solid #2d3748',
+          fontFamily: CODE_FONT, fontSize: 13, lineHeight: 1.5, color: '#e2e8f0',
+        }}>
+          {rawText}
+        </pre>
+      )
+    }
     return <CodeBlockWrapper lang={lang}>{children}</CodeBlockWrapper>
   },
   code({ className, children, ...props }: any) {
     if (!className) {
+      // 인라인 코드
       return (
-        <code style={{ background: 'var(--c-thead)', padding: '1px 5px', borderRadius: 3, fontFamily: 'monospace', fontSize: '0.88em' }} {...props}>
+        <code style={{ background: 'var(--c-thead)', padding: '1px 5px', borderRadius: 3, fontFamily: CODE_FONT, fontSize: '0.88em' }} {...props}>
           {children}
         </code>
       )
     }
+    // 언어 지정 코드블록 내부 <code> — CodeBlockWrapper의 <pre> 안에서 렌더됨
     return (
-      <code className={className} style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' }} {...props}>
+      <code className={className} style={{ fontFamily: CODE_FONT, fontSize: 13, lineHeight: 1.5, color: '#e2e8f0' }} {...props}>
         {children}
       </code>
     )
@@ -253,6 +363,7 @@ export default function AiChatPage() {
   const [currentConvId, setCurrentConvId] = useState<number | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [docCount, setDocCount] = useState<number | null>(null)
+  const [agentMode, setAgentMode] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -369,35 +480,63 @@ export default function AiChatPage() {
     const now = new Date().toISOString()
     const userMsg: Message = { id: ++_seq, from: 'user', text, createdAt: now }
     const aiId = ++_seq
-    const aiMsg: Message = { id: aiId, from: 'ai', text: '', streaming: true }
+    const aiMsg: Message = { id: aiId, from: 'ai', text: '', streaming: true, steps: agentMode ? [] : undefined }
     setMessages(prev => [...prev, userMsg, aiMsg])
 
-    abortRef.current = chat(
-      text, role, memberId, currentConvId,
-      (sources) => {
+    const onDone = (convId: number) => {
+      setCurrentConvId(convId)
+      setLoading(false)
+      setMessages(prev => prev.map(m =>
+        m.id === aiId ? { ...m, streaming: false, createdAt: new Date().toISOString() } : m
+      ))
+      loadConversations()
+    }
+    const onError = (err: Error) => {
+      setLoading(false)
+      setMessages(prev => prev.map(m =>
+        m.id === aiId ? { ...m, text: `오류: ${err.message}`, error: true, streaming: false } : m
+      ))
+    }
+
+    if (agentMode) {
+      abortRef.current = agentChat(
+        text, role, memberId, currentConvId,
+        (step) => {
+          setMessages(prev => prev.map(m => {
+            if (m.id !== aiId) return m
+            const steps = m.steps ?? []
+            if (step.status === 'running') {
+              return { ...m, steps: [...steps, step] }
+            }
+            // done/error: 같은 tool의 마지막 running 스텝 업데이트
+            let updated = false
+            const newSteps = [...steps].reverse().map(s => {
+              if (!updated && s.tool === step.tool && s.status === 'running') {
+                updated = true
+                return step
+              }
+              return s
+            }).reverse()
+            return { ...m, steps: updated ? newSteps : [...steps, step] }
+          }))
+        },
+        (markdown) => {
+          setMessages(prev => prev.map(m => m.id === aiId ? { ...m, text: markdown } : m))
+        },
+        onDone, onError,
+      )
+    } else {
+      const onSources = (sources: RagSource[]) => {
         setMessages(prev => prev.map(m => m.id === aiId ? { ...m, sources } : m))
-      },
-      (token) => {
+      }
+      const onToken = (token: string) => {
         setMessages(prev => prev.map(m => m.id === aiId ? { ...m, text: m.text + token } : m))
-      },
-      (convId) => {
-        setCurrentConvId(convId)
-        setLoading(false)
-        setMessages(prev => prev.map(m =>
-          m.id === aiId ? { ...m, streaming: false, createdAt: new Date().toISOString() } : m
-        ))
-        loadConversations()
-      },
-      (err) => {
-        setLoading(false)
-        setMessages(prev => prev.map(m =>
-          m.id === aiId ? { ...m, text: `오류: ${err.message}`, error: true, streaming: false } : m
-        ))
-      },
-    )
+      }
+      abortRef.current = chat(text, role, memberId, currentConvId, onSources, onToken, onDone, onError)
+    }
 
     textareaRef.current?.focus()
-  }, [input, loading, role, currentConvId, memberId, loadConversations])
+  }, [input, loading, role, currentConvId, memberId, agentMode, loadConversations])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -454,6 +593,21 @@ export default function AiChatPage() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setAgentMode(v => !v)}
+                title="에이전트 모드: 도구를 순차적으로 사용하는 멀티스텝 추론"
+                style={{
+                  fontSize: 12, padding: '5px 11px', borderRadius: 6, cursor: 'pointer',
+                  border: `1px solid ${agentMode ? '#7c3aed' : 'var(--c-border)'}`,
+                  background: agentMode ? '#7c3aed18' : 'var(--c-card)',
+                  color: agentMode ? '#7c3aed' : 'var(--c-text-muted)',
+                  fontWeight: agentMode ? 700 : 400,
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  transition: 'all 0.15s',
+                }}
+              >
+                ⚡ 에이전트 모드
+              </button>
               <button
                 onClick={() => setSidebarOpen(v => !v)}
                 style={{ fontSize: 12, padding: '5px 11px', borderRadius: 6, cursor: 'pointer', border: '1px solid var(--c-border)', background: sidebarOpen ? 'var(--c-thead)' : 'var(--c-card)', color: 'var(--c-text)', display: 'flex', alignItems: 'center', gap: 5 }}
@@ -540,19 +694,34 @@ export default function AiChatPage() {
                   </div>
                   <div style={{ maxWidth: '82%', padding: '9px 13px', borderRadius: 10, background: msg.from === 'user' ? selectedRole.color + '18' : 'var(--c-bg)', border: `1px solid ${msg.from === 'user' ? selectedRole.color + '44' : 'var(--c-border)'}`, color: msg.error ? '#f44336' : 'var(--c-text)', fontSize: 14, lineHeight: 1.7, borderTopRightRadius: msg.from === 'user' ? 2 : 10, borderTopLeftRadius: msg.from === 'ai' ? 2 : 10 }}>
                     {msg.from === 'ai' ? (
-                      msg.streaming ? (
-                        <span style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{msg.text}</span>
-                      ) : (
-                        <div className="ai-markdown">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>
-                            {msg.text}
-                          </ReactMarkdown>
-                        </div>
-                      )
+                      <>
+                        {msg.steps && <StepTimeline steps={msg.steps} />}
+                        {/* 에이전트 모드: answer 이벤트가 완성 마크다운이므로 바로 렌더 */}
+                        {msg.steps != null ? (
+                          msg.text ? (
+                            <div className="ai-markdown">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>
+                                {msg.text}
+                              </ReactMarkdown>
+                            </div>
+                          ) : msg.streaming ? (
+                            <span style={{ color: 'var(--c-text-muted)', fontSize: 12 }}>분석 중...</span>
+                          ) : null
+                        ) : msg.streaming ? (
+                          <span style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{msg.text}</span>
+                        ) : (
+                          <div className="ai-markdown">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>
+                              {msg.text}
+                            </ReactMarkdown>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <span style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</span>
                     )}
-                    {msg.streaming && (
+                    {/* 일반 모드 스트리밍 커서 */}
+                    {msg.streaming && msg.steps == null && (
                       <span className="ai-cursor" style={{ display: 'inline-block', width: 2, height: '1em', background: selectedRole.color, marginLeft: 2, verticalAlign: 'text-bottom' }} />
                     )}
                     {msg.sources && <SourceList sources={msg.sources} />}
@@ -581,14 +750,20 @@ export default function AiChatPage() {
         )}
 
         {/* 입력창 */}
-        <div style={{ flexShrink: 0, background: 'var(--c-card)', borderRadius: 10, border: '1px solid var(--c-border)', padding: '10px 14px', marginBottom: 20 }}>
+        <div style={{ flexShrink: 0, background: 'var(--c-card)', borderRadius: 10, border: `1px solid ${agentMode ? '#7c3aed44' : 'var(--c-border)'}`, padding: '10px 14px', marginBottom: 20 }}>
+          {agentMode && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '5px 8px', background: '#7c3aed10', borderRadius: 6, fontSize: 11, color: '#7c3aed' }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, border: '1.5px solid #7c3aed55', borderTopColor: '#7c3aed', borderRadius: '50%', animation: loading ? 'ai-spin 0.7s linear infinite' : 'none', flexShrink: 0 }} />
+              여러 단계로 분석합니다 (1~3분 소요)
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
             <textarea
               ref={textareaRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`${selectedRole.label} 관련 질문 입력... (Enter 전송 / Shift+Enter 줄바꿈)`}
+              placeholder={agentMode ? `${selectedRole.label} 관련 질문 입력... (에이전트가 코드베이스를 분석합니다)` : `${selectedRole.label} 관련 질문 입력... (Enter 전송 / Shift+Enter 줄바꿈)`}
               rows={3}
               style={{ flex: 1, resize: 'none', border: 'none', outline: 'none', background: 'transparent', color: 'var(--c-text)', fontSize: 14, lineHeight: 1.6, padding: 0, fontFamily: 'inherit' }}
             />

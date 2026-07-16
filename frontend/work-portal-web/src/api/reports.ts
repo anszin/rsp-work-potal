@@ -28,9 +28,12 @@ export interface WeeklyReport {
   title: string
   weekStart: string
   weekEnd: string
-  accomplishments: string | null
-  plans: string | null
-  issues: string | null
+  thisWeekWork: string | null
+  thisWeekProposal: string | null
+  thisWeekEtc: string | null
+  nextWeekWork: string | null
+  nextWeekProposal: string | null
+  nextWeekEtc: string | null
   author: string
   createdAt: string
 }
@@ -39,9 +42,12 @@ export interface SaveWeeklyRequest {
   title: string
   weekStart: string
   weekEnd: string
-  accomplishments?: string
-  plans?: string
-  issues?: string
+  thisWeekWork?: string
+  thisWeekProposal?: string
+  thisWeekEtc?: string
+  nextWeekWork?: string
+  nextWeekProposal?: string
+  nextWeekEtc?: string
 }
 
 // Daily Check Reports
