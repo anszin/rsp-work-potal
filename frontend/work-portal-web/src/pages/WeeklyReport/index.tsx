@@ -65,10 +65,11 @@ function currentWeekRange() {
   const mon = new Date(today)
   mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1))
   const fri = new Date(mon); fri.setDate(mon.getDate() + 4)
+  const weekOfMonth = Math.ceil(mon.getDate() / 7)
   return {
     weekStart: mon.toISOString().slice(0, 10),
     weekEnd: fri.toISOString().slice(0, 10),
-    label: mon.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }),
+    label: `${mon.getMonth() + 1}월 ${weekOfMonth}주차`,
   }
 }
 
