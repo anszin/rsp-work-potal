@@ -3,6 +3,60 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { useAuth } from '../../context/useAuth'
 
+// ── 업무 타입 ─────────────────────────────────────────────────────────────────
+
+type WorkType = '중점' | '기타'
+const WORK_TYPES: WorkType[] = ['중점', '기타']
+
+const TYPE_STYLE: Record<WorkType, { bg: string; color: string }> = {
+  중점: { bg: '#1976d218', color: '#1976d2' },
+  기타: { bg: 'var(--c-thead)', color: 'var(--c-text-muted)' },
+}
+
+interface WorkItem {
+  id: string
+  type: WorkType
+  content: string
+}
+
+type ContentKey =
+  | 'thisWeekWork' | 'thisWeekProposal' | 'thisWeekEtc'
+  | 'nextWeekWork' | 'nextWeekProposal' | 'nextWeekEtc'
+
+// ── 직렬화 헬퍼 ───────────────────────────────────────────────────────────────
+
+function newItem(): WorkItem {
+  return { id: Math.random().toString(36).slice(2), type: '중점', content: '' }
+}
+
+function parseItems(raw: string | null | undefined): WorkItem[] {
+  if (!raw) return []
+  try {
+    const arr = JSON.parse(raw)
+    if (Array.isArray(arr)) return arr
+  } catch { /* 구형 plain-text → 단일 기타 행으로 폴백 */ }
+  return [{ id: Math.random().toString(36).slice(2), type: '기타', content: raw }]
+}
+
+function serializeItems(items: WorkItem[]): string | undefined {
+  const filled = items.filter(i => i.content.trim())
+  return filled.length ? JSON.stringify(filled) : undefined
+}
+
+// ── 내부 폼 상태 ──────────────────────────────────────────────────────────────
+
+interface WeeklyFormState {
+  title: string
+  weekStart: string
+  weekEnd: string
+  thisWeekWork: WorkItem[]
+  thisWeekProposal: WorkItem[]
+  thisWeekEtc: WorkItem[]
+  nextWeekWork: WorkItem[]
+  nextWeekProposal: WorkItem[]
+  nextWeekEtc: WorkItem[]
+}
+
 // ── 날짜 유틸 ────────────────────────────────────────────────────────────────
 
 function currentWeekRange() {
@@ -10,22 +64,11 @@ function currentWeekRange() {
   const day = today.getDay()
   const mon = new Date(today)
   mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1))
-  const fri = new Date(mon)
-  fri.setDate(mon.getDate() + 4)
+  const fri = new Date(mon); fri.setDate(mon.getDate() + 4)
   return {
     weekStart: mon.toISOString().slice(0, 10),
     weekEnd: fri.toISOString().slice(0, 10),
     label: mon.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }),
-  }
-}
-
-const emptyForm = (): SaveWeeklyRequest => {
-  const { weekStart, weekEnd, label } = currentWeekRange()
-  return {
-    title: `${label} 주간보고`,
-    weekStart, weekEnd,
-    thisWeekWork: '', thisWeekProposal: '', thisWeekEtc: '',
-    nextWeekWork: '', nextWeekProposal: '', nextWeekEtc: '',
   }
 }
 
@@ -34,33 +77,173 @@ function fmtWeek(start: string, end: string) {
   return `${s.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} ~ ${e.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}`
 }
 
-// ── 서브컴포넌트 ──────────────────────────────────────────────────────────────
-
-interface WeekBlockProps {
-  week: '금주' | '차주'
-  color: string
-  fields: { key: keyof SaveWeeklyRequest; label: string }[]
-  form: SaveWeeklyRequest
-  onChange: (key: keyof SaveWeeklyRequest, val: string) => void
+function emptyFormState(): WeeklyFormState {
+  const { weekStart, weekEnd, label } = currentWeekRange()
+  return {
+    title: `${label} 주간보고`, weekStart, weekEnd,
+    thisWeekWork: [], thisWeekProposal: [], thisWeekEtc: [],
+    nextWeekWork: [], nextWeekProposal: [], nextWeekEtc: [],
+  }
 }
 
-function WeekFormBlock({ week, color, fields, form, onChange }: WeekBlockProps) {
+function reportToForm(item: WeeklyReport): WeeklyFormState {
+  return {
+    title: item.title, weekStart: item.weekStart, weekEnd: item.weekEnd,
+    thisWeekWork:     parseItems(item.thisWeekWork),
+    thisWeekProposal: parseItems(item.thisWeekProposal),
+    thisWeekEtc:      parseItems(item.thisWeekEtc),
+    nextWeekWork:     parseItems(item.nextWeekWork),
+    nextWeekProposal: parseItems(item.nextWeekProposal),
+    nextWeekEtc:      parseItems(item.nextWeekEtc),
+  }
+}
+
+function formToRequest(f: WeeklyFormState): SaveWeeklyRequest {
+  return {
+    title: f.title, weekStart: f.weekStart, weekEnd: f.weekEnd,
+    thisWeekWork:     serializeItems(f.thisWeekWork),
+    thisWeekProposal: serializeItems(f.thisWeekProposal),
+    thisWeekEtc:      serializeItems(f.thisWeekEtc),
+    nextWeekWork:     serializeItems(f.nextWeekWork),
+    nextWeekProposal: serializeItems(f.nextWeekProposal),
+    nextWeekEtc:      serializeItems(f.nextWeekEtc),
+  }
+}
+
+// ── 행 입력 컴포넌트 ──────────────────────────────────────────────────────────
+
+interface WorkSectionFormProps {
+  label: string
+  sectionColor: string
+  items: WorkItem[]
+  onChange: (items: WorkItem[]) => void
+}
+
+function WorkSectionForm({ label, sectionColor, items, onChange }: WorkSectionFormProps) {
+  const add = () => onChange([...items, newItem()])
+  const update = (idx: number, next: WorkItem) => onChange(items.map((it, i) => i === idx ? next : it))
+  const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx))
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: sectionColor, letterSpacing: '0.03em' }}>{label}</span>
+        <button
+          type="button" onClick={add}
+          style={{ fontSize: 11, padding: '2px 9px', border: `1px solid ${sectionColor}55`, borderRadius: 10, background: sectionColor + '12', color: sectionColor, cursor: 'pointer', fontWeight: 600 }}
+        >
+          + 행 추가
+        </button>
+      </div>
+      {items.length === 0 ? (
+        <div
+          onClick={add}
+          style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '7px 12px', background: 'var(--c-bg)', borderRadius: 6, border: '1px dashed var(--c-border)', textAlign: 'center', cursor: 'pointer', userSelect: 'none' }}
+        >
+          + 클릭하여 추가
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {items.map((item, i) => (
+            <div key={item.id} style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+              <select
+                value={item.type}
+                onChange={e => update(i, { ...item, type: e.target.value as WorkType })}
+                style={{
+                  flexShrink: 0, padding: '4px 6px', borderRadius: 6,
+                  border: `1px solid ${TYPE_STYLE[item.type].color}55`,
+                  background: TYPE_STYLE[item.type].bg, color: TYPE_STYLE[item.type].color,
+                  fontSize: 12, fontWeight: 700, cursor: 'pointer', appearance: 'none',
+                  textAlign: 'center', width: 46,
+                }}
+              >
+                {WORK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <input
+                value={item.content}
+                onChange={e => update(i, { ...item, content: e.target.value })}
+                placeholder="업무 내용 입력..."
+                style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none' }}
+              />
+              <button
+                type="button" onClick={() => remove(i)}
+                style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}
+              >×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── 주간 블록 (폼) ────────────────────────────────────────────────────────────
+
+const WEEK_SECTIONS: { key: ContentKey; label: string }[] = [
+  { key: 'thisWeekWork',     label: '수행' },
+  { key: 'thisWeekProposal', label: '제안' },
+  { key: 'thisWeekEtc',      label: '기타사항' },
+]
+const NEXT_SECTIONS: { key: ContentKey; label: string }[] = [
+  { key: 'nextWeekWork',     label: '수행' },
+  { key: 'nextWeekProposal', label: '제안' },
+  { key: 'nextWeekEtc',      label: '기타사항' },
+]
+
+interface WeekFormBlockProps {
+  week: '금주' | '차주'
+  color: string
+  sections: { key: ContentKey; label: string }[]
+  form: WeeklyFormState
+  onChange: (key: ContentKey, items: WorkItem[]) => void
+}
+
+function WeekFormBlock({ week, color, sections, form, onChange }: WeekFormBlockProps) {
   return (
     <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}33`, fontWeight: 700, fontSize: 13, color }}>
+      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, fontWeight: 700, fontSize: 13, color }}>
         {week}
       </div>
-      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {fields.map(({ key, label }) => (
-          <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)' }}>{label}</span>
-            <textarea
-              value={(form[key] as string) ?? ''}
-              onChange={e => onChange(key, e.target.value)}
-              rows={3}
-              style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.6 }}
-            />
-          </label>
+      <div style={{ padding: '14px' }}>
+        {sections.map(({ key, label }) => (
+          <WorkSectionForm
+            key={key}
+            label={label}
+            sectionColor={color}
+            items={form[key]}
+            onChange={items => onChange(key, items)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── 행 조회 컴포넌트 ──────────────────────────────────────────────────────────
+
+interface WorkSectionDetailProps {
+  label: string
+  color: string
+  items: WorkItem[]
+}
+
+function WorkSectionDetail({ label, color, items }: WorkSectionDetailProps) {
+  if (!items.length) return null
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color, marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {items.map((item, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border)' }}>
+            <span style={{
+              flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 1,
+              background: TYPE_STYLE[item.type]?.bg ?? 'var(--c-thead)',
+              color: TYPE_STYLE[item.type]?.color ?? 'var(--c-text-muted)',
+            }}>
+              {item.type}
+            </span>
+            <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text)', flex: 1 }}>{item.content}</span>
+          </div>
         ))}
       </div>
     </div>
@@ -70,50 +253,51 @@ function WeekFormBlock({ week, color, fields, form, onChange }: WeekBlockProps) 
 interface WeekDetailBlockProps {
   week: '금주' | '차주'
   color: string
-  rows: { label: string; content: string | null }[]
+  sections: { label: string; items: WorkItem[] }[]
 }
 
-function WeekDetailBlock({ week, color, rows }: WeekDetailBlockProps) {
-  const hasContent = rows.some(r => r.content)
-  if (!hasContent) return (
-    <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}33`, fontWeight: 700, fontSize: 13, color }}>
-        {week}
-      </div>
-      <div style={{ padding: '14px', fontSize: 13, color: 'var(--c-text-muted)' }}>내용 없음</div>
-    </div>
-  )
+function WeekDetailBlock({ week, color, sections }: WeekDetailBlockProps) {
+  const hasAny = sections.some(s => s.items.length > 0)
   return (
     <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}33`, fontWeight: 700, fontSize: 13, color }}>
+      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, fontWeight: 700, fontSize: 13, color }}>
         {week}
       </div>
-      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {rows.map(({ label, content }) => content ? (
-          <div key={label}>
-            <div style={{ fontSize: 11, fontWeight: 700, color, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-            <div style={{ fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: 'var(--c-bg)', padding: '10px 12px', borderRadius: 6, border: '1px solid var(--c-border)' }}>
-              {content}
-            </div>
-          </div>
-        ) : null)}
+      <div style={{ padding: '14px' }}>
+        {hasAny
+          ? sections.map(({ label, items }) => (
+              <WorkSectionDetail key={label} label={label} color={color} items={items} />
+            ))
+          : <div style={{ fontSize: 13, color: 'var(--c-text-muted)' }}>내용 없음</div>
+        }
       </div>
     </div>
+  )
+}
+
+// ── PPT 행 렌더 ───────────────────────────────────────────────────────────────
+
+function PrintSectionRows({ items, color }: { items: WorkItem[]; color: string }) {
+  if (!items.length) return null
+  return (
+    <>
+      {items.map((item, i) => (
+        <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'flex-start' }}>
+          <span style={{
+            flexShrink: 0, fontSize: 9, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 1,
+            background: item.type === '중점' ? color + '20' : '#f0f0f0',
+            color: item.type === '중점' ? color : '#888',
+          }}>
+            {item.type}
+          </span>
+          <span style={{ fontSize: 11, lineHeight: 1.5, color: '#333' }}>{item.content}</span>
+        </div>
+      ))}
+    </>
   )
 }
 
 // ── 메인 페이지 ───────────────────────────────────────────────────────────────
-
-const THIS_WEEK_FIELDS: { key: keyof SaveWeeklyRequest; label: string }[] = [
-  { key: 'thisWeekWork',     label: '수행' },
-  { key: 'thisWeekProposal', label: '제안' },
-  { key: 'thisWeekEtc',      label: '기타사항' },
-]
-const NEXT_WEEK_FIELDS: { key: keyof SaveWeeklyRequest; label: string }[] = [
-  { key: 'nextWeekWork',     label: '수행' },
-  { key: 'nextWeekProposal', label: '제안' },
-  { key: 'nextWeekEtc',      label: '기타사항' },
-]
 
 export default function WeeklyReportPage() {
   const qc = useQueryClient()
@@ -122,7 +306,7 @@ export default function WeeklyReportPage() {
   const [selected, setSelected] = useState<WeeklyReport | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<WeeklyReport | null>(null)
-  const [form, setForm] = useState<SaveWeeklyRequest>(emptyForm())
+  const [form, setForm] = useState<WeeklyFormState>(emptyFormState())
   const [printOpen, setPrintOpen] = useState(false)
 
   const { data: items = [], isLoading } = useQuery({
@@ -145,42 +329,24 @@ export default function WeeklyReportPage() {
     onSuccess: () => { invalidate(); setSelected(null) },
   })
 
-  const resetForm = () => { setShowForm(false); setEditing(null); setForm(emptyForm()) }
+  const resetForm = () => { setShowForm(false); setEditing(null); setForm(emptyFormState()) }
 
   const openEdit = (item: WeeklyReport) => {
     setEditing(item)
-    setForm({
-      title: item.title, weekStart: item.weekStart, weekEnd: item.weekEnd,
-      thisWeekWork:     item.thisWeekWork ?? '',
-      thisWeekProposal: item.thisWeekProposal ?? '',
-      thisWeekEtc:      item.thisWeekEtc ?? '',
-      nextWeekWork:     item.nextWeekWork ?? '',
-      nextWeekProposal: item.nextWeekProposal ?? '',
-      nextWeekEtc:      item.nextWeekEtc ?? '',
-    })
+    setForm(reportToForm(item))
     setShowForm(true); setSelected(null)
   }
 
-  const setField = (key: keyof SaveWeeklyRequest, val: string) =>
-    setForm(f => ({ ...f, [key]: val }))
+  const setSection = (key: ContentKey, items: WorkItem[]) =>
+    setForm(f => ({ ...f, [key]: items }))
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const clean = (v?: string) => v || undefined
-    const d: SaveWeeklyRequest = {
-      title: form.title, weekStart: form.weekStart, weekEnd: form.weekEnd,
-      thisWeekWork:     clean(form.thisWeekWork),
-      thisWeekProposal: clean(form.thisWeekProposal),
-      thisWeekEtc:      clean(form.thisWeekEtc),
-      nextWeekWork:     clean(form.nextWeekWork),
-      nextWeekProposal: clean(form.nextWeekProposal),
-      nextWeekEtc:      clean(form.nextWeekEtc),
-    }
+    const d = formToRequest(form)
     if (editing) updateMut.mutate({ id: editing.id, d })
     else createMut.mutate(d)
   }
 
-  // 이번 주 항목 (PPT용)
   const { weekStart: thisWeekStart } = currentWeekRange()
   const thisWeekItems = items.filter(i => i.weekStart === thisWeekStart)
 
@@ -199,16 +365,12 @@ export default function WeeklyReportPage() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                onClick={() => window.print()}
-                style={{ padding: '7px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-              >
+              <button onClick={() => window.print()}
+                style={{ padding: '7px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
                 🖨 인쇄 / PDF
               </button>
-              <button
-                onClick={() => setPrintOpen(false)}
-                style={{ padding: '7px 14px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}
-              >
+              <button onClick={() => setPrintOpen(false)}
+                style={{ padding: '7px 14px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
                 닫기
               </button>
             </div>
@@ -217,47 +379,43 @@ export default function WeeklyReportPage() {
           {thisWeekItems.length === 0 ? (
             <div style={{ textAlign: 'center', color: '#999', paddingTop: 60, fontSize: 14 }}>이번 주 등록된 보고서가 없습니다.</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-              {thisWeekItems.map(item => (
-                <div key={item.id} style={{ pageBreakInside: 'avoid', border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden' }}>
-                  {/* 슬라이드 헤더 */}
-                  <div style={{ padding: '10px 18px', background: '#1976d2', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 700, fontSize: 15 }}>{item.author}</span>
-                    <span style={{ fontSize: 12, opacity: 0.85 }}>{fmtWeek(item.weekStart, item.weekEnd)}</span>
-                  </div>
-                  {/* 금주/차주 2컬럼 */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-                    {/* 금주 */}
-                    <div style={{ padding: '14px 18px', borderRight: '1px solid #eee' }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: '#1976d2', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #1976d220' }}>금주</div>
-                      {[
-                        { label: '수행',     val: item.thisWeekWork },
-                        { label: '제안',     val: item.thisWeekProposal },
-                        { label: '기타사항', val: item.thisWeekEtc },
-                      ].map(({ label, val }) => val ? (
-                        <div key={label} style={{ marginBottom: 8 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
-                          <div style={{ fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', marginTop: 2, color: '#333' }}>{val}</div>
-                        </div>
-                      ) : null)}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {thisWeekItems.map(report => {
+                const tw = {
+                  work:     parseItems(report.thisWeekWork),
+                  proposal: parseItems(report.thisWeekProposal),
+                  etc:      parseItems(report.thisWeekEtc),
+                }
+                const nw = {
+                  work:     parseItems(report.nextWeekWork),
+                  proposal: parseItems(report.nextWeekProposal),
+                  etc:      parseItems(report.nextWeekEtc),
+                }
+                return (
+                  <div key={report.id} style={{ pageBreakInside: 'avoid', border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ padding: '10px 18px', background: '#1976d2', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 700, fontSize: 15 }}>{report.author}</span>
+                      <span style={{ fontSize: 12, opacity: 0.85 }}>{fmtWeek(report.weekStart, report.weekEnd)}</span>
                     </div>
-                    {/* 차주 */}
-                    <div style={{ padding: '14px 18px' }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: '#4caf50', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #4caf5020' }}>차주</div>
-                      {[
-                        { label: '수행',     val: item.nextWeekWork },
-                        { label: '제안',     val: item.nextWeekProposal },
-                        { label: '기타사항', val: item.nextWeekEtc },
-                      ].map(({ label, val }) => val ? (
-                        <div key={label} style={{ marginBottom: 8 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
-                          <div style={{ fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', marginTop: 2, color: '#333' }}>{val}</div>
-                        </div>
-                      ) : null)}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+                      {/* 금주 */}
+                      <div style={{ padding: '14px 18px', borderRight: '1px solid #eee' }}>
+                        <div style={{ fontWeight: 700, fontSize: 12, color: '#1976d2', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #1976d230' }}>금주</div>
+                        {tw.work.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', marginBottom: 3, textTransform: 'uppercase' }}>수행</div><PrintSectionRows items={tw.work} color="#1976d2" /></>}
+                        {tw.proposal.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', margin: '6px 0 3px', textTransform: 'uppercase' }}>제안</div><PrintSectionRows items={tw.proposal} color="#1976d2" /></>}
+                        {tw.etc.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', margin: '6px 0 3px', textTransform: 'uppercase' }}>기타</div><PrintSectionRows items={tw.etc} color="#1976d2" /></>}
+                      </div>
+                      {/* 차주 */}
+                      <div style={{ padding: '14px 18px' }}>
+                        <div style={{ fontWeight: 700, fontSize: 12, color: '#4caf50', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #4caf5030' }}>차주</div>
+                        {nw.work.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', marginBottom: 3, textTransform: 'uppercase' }}>수행</div><PrintSectionRows items={nw.work} color="#4caf50" /></>}
+                        {nw.proposal.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', margin: '6px 0 3px', textTransform: 'uppercase' }}>제안</div><PrintSectionRows items={nw.proposal} color="#4caf50" /></>}
+                        {nw.etc.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', margin: '6px 0 3px', textTransform: 'uppercase' }}>기타</div><PrintSectionRows items={nw.etc} color="#4caf50" /></>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
@@ -268,17 +426,12 @@ export default function WeeklyReportPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h2 style={{ margin: 0, fontSize: 18 }}>주간보고</h2>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              onClick={() => setPrintOpen(true)}
-              title="이번 주 전체 보고서 인쇄"
-              style={{ padding: '5px 10px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 6, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-muted)' }}
-            >
+            <button onClick={() => setPrintOpen(true)} title="이번 주 전체 보고서 인쇄"
+              style={{ padding: '5px 10px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 6, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-muted)' }}>
               🖨
             </button>
-            <button
-              onClick={() => { resetForm(); setShowForm(true); setSelected(null) }}
-              style={{ padding: '6px 14px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}
-            >
+            <button onClick={() => { resetForm(); setShowForm(true); setSelected(null) }}
+              style={{ padding: '6px 14px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
               + 작성
             </button>
           </div>
@@ -292,13 +445,8 @@ export default function WeeklyReportPage() {
                 const isMine = item.author === user?.username
                 const isSelected = selected?.id === item.id
                 return (
-                  <div key={item.id}
-                    onClick={() => { setSelected(item); setShowForm(false) }}
-                    style={{
-                      padding: '10px 14px', borderRadius: 8, cursor: 'pointer',
-                      border: `1px solid ${isSelected ? '#1976d2' : 'var(--c-border)'}`,
-                      background: isSelected ? '#e3f2fd' : 'var(--c-card)',
-                    }}>
+                  <div key={item.id} onClick={() => { setSelected(item); setShowForm(false) }}
+                    style={{ padding: '10px 14px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${isSelected ? '#1976d2' : 'var(--c-border)'}`, background: isSelected ? '#e3f2fd' : 'var(--c-card)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{item.title}</div>
                       {isMine && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: '#1976d222', color: '#1976d2', fontWeight: 700, flexShrink: 0, marginLeft: 4 }}>내것</span>}
@@ -318,7 +466,6 @@ export default function WeeklyReportPage() {
           <>
             <h3 style={{ margin: '0 0 20px' }}>{editing ? '주간보고 수정' : '새 주간보고 작성'}</h3>
             <form onSubmit={handleSubmit}>
-              {/* 제목 + 기간 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 600 }}>제목 *</span>
@@ -337,10 +484,9 @@ export default function WeeklyReportPage() {
                 </label>
               </div>
 
-              {/* 금주 / 차주 2컬럼 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <WeekFormBlock week="금주" color="#1976d2" fields={THIS_WEEK_FIELDS} form={form} onChange={setField} />
-                <WeekFormBlock week="차주" color="#4caf50" fields={NEXT_WEEK_FIELDS} form={form} onChange={setField} />
+                <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={form} onChange={setSection} />
+                <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={form} onChange={setSection} />
               </div>
 
               <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
@@ -357,7 +503,6 @@ export default function WeeklyReportPage() {
           </>
         ) : selected ? (
           <>
-            {/* 헤더 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <h2 style={{ margin: '0 0 6px', fontSize: 20 }}>{selected.title}</h2>
@@ -378,17 +523,16 @@ export default function WeeklyReportPage() {
               </div>
             </div>
 
-            {/* 금주 / 차주 2컬럼 */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <WeekDetailBlock week="금주" color="#1976d2" rows={[
-                { label: '수행',     content: selected.thisWeekWork },
-                { label: '제안',     content: selected.thisWeekProposal },
-                { label: '기타사항', content: selected.thisWeekEtc },
+              <WeekDetailBlock week="금주" color="#1976d2" sections={[
+                { label: '수행',     items: parseItems(selected.thisWeekWork) },
+                { label: '제안',     items: parseItems(selected.thisWeekProposal) },
+                { label: '기타사항', items: parseItems(selected.thisWeekEtc) },
               ]} />
-              <WeekDetailBlock week="차주" color="#4caf50" rows={[
-                { label: '수행',     content: selected.nextWeekWork },
-                { label: '제안',     content: selected.nextWeekProposal },
-                { label: '기타사항', content: selected.nextWeekEtc },
+              <WeekDetailBlock week="차주" color="#4caf50" sections={[
+                { label: '수행',     items: parseItems(selected.nextWeekWork) },
+                { label: '제안',     items: parseItems(selected.nextWeekProposal) },
+                { label: '기타사항', items: parseItems(selected.nextWeekEtc) },
               ]} />
             </div>
           </>
