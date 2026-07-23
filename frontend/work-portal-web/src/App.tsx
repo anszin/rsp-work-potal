@@ -17,6 +17,7 @@ import SystemManagementPage from './pages/SystemManagement'
 import UserManagementPage from './pages/UserManagement'
 import KeyTaskPage from './pages/KeyTask'
 import Layout from './components/Layout'
+import NotificationPage from './pages/Notification'
 import AiChatPage from './pages/AiChat'
 import AiDocumentsPage from './pages/AiDocuments'
 import AiPromptsPage from './pages/AiPrompts'
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="key-tasks" element={<KeyTaskPage />} />
             <Route path="admin/systems" element={<SystemManagementPage />} />
             <Route path="admin/users" element={<UserManagementPage />} />
+            <Route path="admin/notifications" element={<NotificationPage />} />
             {aiConfig.enabled && (
               <Route path="ai" element={<AiChatPage />} />
             )}

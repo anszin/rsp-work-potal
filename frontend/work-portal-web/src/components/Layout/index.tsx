@@ -16,8 +16,9 @@ const MENU_ITEMS = [
 ]
 
 const SETTINGS_ITEMS = [
-  { key: 'system_mgmt', to: '/admin/systems', label: '시스템 관리' },
-  { key: 'user_mgmt',   to: '/admin/users',   label: '사용자 관리' },
+  { key: 'system_mgmt',     to: '/admin/systems',        label: '시스템 관리' },
+  { key: 'user_mgmt',       to: '/admin/users',          label: '사용자 관리' },
+  { key: 'notifications',   to: '/admin/notifications',  label: '공지 발송' },
 ]
 
 export default function Layout() {

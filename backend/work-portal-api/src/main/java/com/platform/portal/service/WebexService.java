@@ -136,6 +136,33 @@ public class WebexService {
         return null;
     }
 
+    public void sendDirectMessage(String toEmail, String markdown) {
+        if (botToken == null || botToken.isBlank()) return;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(botToken);
+            Map<String, String> body = Map.of("toPersonEmail", toEmail, "markdown", markdown);
+            restTemplate.postForEntity("https://webexapis.com/v1/messages",
+                    new HttpEntity<>(body, headers), String.class);
+        } catch (Exception e) {
+            log.warn("Webex DM failed to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
+    public void sendRoomMessage(String targetRoomId, String markdown) {
+        if (botToken == null || botToken.isBlank() || targetRoomId == null || targetRoomId.isBlank()) return;
+        try {
+            sendMessage(markdown, targetRoomId);
+        } catch (Exception e) {
+            log.warn("Webex room message failed: {}", e.getMessage());
+        }
+    }
+
+    public String getDefaultRoomId() {
+        return roomId;
+    }
+
     private void sendMessage(String markdown, String targetRoomId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
