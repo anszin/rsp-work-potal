@@ -41,6 +41,7 @@ public class WeeklyReportDto {
         private final String nextWeekProposal;
         private final String nextWeekEtc;
         private final String author;
+        private final String reportType;
         private final LocalDateTime createdAt;
 
         public Response(WeeklyReport r) {
@@ -55,6 +56,7 @@ public class WeeklyReportDto {
             this.nextWeekProposal = r.getNextWeekProposal();
             this.nextWeekEtc = r.getNextWeekEtc();
             this.author = r.getAuthor();
+            this.reportType = r.getReportType().name();
             this.createdAt = r.getCreatedAt();
         }
     }

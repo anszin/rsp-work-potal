@@ -3,10 +3,13 @@ package com.platform.portal.domain.report.service;
 import com.platform.portal.domain.report.dto.WeeklyReportDto;
 import com.platform.portal.domain.report.entity.WeeklyReport;
 import com.platform.portal.domain.report.repository.WeeklyReportRepository;
+import com.platform.portal.domain.user.entity.User;
+import com.platform.portal.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -15,10 +18,17 @@ import java.util.List;
 public class WeeklyReportService {
 
     private final WeeklyReportRepository repository;
+    private final UserRepository userRepository;
 
-    public List<WeeklyReportDto.Response> findAll() {
-        return repository.findAllByOrderByWeekStartDescCreatedAtDesc().stream()
-                .map(WeeklyReportDto.Response::new).toList();
+    public List<WeeklyReportDto.Response> findAll(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow();
+        boolean isManager = user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.MANAGER;
+        if (isManager) {
+            return repository.findByReportTypeOrderByWeekStartDescCreatedAtDesc(WeeklyReport.ReportType.INDIVIDUAL)
+                    .stream().map(WeeklyReportDto.Response::new).toList();
+        }
+        return repository.findByAuthorAndReportTypeOrderByWeekStartDescCreatedAtDesc(username, WeeklyReport.ReportType.INDIVIDUAL)
+                .stream().map(WeeklyReportDto.Response::new).toList();
     }
 
     public WeeklyReportDto.Response findById(Long id) {
@@ -27,9 +37,29 @@ public class WeeklyReportService {
                 .orElseThrow(() -> new IllegalArgumentException("Not found: " + id));
     }
 
+    public List<WeeklyReportDto.Response> findByWeek(LocalDate weekStart) {
+        return repository.findByWeekStartAndReportTypeOrderByCreatedAtDesc(weekStart, WeeklyReport.ReportType.INDIVIDUAL)
+                .stream().map(WeeklyReportDto.Response::new).toList();
+    }
+
+    public List<WeeklyReportDto.Response> findAllConsolidated() {
+        return repository.findByReportTypeOrderByWeekStartDescCreatedAtDesc(WeeklyReport.ReportType.CONSOLIDATED)
+                .stream().map(WeeklyReportDto.Response::new).toList();
+    }
+
     @Transactional
     public WeeklyReportDto.Response create(WeeklyReportDto.SaveRequest req, String author) {
         WeeklyReport r = new WeeklyReport();
+        r.setReportType(WeeklyReport.ReportType.INDIVIDUAL);
+        apply(r, req);
+        r.setAuthor(author);
+        return new WeeklyReportDto.Response(repository.save(r));
+    }
+
+    @Transactional
+    public WeeklyReportDto.Response createConsolidated(WeeklyReportDto.SaveRequest req, String author) {
+        WeeklyReport r = new WeeklyReport();
+        r.setReportType(WeeklyReport.ReportType.CONSOLIDATED);
         apply(r, req);
         r.setAuthor(author);
         return new WeeklyReportDto.Response(repository.save(r));

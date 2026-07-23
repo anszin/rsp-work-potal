@@ -35,6 +35,7 @@ export interface WeeklyReport {
   nextWeekProposal: string | null
   nextWeekEtc: string | null
   author: string
+  reportType: 'INDIVIDUAL' | 'CONSOLIDATED'
   createdAt: string
 }
 
@@ -83,7 +84,10 @@ export const meetingApi = {
 export const weeklyApi = {
   list: () => client.get<WeeklyReport[]>('/weekly-reports'),
   get: (id: number) => client.get<WeeklyReport>(`/weekly-reports/${id}`),
+  byWeek: (weekStart: string) => client.get<WeeklyReport[]>('/weekly-reports/by-week', { params: { weekStart } }),
+  listConsolidated: () => client.get<WeeklyReport[]>('/weekly-reports/consolidated'),
   create: (data: SaveWeeklyRequest) => client.post<WeeklyReport>('/weekly-reports', data),
+  createConsolidated: (data: SaveWeeklyRequest) => client.post<WeeklyReport>('/weekly-reports/consolidated', data),
   update: (id: number, data: SaveWeeklyRequest) =>
     client.put<WeeklyReport>(`/weekly-reports/${id}`, data),
   delete: (id: number) => client.delete(`/weekly-reports/${id}`),

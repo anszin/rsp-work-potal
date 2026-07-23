@@ -52,7 +52,15 @@ public class WeeklyReport {
     @Column(nullable = false)
     private String author;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReportType reportType = ReportType.INDIVIDUAL;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    public enum ReportType {
+        INDIVIDUAL, CONSOLIDATED
+    }
 }
