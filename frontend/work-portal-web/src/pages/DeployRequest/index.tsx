@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import {
@@ -260,6 +260,16 @@ export default function DeployRequestPage() {
 
   // 필터/페이지 크기 변경 시 1페이지로 리셋
   useEffect(() => { setPage(1) }, [statusFilter, pageSize])
+
+  // URL ?no= 쿼리파라미터로 특정 배포 건 자동 선택
+  const autoSelectDone = useRef(false)
+  useEffect(() => {
+    if (autoSelectDone.current || requests.length === 0) return
+    const no = new URLSearchParams(window.location.search).get('no')
+    if (!no) return
+    const found = requests.find(r => r.deployNo === no)
+    if (found) { setDetail(found); autoSelectDone.current = true }
+  }, [requests])
 
   return (
     <div className="page-wrap">

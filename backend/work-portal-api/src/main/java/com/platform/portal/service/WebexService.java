@@ -19,6 +19,9 @@ public class WebexService {
     @Value("${webex.room-id:}")
     private String roomId;
 
+    @Value("${app.site-url:https://rsp-work-potal.vercel.app}")
+    private String siteUrl;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     private static final Map<DeployRequest.DeployType, String> TYPE_LABELS = Map.of(
@@ -65,6 +68,7 @@ public class WebexService {
             }
             if (dr.getScheduledAt() != null)
                 sb.append("\n> 예정: ").append(dr.getScheduledAt().toString().replace("T", " ").substring(0, 16));
+            sb.append("\n> [🔗 포탈에서 보기](").append(siteUrl).append("/deploys?no=").append(dr.getDeployNo()).append(")");
             sendMessage(sb.toString(), targetRoomId);
         } catch (Exception e) {
             log.warn("Webex notify failed (created): {}", e.getMessage());
@@ -85,6 +89,7 @@ public class WebexService {
             sb.append("> 처리자: **").append(actorUsername).append("**");
             if (comment != null && !comment.isBlank())
                 sb.append("\n> ").append(comment);
+            sb.append("\n> [🔗 포탈에서 보기](").append(siteUrl).append("/deploys?no=").append(dr.getDeployNo()).append(")");
             sendMessage(sb.toString(), targetRoomId);
         } catch (Exception e) {
             log.warn("Webex notify failed (status {}): {}", dr.getStatus(), e.getMessage());
@@ -99,7 +104,8 @@ public class WebexService {
                     + (dr.getSubSystem() != null ? " / " + dr.getSubSystem().getName() : "");
             String msg = "🔧 **배포 진행** `" + dr.getDeployNo() + "`\n"
                     + "> **[" + sys + "]** " + dr.getTitle() + "\n"
-                    + "> **" + serverName + "** 배포 완료 (" + username + ") — " + done + "/" + total;
+                    + "> **" + serverName + "** 배포 완료 (" + username + ") — " + done + "/" + total + "\n"
+                    + "> [🔗 포탈에서 보기](" + siteUrl + "/deploys?no=" + dr.getDeployNo() + ")";
             sendMessage(msg, targetRoomId);
         } catch (Exception e) {
             log.warn("Webex notify failed (step): {}", e.getMessage());
@@ -114,7 +120,8 @@ public class WebexService {
                     + (dr.getSubSystem() != null ? " / " + dr.getSubSystem().getName() : "");
             String msg = "🚀 **전체 배포 완료** `" + dr.getDeployNo() + "`\n"
                     + "> **[" + sys + "]** " + dr.getTitle() + "\n"
-                    + "> 처리자: **" + username + "**";
+                    + "> 처리자: **" + username + "**\n"
+                    + "> [🔗 포탈에서 보기](" + siteUrl + "/deploys?no=" + dr.getDeployNo() + ")";
             sendMessage(msg, targetRoomId);
         } catch (Exception e) {
             log.warn("Webex notify failed (all steps): {}", e.getMessage());
