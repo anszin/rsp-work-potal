@@ -65,17 +65,25 @@ interface WeeklyFormState {
 
 // ── 날짜 유틸 ────────────────────────────────────────────────────────────────
 
+// 해당 주의 목요일 기준으로 월/주차 계산 (ISO 8601)
+function getThursday(mon: Date): Date {
+  const thu = new Date(mon)
+  thu.setDate(mon.getDate() + 3)
+  return thu
+}
+
 function currentWeekRange() {
   const today = new Date()
   const day = today.getDay()
   const mon = new Date(today)
   mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1))
   const fri = new Date(mon); fri.setDate(mon.getDate() + 4)
-  const weekOfMonth = Math.ceil(mon.getDate() / 7)
+  const thu = getThursday(mon)
+  const weekOfMonth = Math.ceil(thu.getDate() / 7)
   return {
     weekStart: mon.toISOString().slice(0, 10),
     weekEnd: fri.toISOString().slice(0, 10),
-    label: `${mon.getMonth() + 1}월 ${weekOfMonth}주차`,
+    label: `${thu.getMonth() + 1}월 ${weekOfMonth}주차`,
   }
 }
 
@@ -85,8 +93,9 @@ function fmtWeek(start: string, end: string) {
 }
 
 function weekLabel(weekStart: string) {
-  const d = new Date(weekStart)
-  return `${d.getMonth() + 1}월 ${Math.ceil(d.getDate() / 7)}주차`
+  const mon = new Date(weekStart)
+  const thu = getThursday(mon)
+  return `${thu.getMonth() + 1}월 ${Math.ceil(thu.getDate() / 7)}주차`
 }
 
 interface WeekGroup {
