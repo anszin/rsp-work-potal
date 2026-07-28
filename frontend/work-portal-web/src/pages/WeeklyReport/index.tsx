@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
+import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { useAuth } from '../../context/useAuth'
 
 // ── 업무 타입 ─────────────────────────────────────────────────────────────────
@@ -17,6 +18,8 @@ interface WorkItem {
   id: string
   type: WorkType
   content: string
+  keyTaskId?: number
+  keyTaskName?: string
 }
 
 type ContentKey =
@@ -153,12 +156,18 @@ function formToRequest(f: WeeklyFormState): SaveWeeklyRequest {
 
 // ── 행 입력 컴포넌트 ──────────────────────────────────────────────────────────
 
-function WorkSectionForm({ label, sectionColor, items, onChange }: {
-  label: string; sectionColor: string; items: WorkItem[]; onChange: (items: WorkItem[]) => void
+function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }: {
+  label: string; sectionColor: string; items: WorkItem[]; onChange: (items: WorkItem[]) => void; keyTasks?: KeyTask[]
 }) {
   const add = () => onChange([...items, newItem()])
   const update = (idx: number, next: WorkItem) => onChange(items.map((it, i) => i === idx ? next : it))
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx))
+
+  const linkTask = (idx: number, taskId: string) => {
+    const kt = keyTasks.find(k => String(k.id) === taskId)
+    update(idx, { ...items[idx], keyTaskId: kt?.id, keyTaskName: kt?.taskName })
+  }
+
   return (
     <div style={{ marginBottom: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -175,17 +184,35 @@ function WorkSectionForm({ label, sectionColor, items, onChange }: {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {items.map((item, i) => (
-            <div key={item.id} style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-              <select value={item.type} onChange={e => update(i, { ...item, type: e.target.value as WorkType })}
-                style={{ flexShrink: 0, padding: '4px 6px', borderRadius: 6, border: `1px solid ${TYPE_STYLE[item.type].color}55`, background: TYPE_STYLE[item.type].bg, color: TYPE_STYLE[item.type].color, fontSize: 12, fontWeight: 700, cursor: 'pointer', appearance: 'none', textAlign: 'center', width: 46 }}>
-                {WORK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-              <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-                onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-                placeholder="업무 내용 입력..." rows={1}
-                style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
-              <button type="button" onClick={() => remove(i)}
-                style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>×</button>
+            <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                <select value={item.type} onChange={e => update(i, { ...item, type: e.target.value as WorkType, keyTaskId: undefined, keyTaskName: undefined })}
+                  style={{ flexShrink: 0, padding: '4px 6px', borderRadius: 6, border: `1px solid ${TYPE_STYLE[item.type].color}55`, background: TYPE_STYLE[item.type].bg, color: TYPE_STYLE[item.type].color, fontSize: 12, fontWeight: 700, cursor: 'pointer', appearance: 'none', textAlign: 'center', width: 46 }}>
+                  {WORK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+                  onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+                  placeholder="업무 내용 입력..." rows={1}
+                  style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
+                <button type="button" onClick={() => remove(i)}
+                  style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>×</button>
+              </div>
+              {/* 중점 타입이고 KPI 목록이 있을 때 연결 셀렉터 표시 */}
+              {item.type === '중점' && keyTasks.length > 0 && (
+                <div style={{ paddingLeft: 51, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 11, color: 'var(--c-text-muted)', flexShrink: 0 }}>📌 KPI</span>
+                  <select
+                    value={item.keyTaskId ?? ''}
+                    onChange={e => linkTask(i, e.target.value)}
+                    style={{ fontSize: 11, padding: '2px 6px', borderRadius: 5, border: '1px solid var(--c-border-in)', background: 'var(--c-bg)', color: item.keyTaskId ? '#1976d2' : 'var(--c-text-muted)', cursor: 'pointer', maxWidth: 260 }}
+                  >
+                    <option value="">연결 없음</option>
+                    {keyTasks.map(kt => (
+                      <option key={kt.id} value={kt.id}>{kt.taskName}{kt.kpi ? ` (${kt.kpi})` : ''}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -194,15 +221,15 @@ function WorkSectionForm({ label, sectionColor, items, onChange }: {
   )
 }
 
-function WeekFormBlock({ week, color, sections, form, onChange }: {
-  week: '금주' | '차주'; color: string; sections: { key: ContentKey; label: string }[]; form: WeeklyFormState; onChange: (key: ContentKey, items: WorkItem[]) => void
+function WeekFormBlock({ week, color, sections, form, onChange, keyTasks }: {
+  week: '금주' | '차주'; color: string; sections: { key: ContentKey; label: string }[]; form: WeeklyFormState; onChange: (key: ContentKey, items: WorkItem[]) => void; keyTasks: KeyTask[]
 }) {
   return (
     <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, fontWeight: 700, fontSize: 13, color }}>{week}</div>
       <div style={{ padding: '14px' }}>
         {sections.map(({ key, label }) => (
-          <WorkSectionForm key={key} label={label} sectionColor={color} items={form[key]} onChange={items => onChange(key, items)} />
+          <WorkSectionForm key={key} label={label} sectionColor={color} items={form[key]} onChange={items => onChange(key, items)} keyTasks={keyTasks} />
         ))}
       </div>
     </div>
@@ -220,7 +247,14 @@ function WorkSectionDetail({ label, color, items }: { label: string; color: stri
         {items.map((item, i) => (
           <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border)' }}>
             <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 1, background: TYPE_STYLE[item.type]?.bg ?? 'var(--c-thead)', color: TYPE_STYLE[item.type]?.color ?? 'var(--c-text-muted)' }}>{item.type}</span>
-            <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text)', flex: 1, whiteSpace: 'pre-wrap' }}>{item.content}</span>
+            <div style={{ flex: 1 }}>
+              {item.keyTaskName && (
+                <div style={{ marginBottom: 3 }}>
+                  <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 8, background: '#1976d210', color: '#1976d2', fontWeight: 600, border: '1px solid #1976d225' }}>📌 {item.keyTaskName}</span>
+                </div>
+              )}
+              <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
+            </div>
           </div>
         ))}
       </div>
@@ -295,9 +329,9 @@ const NEXT_SECTIONS: { key: ContentKey; label: string }[] = [
   { key: 'nextWeekWork', label: '수행' }, { key: 'nextWeekProposal', label: '제안' }, { key: 'nextWeekEtc', label: '기타사항' },
 ]
 
-function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCancel, saving }: {
+function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCancel, saving, keyTasks }: {
   form: WeeklyFormState; setForm: React.Dispatch<React.SetStateAction<WeeklyFormState>>
-  isConsolidated: boolean; isEditing: boolean; onSubmit: (e: React.FormEvent) => void; onCancel: () => void; saving: boolean
+  isConsolidated: boolean; isEditing: boolean; onSubmit: (e: React.FormEvent) => void; onCancel: () => void; saving: boolean; keyTasks: KeyTask[]
 }) {
   const setSection = (key: ContentKey, items: WorkItem[]) => setForm(f => ({ ...f, [key]: items }))
   return (
@@ -325,8 +359,8 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
           </label>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={form} onChange={setSection} />
-          <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={form} onChange={setSection} />
+          <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={form} onChange={setSection} keyTasks={keyTasks} />
+          <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={form} onChange={setSection} keyTasks={keyTasks} />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
           <button type="submit" disabled={saving}
@@ -385,6 +419,10 @@ export default function WeeklyReportPage() {
   const { data: consolidated = [] } = useQuery({
     queryKey: ['weekly-reports-consolidated'],
     queryFn: () => weeklyApi.listConsolidated().then(r => r.data),
+  })
+  const { data: keyTasks = [] } = useQuery({
+    queryKey: ['key-tasks', new Date().getFullYear()],
+    queryFn: () => getKeyTasks(new Date().getFullYear()),
   })
 
   const invalidate = () => {
@@ -678,6 +716,7 @@ export default function WeeklyReportPage() {
             onSubmit={handleSubmit}
             onCancel={() => setDetail({ type: 'none' })}
             saving={saving}
+            keyTasks={keyTasks}
           />
         ) : detail.type === 'view' ? (
           <ReportDetail

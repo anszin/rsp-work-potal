@@ -5,6 +5,29 @@ import {
   getKeyTasks, getKeyTaskYears, createKeyTask, updateKeyTask, deleteKeyTask,
   type KeyTask, type SaveKeyTaskRequest,
 } from '../../api/keyTasks'
+import { weeklyApi, type WeeklyReport } from '../../api/reports'
+
+interface WorkItem {
+  id: string
+  type: '중점' | '기타'
+  content: string
+  keyTaskId?: number
+  keyTaskName?: string
+}
+
+function parseWorkItems(raw: string | null | undefined): WorkItem[] {
+  if (!raw) return []
+  try { const a = JSON.parse(raw); if (Array.isArray(a)) return a } catch {}
+  return []
+}
+
+function weekLabelFrom(weekStart: string): string {
+  const mon = new Date(weekStart)
+  const thu = new Date(mon); thu.setDate(mon.getDate() + 3)
+  return `${thu.getMonth() + 1}월 ${Math.ceil(thu.getDate() / 7)}주차`
+}
+
+type LinkedEntry = { report: WeeklyReport; item: WorkItem; section: string }
 
 const QUARTERS = [1, 2, 3, 4] as const
 type Quarter = typeof QUARTERS[number]
@@ -66,9 +89,15 @@ export default function KeyTaskPage() {
     queryFn: () => getKeyTasks(selYear),
   })
 
+  const { data: allReports = [] } = useQuery({
+    queryKey: ['weekly-reports'],
+    queryFn: () => weeklyApi.list().then(r => r.data),
+  })
+
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<KeyTask | null>(null)
   const [form, setForm] = useState<FormData>(emptyForm())
+  const [progressTask, setProgressTask] = useState<KeyTask | null>(null)
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['key-tasks', selYear] })
@@ -269,6 +298,67 @@ export default function KeyTaskPage() {
         </div>
       )}
 
+      {/* 주간 실적 모달 */}
+      {progressTask && (() => {
+        const SECTIONS = [
+          { key: 'thisWeekWork', label: '금주 수행' }, { key: 'thisWeekProposal', label: '금주 제안' }, { key: 'thisWeekEtc', label: '금주 기타' },
+          { key: 'nextWeekWork', label: '차주 수행' }, { key: 'nextWeekProposal', label: '차주 제안' }, { key: 'nextWeekEtc', label: '차주 기타' },
+        ]
+        const linked: LinkedEntry[] = allReports.flatMap(report =>
+          SECTIONS.flatMap(({ key, label }) =>
+            parseWorkItems((report as unknown as Record<string, string>)[key])
+              .filter(it => it.keyTaskId === progressTask.id)
+              .map(it => ({ report, item: it, section: label }))
+          )
+        )
+        // 주차별 그룹핑
+        const weekMap = new Map<string, LinkedEntry[]>()
+        for (const e of linked) {
+          if (!weekMap.has(e.report.weekStart)) weekMap.set(e.report.weekStart, [])
+          weekMap.get(e.report.weekStart)!.push(e)
+        }
+        const weeks = Array.from(weekMap.keys()).sort((a, b) => b.localeCompare(a))
+        return (
+          <div style={s.overlay} onClick={() => setProgressTask(null)}>
+            <div style={{ ...s.modal, maxWidth: 680 }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
+                <div>
+                  <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 4 }}>주간 실적 — {progressTask.kpi || progressTask.taskLevel}</div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{progressTask.taskName}</h3>
+                </div>
+                <button style={s.btnSecondary} onClick={() => setProgressTask(null)}>✕</button>
+              </div>
+              {linked.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--c-text-muted)', fontSize: 14 }}>
+                  연결된 주간 실적이 없습니다.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {weeks.map(ws => (
+                    <div key={ws} style={{ border: '1px solid var(--c-border)', borderRadius: 8, overflow: 'hidden' }}>
+                      <div style={{ padding: '8px 14px', background: 'var(--c-thead)', fontWeight: 700, fontSize: 13, color: '#1976d2' }}>
+                        {weekLabelFrom(ws)}
+                      </div>
+                      <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {weekMap.get(ws)!.map((e, i) => (
+                          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>
+                            <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 6px', borderRadius: 8, background: '#1976d212', color: '#1976d2', fontWeight: 700, marginTop: 2 }}>{e.section}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 2 }}>{e.report.author}</div>
+                              <div style={{ fontSize: 13, color: 'var(--c-text)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{e.item.content}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
       {/* 헤더 */}
       <div className="deploy-header" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -386,7 +476,8 @@ export default function KeyTaskPage() {
                   ))}
                   {visibleQs.map((q, i) => <td key={`reason-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></td>)}
                   <td style={s.td}>
-                    <div style={{ display: 'flex', gap: 4 }}>
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                      <button style={{ ...s.btnSm, color: '#1976d2', borderColor: '#90caf9' }} onClick={() => setProgressTask(t)}>실적</button>
                       <button style={s.btnSm} onClick={() => openEdit(t)}>수정</button>
                       <button style={{ ...s.btnSm, color: '#e53e3e' }}
                         onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</button>
