@@ -4,22 +4,19 @@ import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { useAuth } from '../../context/useAuth'
 
-// ── 업무 타입 ─────────────────────────────────────────────────────────────────
-
-type WorkType = '중점' | '기타'
-const WORK_TYPES: WorkType[] = ['중점', '기타']
-
-const TYPE_STYLE: Record<WorkType, { bg: string; color: string }> = {
-  중점: { bg: '#1976d218', color: '#1976d2' },
-  기타: { bg: 'var(--c-thead)', color: 'var(--c-text-muted)' },
-}
+// ── 업무 아이템 ───────────────────────────────────────────────────────────────
 
 interface WorkItem {
   id: string
-  type: WorkType
+  type: string        // keyTask.kpi 또는 '기타' (구형 '중점' 포함)
   content: string
   keyTaskId?: number
   keyTaskName?: string
+}
+
+function itemBadge(item: WorkItem): { bg: string; color: string; label: string } {
+  if (item.keyTaskId) return { bg: '#1976d218', color: '#1976d2', label: item.keyTaskName ?? item.type }
+  return { bg: 'var(--c-thead)', color: 'var(--c-text-muted)', label: '기타' }
 }
 
 type ContentKey =
@@ -29,7 +26,7 @@ type ContentKey =
 // ── 직렬화 헬퍼 ───────────────────────────────────────────────────────────────
 
 function newItem(): WorkItem {
-  return { id: Math.random().toString(36).slice(2), type: '중점', content: '' }
+  return { id: Math.random().toString(36).slice(2), type: '기타', content: '' }
 }
 
 function parseItems(raw: string | null | undefined): WorkItem[] {
@@ -163,9 +160,13 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
   const update = (idx: number, next: WorkItem) => onChange(items.map((it, i) => i === idx ? next : it))
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx))
 
-  const linkTask = (idx: number, taskId: string) => {
-    const kt = keyTasks.find(k => String(k.id) === taskId)
-    update(idx, { ...items[idx], keyTaskId: kt?.id, keyTaskName: kt?.taskName })
+  const selectTask = (idx: number, taskId: string) => {
+    if (!taskId) {
+      update(idx, { ...items[idx], type: '기타', keyTaskId: undefined, keyTaskName: undefined })
+    } else {
+      const kt = keyTasks.find(k => String(k.id) === taskId)
+      if (kt) update(idx, { ...items[idx], type: kt.kpi || '중점', keyTaskId: kt.id, keyTaskName: kt.taskName })
+    }
   }
 
   return (
@@ -183,38 +184,37 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {items.map((item, i) => (
-            <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                <select value={item.type} onChange={e => update(i, { ...item, type: e.target.value as WorkType, keyTaskId: undefined, keyTaskName: undefined })}
-                  style={{ flexShrink: 0, padding: '4px 6px', borderRadius: 6, border: `1px solid ${TYPE_STYLE[item.type].color}55`, background: TYPE_STYLE[item.type].bg, color: TYPE_STYLE[item.type].color, fontSize: 12, fontWeight: 700, cursor: 'pointer', appearance: 'none', textAlign: 'center', width: 46 }}>
-                  {WORK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          {items.map((item, i) => {
+            const isLinked = !!item.keyTaskId
+            return (
+              <div key={item.id} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
+                <select
+                  value={item.keyTaskId ? String(item.keyTaskId) : ''}
+                  onChange={e => selectTask(i, e.target.value)}
+                  style={{
+                    flexShrink: 0, padding: '5px 6px', borderRadius: 6, maxWidth: 150, fontSize: 12,
+                    border: `1px solid ${isLinked ? '#1976d255' : 'var(--c-border-in)'}`,
+                    background: isLinked ? '#1976d218' : 'var(--c-thead)',
+                    color: isLinked ? '#1976d2' : 'var(--c-text-muted)',
+                    fontWeight: isLinked ? 700 : 400, cursor: 'pointer',
+                  }}
+                >
+                  <option value="">기타</option>
+                  {keyTasks.map(kt => (
+                    <option key={kt.id} value={kt.id}>
+                      {kt.kpi ? `[${kt.kpi}] ` : ''}{kt.taskName}
+                    </option>
+                  ))}
                 </select>
                 <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                   onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                   placeholder="업무 내용 입력..." rows={1}
                   style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
                 <button type="button" onClick={() => remove(i)}
-                  style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}>×</button>
+                  style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6, marginTop: 4 }}>×</button>
               </div>
-              {/* 중점 타입이고 KPI 목록이 있을 때 연결 셀렉터 표시 */}
-              {item.type === '중점' && keyTasks.length > 0 && (
-                <div style={{ paddingLeft: 51, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 11, color: 'var(--c-text-muted)', flexShrink: 0 }}>📌 KPI</span>
-                  <select
-                    value={item.keyTaskId ?? ''}
-                    onChange={e => linkTask(i, e.target.value)}
-                    style={{ fontSize: 11, padding: '2px 6px', borderRadius: 5, border: '1px solid var(--c-border-in)', background: 'var(--c-bg)', color: item.keyTaskId ? '#1976d2' : 'var(--c-text-muted)', cursor: 'pointer', maxWidth: 260 }}
-                  >
-                    <option value="">연결 없음</option>
-                    {keyTasks.map(kt => (
-                      <option key={kt.id} value={kt.id}>{kt.taskName}{kt.kpi ? ` (${kt.kpi})` : ''}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
@@ -244,19 +244,17 @@ function WorkSectionDetail({ label, color, items }: { label: string; color: stri
     <div style={{ marginBottom: 14 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color, marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {items.map((item, i) => (
-          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border)' }}>
-            <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 1, background: TYPE_STYLE[item.type]?.bg ?? 'var(--c-thead)', color: TYPE_STYLE[item.type]?.color ?? 'var(--c-text-muted)' }}>{item.type}</span>
-            <div style={{ flex: 1 }}>
-              {item.keyTaskName && (
-                <div style={{ marginBottom: 3 }}>
-                  <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 8, background: '#1976d210', color: '#1976d2', fontWeight: 600, border: '1px solid #1976d225' }}>📌 {item.keyTaskName}</span>
-                </div>
-              )}
+        {items.map((item, i) => {
+          const { bg, color: badgeColor, label: badgeLabel } = itemBadge(item)
+          return (
+            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border)' }}>
+              <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 1, background: bg, color: badgeColor, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {item.keyTaskId ? '📌 ' : ''}{badgeLabel}
+              </span>
               <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
@@ -379,13 +377,17 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
 
 // ── PPT 인쇄 ─────────────────────────────────────────────────────────────────
 
-function PrintSectionRows({ items, color }: { items: WorkItem[]; color: string }) {
+function PrintSectionRows({ items }: { items: WorkItem[] }) {
   if (!items.length) return null
   return (
     <>
       {items.map((item, i) => (
         <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'flex-start' }}>
-          <span style={{ flexShrink: 0, fontSize: 9, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 1, background: item.type === '중점' ? color + '20' : '#f0f0f0', color: item.type === '중점' ? color : '#888' }}>{item.type}</span>
+          {item.keyTaskId && (
+            <span style={{ flexShrink: 0, fontSize: 9, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 1, background: '#1976d220', color: '#1976d2', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              📌 {item.keyTaskName}
+            </span>
+          )}
           <span style={{ fontSize: 11, lineHeight: 1.5, color: '#333' }}>{item.content}</span>
         </div>
       ))}
@@ -520,15 +522,15 @@ export default function WeeklyReportPage() {
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
                         <div style={{ padding: '14px 18px', borderRight: '1px solid #eee' }}>
                           <div style={{ fontWeight: 700, fontSize: 12, color: '#1976d2', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #1976d230' }}>금주</div>
-                          {tw.work.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', marginBottom: 3 }}>수행</div><PrintSectionRows items={tw.work} color="#1976d2" /></>}
-                          {tw.proposal.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', margin: '6px 0 3px' }}>제안</div><PrintSectionRows items={tw.proposal} color="#1976d2" /></>}
-                          {tw.etc.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', margin: '6px 0 3px' }}>기타</div><PrintSectionRows items={tw.etc} color="#1976d2" /></>}
+                          {tw.work.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', marginBottom: 3 }}>수행</div><PrintSectionRows items={tw.work} /></>}
+                          {tw.proposal.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', margin: '6px 0 3px' }}>제안</div><PrintSectionRows items={tw.proposal} /></>}
+                          {tw.etc.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#1976d2', margin: '6px 0 3px' }}>기타</div><PrintSectionRows items={tw.etc} /></>}
                         </div>
                         <div style={{ padding: '14px 18px' }}>
                           <div style={{ fontWeight: 700, fontSize: 12, color: '#4caf50', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #4caf5030' }}>차주</div>
-                          {nw.work.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', marginBottom: 3 }}>수행</div><PrintSectionRows items={nw.work} color="#4caf50" /></>}
-                          {nw.proposal.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', margin: '6px 0 3px' }}>제안</div><PrintSectionRows items={nw.proposal} color="#4caf50" /></>}
-                          {nw.etc.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', margin: '6px 0 3px' }}>기타</div><PrintSectionRows items={nw.etc} color="#4caf50" /></>}
+                          {nw.work.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', marginBottom: 3 }}>수행</div><PrintSectionRows items={nw.work} /></>}
+                          {nw.proposal.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', margin: '6px 0 3px' }}>제안</div><PrintSectionRows items={nw.proposal} /></>}
+                          {nw.etc.length > 0 && <><div style={{ fontSize: 10, fontWeight: 700, color: '#4caf50', margin: '6px 0 3px' }}>기타</div><PrintSectionRows items={nw.etc} /></>}
                         </div>
                       </div>
                     </div>
