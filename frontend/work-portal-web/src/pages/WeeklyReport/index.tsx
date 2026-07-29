@@ -55,6 +55,8 @@ interface WeeklyFormState {
   title: string
   weekStart: string
   weekEnd: string
+  nextWeekStart: string
+  nextWeekEnd: string
   thisWeekWork: WorkItem[]
   thisWeekProposal: WorkItem[]
   thisWeekEtc: WorkItem[]
@@ -127,10 +129,12 @@ function groupByWeek(items: WeeklyReport[]): WeekGroup[] {
 
 function emptyFormState(weekStart?: string, weekEnd?: string, label?: string): WeeklyFormState {
   const cur = currentWeekRange()
+  const ws = weekStart ?? cur.weekStart
+  const we = weekEnd ?? cur.weekEnd
   return {
     title: `${label ?? cur.label} 주간보고`,
-    weekStart: weekStart ?? cur.weekStart,
-    weekEnd: weekEnd ?? cur.weekEnd,
+    weekStart: ws, weekEnd: we,
+    nextWeekStart: addDays(ws, 7), nextWeekEnd: addDays(we, 7),
     thisWeekWork: [], thisWeekProposal: [], thisWeekEtc: [],
     nextWeekWork: [], nextWeekProposal: [], nextWeekEtc: [],
   }
@@ -139,6 +143,7 @@ function emptyFormState(weekStart?: string, weekEnd?: string, label?: string): W
 function reportToForm(item: WeeklyReport): WeeklyFormState {
   return {
     title: item.title, weekStart: item.weekStart, weekEnd: item.weekEnd,
+    nextWeekStart: addDays(item.weekStart, 7), nextWeekEnd: addDays(item.weekEnd, 7),
     thisWeekWork:     parseItems(item.thisWeekWork),
     thisWeekProposal: parseItems(item.thisWeekProposal),
     thisWeekEtc:      parseItems(item.thisWeekEtc),
@@ -230,19 +235,25 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
   )
 }
 
-function WeekFormBlock({ week, color, sections, form, onChange, keyTasks }: {
-  week: '금주' | '차주'; color: string; sections: { key: ContentKey; label: string }[]; form: WeeklyFormState; onChange: (key: ContentKey, items: WorkItem[]) => void; keyTasks: KeyTask[]
+function WeekFormBlock({ week, color, sections, form, onChange, onDateChange, keyTasks }: {
+  week: '금주' | '차주'; color: string; sections: { key: ContentKey; label: string }[]
+  form: WeeklyFormState; onChange: (key: ContentKey, items: WorkItem[]) => void
+  onDateChange: (start: string, end: string) => void; keyTasks: KeyTask[]
 }) {
-  const dateRange = form.weekStart && form.weekEnd
-    ? week === '금주'
-      ? fmtShort(form.weekStart, form.weekEnd)
-      : fmtShort(addDays(form.weekStart, 7), addDays(form.weekEnd, 7))
-    : ''
+  const isThis = week === '금주'
+  const startVal = isThis ? form.weekStart : form.nextWeekStart
+  const endVal   = isThis ? form.weekEnd   : form.nextWeekEnd
+  const dateInput: React.CSSProperties = {
+    padding: '3px 6px', borderRadius: 5, border: `1px solid ${color}55`,
+    background: color + '10', color, fontSize: 12, width: 110,
+  }
   return (
     <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontWeight: 700, fontSize: 13, color }}>{week}</span>
-        {dateRange && <span style={{ fontSize: 11, color, opacity: 0.65 }}>{dateRange}</span>}
+      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontWeight: 700, fontSize: 13, color, flexShrink: 0 }}>{week}</span>
+        <input type="date" value={startVal} onChange={e => onDateChange(e.target.value, endVal)} style={dateInput} />
+        <span style={{ fontSize: 12, color, opacity: 0.5 }}>~</span>
+        <input type="date" value={endVal} onChange={e => onDateChange(startVal, e.target.value)} style={dateInput} />
       </div>
       <div style={{ padding: '14px' }}>
         {sections.map(({ key, label }) => (
@@ -352,33 +363,23 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
   isConsolidated: boolean; isEditing: boolean; onSubmit: (e: React.FormEvent) => void; onCancel: () => void; saving: boolean; keyTasks: KeyTask[]
 }) {
   const setSection = (key: ContentKey, items: WorkItem[]) => setForm(f => ({ ...f, [key]: items }))
+  const setThisWeekDates = (start: string, end: string) => setForm(f => ({ ...f, weekStart: start, weekEnd: end }))
+  const setNextWeekDates = (start: string, end: string) => setForm(f => ({ ...f, nextWeekStart: start, nextWeekEnd: end }))
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         {isConsolidated && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700, border: '1px solid #7c3aed33' }}>통합</span>}
         <h3 style={{ margin: 0 }}>{isConsolidated ? '통합 주간보고' : (isEditing ? '주간보고 수정' : '새 주간보고 작성')}</h3>
       </div>
       <form onSubmit={onSubmit}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>제목 *</span>
-            <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required
-              style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, background: 'var(--c-bg)', color: 'var(--c-text)' }} />
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>주간 시작 *</span>
-            <input type="date" value={form.weekStart} onChange={e => setForm(f => ({ ...f, weekStart: e.target.value }))} required
-              style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, background: 'var(--c-bg)', color: 'var(--c-text)' }} />
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>주간 종료 *</span>
-            <input type="date" value={form.weekEnd} onChange={e => setForm(f => ({ ...f, weekEnd: e.target.value }))} required
-              style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, background: 'var(--c-bg)', color: 'var(--c-text)' }} />
-          </label>
-        </div>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 }}>
+          <span style={{ fontSize: 13, fontWeight: 600 }}>제목 *</span>
+          <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required
+            style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, background: 'var(--c-bg)', color: 'var(--c-text)' }} />
+        </label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={form} onChange={setSection} keyTasks={keyTasks} />
-          <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={form} onChange={setSection} keyTasks={keyTasks} />
+          <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={form} onChange={setSection} onDateChange={setThisWeekDates} keyTasks={keyTasks} />
+          <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={form} onChange={setSection} onDateChange={setNextWeekDates} keyTasks={keyTasks} />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
           <button type="submit" disabled={saving}
