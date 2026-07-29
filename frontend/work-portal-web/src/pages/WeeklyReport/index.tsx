@@ -92,6 +92,15 @@ function fmtWeek(start: string, end: string) {
   return `${s.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} ~ ${e.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}`
 }
 
+function fmtShort(start: string, end: string) {
+  const s = new Date(start), e = new Date(end)
+  return `${s.getMonth() + 1}/${s.getDate()} ~ ${e.getMonth() + 1}/${e.getDate()}`
+}
+
+function addDays(dateStr: string, n: number): string {
+  const d = new Date(dateStr); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10)
+}
+
 function weekLabel(weekStart: string) {
   const mon = new Date(weekStart)
   const thu = getThursday(mon)
@@ -224,9 +233,17 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
 function WeekFormBlock({ week, color, sections, form, onChange, keyTasks }: {
   week: '금주' | '차주'; color: string; sections: { key: ContentKey; label: string }[]; form: WeeklyFormState; onChange: (key: ContentKey, items: WorkItem[]) => void; keyTasks: KeyTask[]
 }) {
+  const dateRange = form.weekStart && form.weekEnd
+    ? week === '금주'
+      ? fmtShort(form.weekStart, form.weekEnd)
+      : fmtShort(addDays(form.weekStart, 7), addDays(form.weekEnd, 7))
+    : ''
   return (
     <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, fontWeight: 700, fontSize: 13, color }}>{week}</div>
+      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontWeight: 700, fontSize: 13, color }}>{week}</span>
+        {dateRange && <span style={{ fontSize: 11, color, opacity: 0.65 }}>{dateRange}</span>}
+      </div>
       <div style={{ padding: '14px' }}>
         {sections.map(({ key, label }) => (
           <WorkSectionForm key={key} label={label} sectionColor={color} items={form[key]} onChange={items => onChange(key, items)} keyTasks={keyTasks} />
@@ -260,11 +277,14 @@ function WorkSectionDetail({ label, color, items }: { label: string; color: stri
   )
 }
 
-function WeekDetailBlock({ week, color, sections }: { week: '금주' | '차주'; color: string; sections: { label: string; items: WorkItem[] }[] }) {
+function WeekDetailBlock({ week, color, sections, dateRange }: { week: '금주' | '차주'; color: string; sections: { label: string; items: WorkItem[] }[]; dateRange?: string }) {
   const hasAny = sections.some(s => s.items.length > 0)
   return (
     <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, fontWeight: 700, fontSize: 13, color }}>{week}</div>
+      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontWeight: 700, fontSize: 13, color }}>{week}</span>
+        {dateRange && <span style={{ fontSize: 11, color, opacity: 0.65 }}>{dateRange}</span>}
+      </div>
       <div style={{ padding: '14px' }}>
         {hasAny
           ? sections.map(({ label, items }) => <WorkSectionDetail key={label} label={label} color={color} items={items} />)
@@ -303,12 +323,12 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
         )}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <WeekDetailBlock week="금주" color="#1976d2" sections={[
+        <WeekDetailBlock week="금주" color="#1976d2" dateRange={fmtShort(report.weekStart, report.weekEnd)} sections={[
           { label: '수행', items: parseItems(report.thisWeekWork) },
           { label: '제안', items: parseItems(report.thisWeekProposal) },
           { label: '기타사항', items: parseItems(report.thisWeekEtc) },
         ]} />
-        <WeekDetailBlock week="차주" color="#4caf50" sections={[
+        <WeekDetailBlock week="차주" color="#4caf50" dateRange={fmtShort(addDays(report.weekStart, 7), addDays(report.weekEnd, 7))} sections={[
           { label: '수행', items: parseItems(report.nextWeekWork) },
           { label: '제안', items: parseItems(report.nextWeekProposal) },
           { label: '기타사항', items: parseItems(report.nextWeekEtc) },
