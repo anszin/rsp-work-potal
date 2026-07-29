@@ -205,8 +205,9 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
                 <select
                   value={item.keyTaskId ? String(item.keyTaskId) : ''}
                   onChange={e => selectTask(i, e.target.value)}
+                  title={item.keyTaskName ?? ''}
                   style={{
-                    flexShrink: 0, padding: '5px 6px', borderRadius: 6, maxWidth: 150, fontSize: 12,
+                    flexShrink: 0, padding: '5px 6px', borderRadius: 6, width: 90, fontSize: 12,
                     border: `1px solid ${isLinked ? '#1976d255' : 'var(--c-border-in)'}`,
                     background: isLinked ? '#1976d218' : 'var(--c-thead)',
                     color: isLinked ? '#1976d2' : 'var(--c-text-muted)',
@@ -214,11 +215,14 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
                   }}
                 >
                   <option value="">기타</option>
-                  {keyTasks.map(kt => (
-                    <option key={kt.id} value={kt.id}>
-                      {kt.kpi ? `[${kt.kpi}] ` : ''}{kt.taskName}
-                    </option>
-                  ))}
+                  {keyTasks.map(kt => {
+                    const short = kt.kpi || (kt.taskName.length > 8 ? kt.taskName.slice(0, 8) + '…' : kt.taskName)
+                    return (
+                      <option key={kt.id} value={kt.id} title={kt.taskName}>
+                        {short}
+                      </option>
+                    )
+                  })}
                 </select>
                 <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                   onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
