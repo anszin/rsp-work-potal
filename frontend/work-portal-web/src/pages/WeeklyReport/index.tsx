@@ -607,7 +607,7 @@ export default function WeeklyReportPage() {
                                     <div style={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                                       {isManager ? item.author : item.title}
                                     </div>
-                                    {isMine && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: '#1976d222', color: '#1976d2', fontWeight: 700, flexShrink: 0, marginLeft: 4 }}>내것</span>}
+                                    {isMine && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: '#1976d222', color: '#1976d2', fontWeight: 700, flexShrink: 0, marginLeft: 4 }}>Me</span>}
                                   </div>
                                   <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {isManager ? item.title : fmtWeek(item.weekStart, item.weekEnd)}
