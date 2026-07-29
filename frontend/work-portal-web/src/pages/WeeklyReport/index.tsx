@@ -15,7 +15,7 @@ interface WorkItem {
 }
 
 function itemBadge(item: WorkItem): { bg: string; color: string; label: string } {
-  if (item.keyTaskId) return { bg: '#1976d218', color: '#1976d2', label: item.keyTaskName ?? item.type }
+  if (item.keyTaskId) return { bg: '#1976d218', color: '#1976d2', label: item.type || '중점' }
   return { bg: 'var(--c-thead)', color: 'var(--c-text-muted)', label: '기타' }
 }
 
@@ -248,10 +248,10 @@ function WorkSectionDetail({ label, color, items }: { label: string; color: stri
           const { bg, color: badgeColor, label: badgeLabel } = itemBadge(item)
           return (
             <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border)' }}>
-              <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 1, background: bg, color: badgeColor, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {item.keyTaskId ? '📌 ' : ''}{badgeLabel}
+              <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {badgeLabel}
               </span>
-              <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
+              <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text-sub)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
             </div>
           )
         })}
