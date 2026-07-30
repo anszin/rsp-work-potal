@@ -485,10 +485,14 @@ export default function WeeklyReportPage() {
     queryKey: ['weekly-reports-consolidated'],
     queryFn: () => weeklyApi.listConsolidated().then(r => r.data),
   })
-  const { data: keyTasks = [] } = useQuery({
+  const { data: allKeyTasks = [] } = useQuery({
     queryKey: ['key-tasks', new Date().getFullYear()],
     queryFn: () => getKeyTasks(new Date().getFullYear()),
   })
+  // 팀 과제 제외, 본인 담당자 과제만 표시
+  const keyTasks = allKeyTasks.filter(kt =>
+    kt.taskLevel === '담당자' && kt.assigneeName === user?.name
+  )
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['weekly-reports'] })
