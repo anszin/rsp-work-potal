@@ -165,6 +165,64 @@ function formToRequest(f: WeeklyFormState): SaveWeeklyRequest {
   }
 }
 
+// ── KPI 커스텀 드롭다운 ───────────────────────────────────────────────────────
+
+function KpiSelect({ value, onChange, keyTasks }: {
+  value: string; onChange: (v: string) => void; keyTasks: KeyTask[]
+}) {
+  const [open, setOpen] = useState(false)
+  const selected = keyTasks.find(k => String(k.id) === value)
+  const isLinked = !!selected
+  const shortLabel = selected
+    ? (selected.kpi || (selected.taskName.length > 8 ? selected.taskName.slice(0, 8) + '…' : selected.taskName))
+    : '기타'
+
+  const rowStyle = (active: boolean): React.CSSProperties => ({
+    padding: '7px 12px', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+    background: active ? '#1976d20a' : 'transparent',
+    color: active ? '#1976d2' : 'var(--c-text)',
+    fontWeight: active ? 600 : 400,
+    borderBottom: '1px solid var(--c-border-in)',
+  })
+
+  return (
+    <div style={{ position: 'relative', flexShrink: 0, width: 88 }}>
+      {open && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setOpen(false)} />}
+      <button type="button" onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', padding: '5px 7px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+          border: `1px solid ${isLinked ? '#1976d255' : 'var(--c-border-in)'}`,
+          background: isLinked ? '#1976d218' : 'var(--c-thead)',
+          color: isLinked ? '#1976d2' : 'var(--c-text-muted)',
+          fontWeight: isLinked ? 700 : 400,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2,
+          overflow: 'hidden',
+        }}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, textAlign: 'left' }}>{shortLabel}</span>
+        <span style={{ fontSize: 8, opacity: 0.5, flexShrink: 0 }}>▼</span>
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 3px)', left: 0, zIndex: 100,
+          background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
+          borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+          minWidth: 240, maxHeight: 220, overflowY: 'auto',
+        }}>
+          <div onClick={() => { onChange(''); setOpen(false) }} style={rowStyle(!value)}>
+            <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: 'var(--c-thead)', color: 'var(--c-text-muted)', fontWeight: 600 }}>기타</span>
+          </div>
+          {keyTasks.map(kt => (
+            <div key={kt.id} onClick={() => { onChange(String(kt.id)); setOpen(false) }} style={rowStyle(value === String(kt.id))}>
+              {kt.kpi && <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 6px', borderRadius: 8, background: '#1976d215', color: '#1976d2', fontWeight: 700 }}>{kt.kpi}</span>}
+              <span style={{ fontSize: 12 }}>{kt.taskName}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── 행 입력 컴포넌트 ──────────────────────────────────────────────────────────
 
 function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }: {
@@ -198,41 +256,21 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {items.map((item, i) => {
-            const isLinked = !!item.keyTaskId
-            return (
-              <div key={item.id} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
-                <select
-                  value={item.keyTaskId ? String(item.keyTaskId) : ''}
-                  onChange={e => selectTask(i, e.target.value)}
-                  title={item.keyTaskName ?? ''}
-                  style={{
-                    flexShrink: 0, padding: '5px 6px', borderRadius: 6, width: 90, fontSize: 12,
-                    border: `1px solid ${isLinked ? '#1976d255' : 'var(--c-border-in)'}`,
-                    background: isLinked ? '#1976d218' : 'var(--c-thead)',
-                    color: isLinked ? '#1976d2' : 'var(--c-text-muted)',
-                    fontWeight: isLinked ? 700 : 400, cursor: 'pointer',
-                  }}
-                >
-                  <option value="">기타</option>
-                  {keyTasks.map(kt => {
-                    const short = kt.kpi || (kt.taskName.length > 8 ? kt.taskName.slice(0, 8) + '…' : kt.taskName)
-                    return (
-                      <option key={kt.id} value={kt.id} title={kt.taskName}>
-                        {short}
-                      </option>
-                    )
-                  })}
-                </select>
-                <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-                  onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-                  placeholder="업무 내용 입력..." rows={1}
-                  style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
-                <button type="button" onClick={() => remove(i)}
-                  style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6, marginTop: 4 }}>×</button>
-              </div>
-            )
-          })}
+          {items.map((item, i) => (
+            <div key={item.id} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
+              <KpiSelect
+                value={item.keyTaskId ? String(item.keyTaskId) : ''}
+                onChange={v => selectTask(i, v)}
+                keyTasks={keyTasks}
+              />
+              <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+                onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+                placeholder="업무 내용 입력..." rows={1}
+                style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
+              <button type="button" onClick={() => remove(i)}
+                style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6, marginTop: 4 }}>×</button>
+            </div>
+          ))}
         </div>
       )}
     </div>
