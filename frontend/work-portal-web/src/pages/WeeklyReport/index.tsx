@@ -786,11 +786,7 @@ export default function WeeklyReportPage() {
         ) : detail.type === 'view' ? (
           <ReportDetail
             report={detail.report}
-            canEdit={
-              detail.report.reportType === 'CONSOLIDATED'
-                ? isManager
-                : detail.report.author === user?.username
-            }
+            canEdit={isManager || detail.report.author === user?.username}
             onEdit={() => openForm({ editing: detail.report, isConsolidated: detail.report.reportType === 'CONSOLIDATED' })}
             onDelete={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(detail.report.id) }}
           />
