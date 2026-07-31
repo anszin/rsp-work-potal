@@ -508,10 +508,8 @@ export default function WeeklyReportPage() {
     queryKey: ['key-tasks', new Date().getFullYear()],
     queryFn: () => getKeyTasks(new Date().getFullYear()),
   })
-  // 팀 과제 제외, 본인 담당자 과제만 표시
-  const keyTasks = allKeyTasks.filter(kt =>
-    kt.taskLevel === '담당자' && kt.assigneeName === user?.name
-  )
+  // 팀/담당부서 과제 제외, 담당자 레벨 과제만 표시
+  const keyTasks = allKeyTasks.filter(kt => kt.taskLevel === '담당자')
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['weekly-reports'] })
