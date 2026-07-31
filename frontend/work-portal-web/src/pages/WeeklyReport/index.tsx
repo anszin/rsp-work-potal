@@ -290,8 +290,8 @@ function WeekFormBlock({ week, color, sections, form, onChange, onDateChange, ke
     background: color + '10', color, fontSize: 12, width: 110,
   }
   return (
-    <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ border: `1px solid ${color}33`, borderRadius: 10 }}>
+      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, display: 'flex', alignItems: 'center', gap: 10, borderRadius: '10px 10px 0 0' }}>
         <span style={{ fontWeight: 700, fontSize: 13, color, flexShrink: 0 }}>{week}</span>
         <input type="date" value={startVal} onChange={e => onDateChange(e.target.value, endVal)} style={dateInput} />
         <span style={{ fontSize: 12, color, opacity: 0.5 }}>~</span>
