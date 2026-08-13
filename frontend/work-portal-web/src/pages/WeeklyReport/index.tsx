@@ -503,10 +503,11 @@ const SECTION_COLOR: Record<ContentKey, string> = {
   nextWeekWork: '#4caf50', nextWeekProposal: '#4caf50', nextWeekEtc: '#4caf50',
 }
 
-function ConsolidatedEditor({ weekLbl, individualReports, existing, onSave, onCancel }: {
+function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolidated, onSave, onCancel }: {
   weekLbl: string
   individualReports: WeeklyReport[]
   existing?: WeeklyReport
+  pastConsolidated?: WeeklyReport[]
   onSave: (form: WeeklyFormState) => void
   onCancel: () => void
 }) {
@@ -548,7 +549,30 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, onSave, onCa
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700, border: '1px solid #7c3aed33' }}>통합</span>
           <span style={{ fontSize: 16, fontWeight: 700 }}>{weekLbl} 통합 주간보고 편집</span>
-          <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>— 개인 보고서에서 항목을 선택해 추가하세요</span>
+          {pastConsolidated && pastConsolidated.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 8 }}>
+              <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>📋 이전 통합본 차주</span>
+              <select defaultValue="" onChange={e => {
+                if (!e.target.value) return
+                const src = pastConsolidated.find(r => String(r.id) === e.target.value)
+                if (!src) return
+                setConForm(f => ({
+                  ...f,
+                  thisWeekWork:     [...f.thisWeekWork,     ...parseItems(src.nextWeekWork)],
+                  thisWeekProposal: [...f.thisWeekProposal, ...parseItems(src.nextWeekProposal)],
+                  thisWeekEtc:      [...f.thisWeekEtc,      ...parseItems(src.nextWeekEtc)],
+                }))
+                e.target.value = ''
+              }}
+                style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #7c3aed55', background: 'var(--c-bg)', color: '#7c3aed', cursor: 'pointer' }}>
+                <option value="">주차 선택...</option>
+                {pastConsolidated.map(r => (
+                  <option key={r.id} value={String(r.id)}>{weekLabel(r.weekStart)}</option>
+                ))}
+              </select>
+              <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>→ 금주 추가</span>
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={onCancel} style={{ padding: '7px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>취소</button>
@@ -806,6 +830,7 @@ export default function WeeklyReportPage() {
           weekLbl={editorConfig.weekLabel}
           individualReports={myReports.filter(r => r.weekStart === editorConfig.weekStart && r.reportType === 'INDIVIDUAL')}
           existing={editorConfig.existing}
+          pastConsolidated={consolidated.filter(r => r.weekStart < editorConfig.weekStart).sort((a, b) => b.weekStart.localeCompare(a.weekStart))}
           onSave={handleEditorSave}
           onCancel={() => setEditorConfig(null)}
         />
