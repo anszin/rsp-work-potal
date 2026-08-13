@@ -14,6 +14,7 @@ export interface Todo {
   sourceType: TodoSourceType | null
   sourceId: number | null
   keyTaskId: number | null
+  onHold: boolean
   assignee: string
   createdAt: string
   updatedAt: string | null
@@ -28,6 +29,7 @@ export interface SaveTodoRequest {
   sourceType?: TodoSourceType
   sourceId?: number
   keyTaskId?: number
+  onHold?: boolean
 }
 
 export const todoApi = {

@@ -42,6 +42,9 @@ public class Todo {
 
     private Long keyTaskId;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean onHold = false;
+
     @Column(nullable = false)
     private String assignee;
 

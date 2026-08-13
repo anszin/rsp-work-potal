@@ -29,6 +29,7 @@ const emptyForm = (): SaveTodoRequest => ({
   priority: 'MEDIUM',
   dueDate: '',
   sourceType: 'SELF',
+  onHold: false,
 })
 
 function formatDate(d: string | null) {
@@ -39,6 +40,20 @@ function formatDate(d: string | null) {
 function isPast(dueDate: string | null) {
   if (!dueDate) return false
   return new Date(dueDate) < new Date(new Date().toDateString())
+}
+
+function toRequest(todo: Todo): SaveTodoRequest {
+  return {
+    title: todo.title,
+    description: todo.description ?? '',
+    status: todo.status,
+    priority: todo.priority ?? 'MEDIUM',
+    dueDate: todo.dueDate ?? '',
+    sourceType: todo.sourceType ?? 'SELF',
+    sourceId: todo.sourceId ?? undefined,
+    keyTaskId: todo.keyTaskId ?? undefined,
+    onHold: todo.onHold,
+  }
 }
 
 export default function TodoPage() {
@@ -68,20 +83,8 @@ export default function TodoPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['todos'] }),
   })
 
-  const statusMut = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: TodoStatus }) => {
-      const todo = todos.find(t => t.id === id)!
-      return todoApi.update(id, {
-        title: todo.title,
-        description: todo.description ?? '',
-        status,
-        priority: todo.priority ?? undefined,
-        dueDate: todo.dueDate ?? '',
-        sourceType: todo.sourceType ?? undefined,
-        sourceId: todo.sourceId ?? undefined,
-        keyTaskId: todo.keyTaskId ?? undefined,
-      })
-    },
+  const patchMut = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: SaveTodoRequest }) => todoApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['todos'] }),
   })
 
@@ -93,16 +96,7 @@ export default function TodoPage() {
 
   function openEdit(todo: Todo) {
     setEditing(todo)
-    setForm({
-      title: todo.title,
-      description: todo.description ?? '',
-      status: todo.status,
-      priority: todo.priority ?? 'MEDIUM',
-      dueDate: todo.dueDate ?? '',
-      sourceType: todo.sourceType ?? 'SELF',
-      sourceId: todo.sourceId ?? undefined,
-      keyTaskId: todo.keyTaskId ?? undefined,
-    })
+    setForm(toRequest(todo))
     setModalOpen(true)
   }
 
@@ -127,15 +121,26 @@ export default function TodoPage() {
     if (dragging == null) return
     const todo = todos.find(t => t.id === dragging)
     if (todo && todo.status !== status) {
-      statusMut.mutate({ id: dragging, status })
+      patchMut.mutate({ id: dragging, data: { ...toRequest(todo), status, onHold: false } })
     }
     setDragging(null)
+  }
+
+  // 보류 토글: onHold ON → 대기로 이동 / OFF → 원래 상태 유지(진행중)
+  function handleHoldToggle(todo: Todo) {
+    const next = !todo.onHold
+    patchMut.mutate({
+      id: todo.id,
+      data: { ...toRequest(todo), onHold: next, status: next ? 'TODO' : 'IN_PROGRESS' },
+    })
   }
 
   const grouped = COLUMNS.reduce((acc, col) => {
     acc[col.status] = todos.filter(t => t.status === col.status)
     return acc
   }, {} as Record<TodoStatus, Todo[]>)
+
+  const holdCount = todos.filter(t => t.onHold).length
 
   if (isLoading) return <div style={{ padding: 40, textAlign: 'center', color: '#718096' }}>로딩 중...</div>
 
@@ -145,7 +150,10 @@ export default function TodoPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Todo</h2>
-          <div style={{ fontSize: 12, color: '#718096', marginTop: 2 }}>총 {todos.length}개 · 완료 {grouped.DONE.length}개</div>
+          <div style={{ fontSize: 12, color: '#718096', marginTop: 2 }}>
+            총 {todos.length}개 · 완료 {grouped.DONE.length}개
+            {holdCount > 0 && <span style={{ color: '#c05621', marginLeft: 8 }}>· 보류 {holdCount}개</span>}
+          </div>
         </div>
         <button onClick={openCreate} style={styles.addBtn}>+ 추가</button>
       </div>
@@ -159,13 +167,11 @@ export default function TodoPage() {
             onDrop={() => handleDrop(col.status)}
             style={{ display: 'flex', flexDirection: 'column', gap: 0, minWidth: 200 }}
           >
-            {/* Column Header */}
             <div style={{ ...styles.colHeader, borderTop: `3px solid ${col.color}` }}>
               <span style={{ fontWeight: 600, fontSize: 13, color: col.color }}>{col.label}</span>
               <span style={{ fontSize: 12, color: '#a0aec0', marginLeft: 6 }}>{grouped[col.status].length}</span>
             </div>
 
-            {/* Cards */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0', flex: 1, overflowY: 'auto' }}>
               {grouped[col.status].map(todo => (
                 <TodoCard
@@ -173,6 +179,7 @@ export default function TodoPage() {
                   todo={todo}
                   onEdit={() => openEdit(todo)}
                   onDelete={() => { if (confirm(`"${todo.title}" 삭제할까요?`)) deleteMut.mutate(todo.id) }}
+                  onHoldToggle={() => handleHoldToggle(todo)}
                   onDragStart={() => setDragging(todo.id)}
                   onDragEnd={() => setDragging(null)}
                 />
@@ -261,28 +268,47 @@ export default function TodoPage() {
   )
 }
 
-function TodoCard({ todo, onEdit, onDelete, onDragStart, onDragEnd }: {
+function TodoCard({ todo, onEdit, onDelete, onHoldToggle, onDragStart, onDragEnd }: {
   todo: Todo
   onEdit: () => void
   onDelete: () => void
+  onHoldToggle: () => void
   onDragStart: () => void
   onDragEnd: () => void
 }) {
   const pStyle = todo.priority ? PRIORITY_STYLE[todo.priority] : null
-  const overdue = todo.status !== 'DONE' && isPast(todo.dueDate)
+  const overdue = todo.status !== 'DONE' && !todo.onHold && isPast(todo.dueDate)
 
   return (
     <div
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      style={styles.card}
+      style={{
+        ...styles.card,
+        borderLeft: todo.onHold ? '3px solid #d69e2e' : '1px solid #e2e8f0',
+        opacity: todo.onHold ? 0.85 : 1,
+      }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
         <div style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
           {todo.title}
         </div>
-        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+          <button
+            onClick={onHoldToggle}
+            style={{
+              ...styles.iconBtn,
+              fontSize: 10, padding: '2px 5px',
+              background: todo.onHold ? '#FFFAF0' : 'transparent',
+              border: todo.onHold ? '1px solid #d69e2e' : '1px solid transparent',
+              borderRadius: 4, color: todo.onHold ? '#c05621' : '#a0aec0',
+              opacity: 1,
+            }}
+            title={todo.onHold ? '보류 해제' : '보류'}
+          >
+            보류
+          </button>
           <button onClick={onEdit} style={styles.iconBtn} title="수정">✏️</button>
           <button onClick={onDelete} style={styles.iconBtn} title="삭제">🗑</button>
         </div>
@@ -295,6 +321,11 @@ function TodoCard({ todo, onEdit, onDelete, onDragStart, onDragEnd }: {
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+        {todo.onHold && (
+          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: '#FFFAF0', color: '#c05621', fontWeight: 600, border: '1px solid #f6ad55' }}>
+            보류
+          </span>
+        )}
         {pStyle && (
           <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: pStyle.bg, color: pStyle.color, fontWeight: 600 }}>
             {pStyle.label}
