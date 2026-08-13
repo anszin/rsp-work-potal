@@ -488,7 +488,7 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
   )
 }
 
-// ── 통합보고서 항목 선택 피커 ──────────────────────────────────────────────────
+// ── 통합보고서 좌우 분할 에디터 ──────────────────────────────────────────────────
 
 const SECTION_KEYS: ContentKey[] = [
   'thisWeekWork', 'thisWeekProposal', 'thisWeekEtc',
@@ -503,98 +503,112 @@ const SECTION_COLOR: Record<ContentKey, string> = {
   nextWeekWork: '#4caf50', nextWeekProposal: '#4caf50', nextWeekEtc: '#4caf50',
 }
 
-type PickedEntry = { item: WorkItem; section: ContentKey; author: string }
-type PickedMap = Map<string, PickedEntry>
-
-function ConsolidatedPicker({ weekLbl, reports, onConfirm, onCancel }: {
-  weekLbl: string; reports: WeeklyReport[]
-  onConfirm: (picked: PickedMap) => void; onCancel: () => void
+function ConsolidatedEditor({ weekLbl, individualReports, existing, onSave, onCancel }: {
+  weekLbl: string
+  individualReports: WeeklyReport[]
+  existing?: WeeklyReport
+  onSave: (form: WeeklyFormState) => void
+  onCancel: () => void
 }) {
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(reports.map(r => r.author)))
-  const [picked, setPicked] = useState<PickedMap>(new Map())
+  const [conForm, setConForm] = useState<WeeklyFormState>(() =>
+    existing ? reportToForm(existing) : emptyFormState(
+      individualReports[0]?.weekStart,
+      individualReports[0]?.weekEnd,
+      weekLbl,
+    )
+  )
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(individualReports.map(r => r.author)))
+  // 추가된 원본 항목 키 추적 (reportId_sec_itemId)
+  const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set())
 
-  const toggleItem = (key: string, entry: PickedEntry) =>
-    setPicked(prev => { const next = new Map(prev); next.has(key) ? next.delete(key) : next.set(key, entry); return next })
+  const toggleExpand = (author: string) =>
+    setExpanded(prev => { const next = new Set(prev); next.has(author) ? next.delete(author) : next.add(author); return next })
 
-  const allKeysOf = (r: WeeklyReport) =>
-    SECTION_KEYS.flatMap(sec => parseItems(r[sec as keyof WeeklyReport] as string).map(item => [`${r.id}_${sec}_${item.id}`, { item, section: sec, author: r.author }] as [string, PickedEntry]))
-
-  const toggleAll = (r: WeeklyReport) => {
-    const all = allKeysOf(r)
-    const allSelected = all.every(([k]) => picked.has(k))
-    setPicked(prev => {
-      const next = new Map(prev)
-      allSelected ? all.forEach(([k]) => next.delete(k)) : all.forEach(([k, v]) => next.set(k, v))
-      return next
-    })
+  const addItem = (reportId: number, sec: ContentKey, item: WorkItem, author: string) => {
+    const key = `${reportId}_${sec}_${item.id}`
+    if (addedKeys.has(key)) return
+    setAddedKeys(prev => new Set([...prev, key]))
+    const added: WorkItem = { ...item, id: Math.random().toString(36).slice(2), content: `[${author}] ${item.content}` }
+    setConForm(f => ({ ...f, [sec]: [...f[sec], added] }))
   }
 
+  const removeItem = (sec: ContentKey, itemId: string) =>
+    setConForm(f => ({ ...f, [sec]: f[sec].filter(i => i.id !== itemId) }))
+
+  const totalRight = SECTION_KEYS.reduce((acc, sec) => acc + conForm[sec].length, 0)
+
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: 'var(--c-card)', borderRadius: 12, width: '90vw', maxWidth: 680, maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 8px 40px rgba(0,0,0,0.25)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', background: 'var(--c-bg)' }}>
 
-        {/* 헤더 */}
-        <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-          <div>
-            <div style={{ fontSize: 11, color: '#7c3aed', fontWeight: 700, marginBottom: 2 }}>통합 보고서 작성</div>
-            <div style={{ fontSize: 16, fontWeight: 700 }}>{weekLbl} — 항목 선택</div>
-          </div>
-          <button onClick={onCancel} style={{ padding: '4px 10px', background: 'none', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13, color: 'var(--c-text-muted)' }}>✕</button>
+      {/* 상단 헤더 */}
+      <div style={{ padding: '10px 20px', background: 'var(--c-card)', borderBottom: '2px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700, border: '1px solid #7c3aed33' }}>통합</span>
+          <span style={{ fontSize: 16, fontWeight: 700 }}>{weekLbl} 통합 주간보고 편집</span>
+          <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>— 개인 보고서에서 항목을 선택해 추가하세요</span>
         </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={onCancel} style={{ padding: '7px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>취소</button>
+          <button onClick={() => onSave(conForm)} disabled={totalRight === 0}
+            style={{ padding: '7px 20px', background: totalRight > 0 ? '#7c3aed' : '#ccc', color: '#fff', border: 'none', borderRadius: 6, cursor: totalRight > 0 ? 'pointer' : 'not-allowed', fontWeight: 600, fontSize: 13 }}>
+            저장 ({totalRight}개)
+          </button>
+        </div>
+      </div>
 
-        {/* 본문 */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '14px 22px' }}>
-          {reports.length === 0 ? (
+      {/* 좌우 분할 본문 */}
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', overflow: 'hidden' }}>
+
+        {/* ── 왼쪽: 개인 보고서 ── */}
+        <div style={{ overflowY: 'auto', borderRight: '2px solid var(--c-border)', padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--c-text-muted)', marginBottom: 10, letterSpacing: '0.05em' }}>
+            개인 보고서 ({individualReports.length}명)
+          </div>
+          {individualReports.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--c-text-muted)', fontSize: 14 }}>이 주차에 제출된 개인 보고서가 없습니다.</div>
-          ) : reports.map(report => {
-            const allItems = allKeysOf(report)
-            const totalCount = allItems.length
-            const selCount = allItems.filter(([k]) => picked.has(k)).length
-            const isExpanded = expanded.has(report.author)
+          ) : individualReports.map(report => {
+            const isExp = expanded.has(report.author)
+            const reportItemCount = SECTION_KEYS.reduce((acc, sec) => acc + parseItems(report[sec as keyof WeeklyReport] as string).length, 0)
+            const addedCount = SECTION_KEYS.reduce((acc, sec) =>
+              acc + parseItems(report[sec as keyof WeeklyReport] as string).filter(item => addedKeys.has(`${report.id}_${sec}_${item.id}`)).length, 0)
 
             return (
-              <div key={report.id} style={{ marginBottom: 10, border: '1px solid var(--c-border)', borderRadius: 8, overflow: 'hidden' }}>
-                {/* 팀원 헤더 */}
-                <div style={{ padding: '9px 14px', background: 'var(--c-thead)', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
-                  onClick={() => setExpanded(prev => { const next = new Set(prev); next.has(report.author) ? next.delete(report.author) : next.add(report.author); return next })}>
-                  <span style={{ fontSize: 13, fontWeight: 700, flex: 1 }}>{report.author}</span>
-                  {selCount > 0 && (
-                    <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700 }}>{selCount}개 선택</span>
+              <div key={report.id} style={{ marginBottom: 8, border: '1px solid var(--c-border)', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ padding: '8px 12px', background: 'var(--c-thead)', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+                  onClick={() => toggleExpand(report.author)}>
+                  <span style={{ flex: 1, fontWeight: 700, fontSize: 13 }}>{report.author}</span>
+                  {addedCount > 0 && (
+                    <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700 }}>{addedCount}/{reportItemCount} 추가됨</span>
                   )}
-                  <button type="button" onClick={e => { e.stopPropagation(); toggleAll(report) }}
-                    style={{ fontSize: 11, padding: '2px 9px', border: '1px solid var(--c-border-in)', borderRadius: 6, background: 'var(--c-card)', cursor: 'pointer', color: 'var(--c-text-muted)', flexShrink: 0 }}>
-                    {selCount === totalCount && totalCount > 0 ? '전체 해제' : '전체 선택'}
-                  </button>
-                  <span style={{ fontSize: 10, color: 'var(--c-text-muted)', flexShrink: 0 }}>{isExpanded ? '▲' : '▼'}</span>
+                  <span style={{ fontSize: 10, color: 'var(--c-text-muted)' }}>{isExp ? '▲' : '▼'}</span>
                 </div>
 
-                {/* 항목 목록 */}
-                {isExpanded && (
-                  <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {isExp && (
+                  <div style={{ padding: '10px 12px' }}>
                     {SECTION_KEYS.map(sec => {
                       const items = parseItems(report[sec as keyof WeeklyReport] as string)
                       if (!items.length) return null
                       return (
-                        <div key={sec}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: SECTION_COLOR[sec], marginBottom: 4, letterSpacing: '0.03em' }}>{SECTION_LABELS[sec]}</div>
+                        <div key={sec} style={{ marginBottom: 8 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: SECTION_COLOR[sec], marginBottom: 4 }}>{SECTION_LABELS[sec]}</div>
                           {items.map(item => {
                             const key = `${report.id}_${sec}_${item.id}`
-                            const isSelected = picked.has(key)
+                            const isAdded = addedKeys.has(key)
                             const { bg, color: badgeColor, label: badgeLabel } = itemBadge(item)
                             return (
-                              <label key={item.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 9px', borderRadius: 6, cursor: 'pointer', marginBottom: 3, background: isSelected ? '#7c3aed08' : 'var(--c-bg)', border: `1px solid ${isSelected ? '#7c3aed44' : 'var(--c-border)'}` }}>
-                                <input type="checkbox" checked={isSelected} onChange={() => toggleItem(key, { item, section: sec, author: report.author })} style={{ marginTop: 3, flexShrink: 0, accentColor: '#7c3aed' }} />
-                                <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 6px', borderRadius: 8, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor }}>{badgeLabel}</span>
-                                <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
-                              </label>
+                              <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', borderRadius: 6, marginBottom: 3, background: isAdded ? '#f0fdf4' : 'var(--c-bg)', border: `1px solid ${isAdded ? '#22c55e44' : 'var(--c-border)'}` }}>
+                                <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor }}>{badgeLabel}</span>
+                                <span style={{ flex: 1, fontSize: 12, lineHeight: 1.5, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
+                                <button onClick={() => addItem(report.id, sec, item, report.author)} disabled={isAdded}
+                                  style={{ flexShrink: 0, padding: '2px 9px', fontSize: 12, border: 'none', borderRadius: 4, cursor: isAdded ? 'default' : 'pointer', background: isAdded ? '#22c55e22' : '#7c3aed', color: isAdded ? '#16a34a' : '#fff', fontWeight: 700, minWidth: 32 }}>
+                                  {isAdded ? '✓' : '+'}
+                                </button>
+                              </div>
                             )
                           })}
                         </div>
                       )
                     })}
-                    {allKeysOf(report).length === 0 && (
-                      <div style={{ fontSize: 13, color: 'var(--c-text-muted)', padding: '6px 0' }}>작성된 항목이 없습니다.</div>
-                    )}
                   </div>
                 )}
               </div>
@@ -602,18 +616,46 @@ function ConsolidatedPicker({ weekLbl, reports, onConfirm, onCancel }: {
           })}
         </div>
 
-        {/* 푸터 */}
-        <div style={{ padding: '14px 22px', borderTop: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-          <span style={{ fontSize: 13, color: 'var(--c-text-muted)' }}>
-            {picked.size > 0 ? <><strong style={{ color: '#7c3aed' }}>{picked.size}개</strong> 항목 선택됨</> : '포함할 항목을 선택하세요'}
-          </span>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={onCancel} style={{ padding: '8px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>취소</button>
-            <button onClick={() => onConfirm(picked)} disabled={picked.size === 0}
-              style={{ padding: '8px 18px', background: picked.size > 0 ? '#7c3aed' : '#ccc', color: '#fff', border: 'none', borderRadius: 6, cursor: picked.size > 0 ? 'pointer' : 'not-allowed', fontWeight: 600, fontSize: 13 }}>
-              통합본 작성 ({picked.size}) →
-            </button>
-          </div>
+        {/* ── 오른쪽: 통합 보고서 ── */}
+        <div style={{ overflowY: 'auto', padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', marginBottom: 6, letterSpacing: '0.05em' }}>통합 보고서 (편집 중)</div>
+          <input value={conForm.title} onChange={e => setConForm(f => ({ ...f, title: e.target.value }))}
+            style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-text)', marginBottom: 12, boxSizing: 'border-box' }} />
+
+          {(['금주', '차주'] as const).map(week => {
+            const color = week === '금주' ? '#1976d2' : '#4caf50'
+            const secKeys: ContentKey[] = week === '금주'
+              ? ['thisWeekWork', 'thisWeekProposal', 'thisWeekEtc']
+              : ['nextWeekWork', 'nextWeekProposal', 'nextWeekEtc']
+            return (
+              <div key={week} style={{ marginBottom: 12, border: `1px solid ${color}33`, borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ padding: '7px 12px', background: color + '12', fontWeight: 700, fontSize: 13, color, borderBottom: `1px solid ${color}22` }}>{week}</div>
+                <div style={{ padding: '10px 12px' }}>
+                  {secKeys.map(sec => {
+                    const items = conForm[sec]
+                    return (
+                      <div key={sec} style={{ marginBottom: 10 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color, marginBottom: 4 }}>{SECTION_LABELS[sec]}</div>
+                        {items.length === 0 ? (
+                          <div style={{ fontSize: 12, color: 'var(--c-text-muted)', fontStyle: 'italic', padding: '3px 0' }}>없음 — 왼쪽에서 + 버튼으로 추가</div>
+                        ) : items.map(item => {
+                          const { bg, color: badgeColor, label: badgeLabel } = itemBadge(item)
+                          return (
+                            <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', borderRadius: 6, marginBottom: 3, background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
+                              <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor }}>{badgeLabel}</span>
+                              <span style={{ flex: 1, fontSize: 12, lineHeight: 1.5, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
+                              <button onClick={() => removeItem(sec, item.id)}
+                                style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 16, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.7, marginTop: 1 }}>×</button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
@@ -654,7 +696,7 @@ export default function WeeklyReportPage() {
 
   const [masterTab, setMasterTab] = useState<'mine' | 'overview'>('mine')
   const [writeMenuOpen, setWriteMenuOpen] = useState(false)
-  const [pickerConfig, setPickerConfig] = useState<{ weekStart: string; weekEnd: string; weekLabel: string } | null>(null)
+  const [editorConfig, setEditorConfig] = useState<{ weekStart: string; weekEnd: string; weekLabel: string; existing?: WeeklyReport } | null>(null)
   const [selectedWeek, setSelectedWeek] = useState<string>(() => currentWeekRange().weekStart)
   const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(() => new Set([currentWeekRange().weekStart]))
   const [detail, setDetail] = useState<DetailMode>({ type: 'none' })
@@ -734,24 +776,11 @@ export default function WeeklyReportPage() {
 
   const saving = createMut.isPending || createConsMut.isPending || updateMut.isPending
 
-  const handlePickerConfirm = (picked: PickedMap) => {
-    if (!pickerConfig) return
-    const grouped: Record<ContentKey, WorkItem[]> = {
-      thisWeekWork: [], thisWeekProposal: [], thisWeekEtc: [],
-      nextWeekWork: [], nextWeekProposal: [], nextWeekEtc: [],
-    }
-    picked.forEach(({ item, section, author }) => {
-      grouped[section].push({ ...item, id: Math.random().toString(36).slice(2), content: `[${author}] ${item.content}` })
-    })
-    const { weekStart, weekEnd, weekLabel: label } = pickerConfig
-    setForm({
-      title: `${label} 통합 주간보고`,
-      weekStart, weekEnd,
-      nextWeekStart: addDays(weekStart, 7), nextWeekEnd: addDays(weekEnd, 7),
-      ...grouped,
-    })
-    setDetail({ type: 'form', editing: null, isConsolidated: true })
-    setPickerConfig(null)
+  const handleEditorSave = (conForm: WeeklyFormState) => {
+    const d = formToRequest(conForm)
+    if (editorConfig?.existing) updateMut.mutate({ id: editorConfig.existing.id, d })
+    else createConsMut.mutate(d)
+    setEditorConfig(null)
   }
 
   // 본인의 개인 보고서 목록 (주차 선택 복사용, 최신순)
@@ -764,13 +793,14 @@ export default function WeeklyReportPage() {
 
   return (
     <div className="master-detail page-wrap">
-      {/* ── 통합보고서 항목 피커 ─────────────────────────────────────── */}
-      {pickerConfig && (
-        <ConsolidatedPicker
-          weekLbl={pickerConfig.weekLabel}
-          reports={myReports.filter(r => r.weekStart === pickerConfig.weekStart && r.reportType === 'INDIVIDUAL')}
-          onConfirm={handlePickerConfirm}
-          onCancel={() => setPickerConfig(null)}
+      {/* ── 통합보고서 좌우 분할 에디터 ──────────────────────────────── */}
+      {editorConfig && (
+        <ConsolidatedEditor
+          weekLbl={editorConfig.weekLabel}
+          individualReports={myReports.filter(r => r.weekStart === editorConfig.weekStart && r.reportType === 'INDIVIDUAL')}
+          existing={editorConfig.existing}
+          onSave={handleEditorSave}
+          onCancel={() => setEditorConfig(null)}
         />
       )}
 
@@ -1000,7 +1030,7 @@ export default function WeeklyReportPage() {
                   <button onClick={() => {
                     const label = weekLabel(selectedWeek)
                     const selectedGroup = myReports.find(r => r.weekStart === selectedWeek)
-                    setPickerConfig({ weekStart: selectedWeek, weekEnd: selectedGroup?.weekEnd ?? selectedWeek, weekLabel: label })
+                    setEditorConfig({ weekStart: selectedWeek, weekEnd: selectedGroup?.weekEnd ?? selectedWeek, weekLabel: label })
                   }}
                     style={{ width: '100%', padding: '9px 12px', border: '1px dashed #7c3aed55', borderRadius: 8, background: 'none', cursor: 'pointer', color: '#7c3aed', fontSize: 13, fontWeight: 600, textAlign: 'center' }}>
                     📋 통합 보고서 작성
@@ -1029,7 +1059,13 @@ export default function WeeklyReportPage() {
           <ReportDetail
             report={detail.report}
             canEdit={isManager || detail.report.author === user?.username}
-            onEdit={() => openForm({ editing: detail.report, isConsolidated: detail.report.reportType === 'CONSOLIDATED' })}
+            onEdit={() => {
+              if (detail.report.reportType === 'CONSOLIDATED') {
+                setEditorConfig({ weekStart: detail.report.weekStart, weekEnd: detail.report.weekEnd, weekLabel: weekLabel(detail.report.weekStart), existing: detail.report })
+              } else {
+                openForm({ editing: detail.report })
+              }
+            }}
             onDelete={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(detail.report.id) }}
           />
         ) : (
