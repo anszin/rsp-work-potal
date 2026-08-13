@@ -62,6 +62,7 @@ export default function TodoPage() {
   const qc = useQueryClient()
   const { user } = useAuth()
   const isManager = ['ADMIN', 'MANAGER'].includes(user?.role ?? '')
+  const nameOf = (username: string) => users.find(u => u.username === username)?.name ?? username
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Todo | null>(null)
   const [form, setForm] = useState<SaveTodoRequest>(emptyForm())
@@ -178,6 +179,7 @@ export default function TodoPage() {
                   todo={todo}
                   showAssignee={isManager}
                   onDetail={() => setDetail(todo)}
+                  nameOf={nameOf}
                   onEdit={() => openEdit(todo)}
                   onDelete={() => { if (confirm(`"${todo.title}" 삭제할까요?`)) deleteMut.mutate(todo.id) }}
                   onDragStart={() => setDragging(todo.id)}
@@ -209,7 +211,7 @@ export default function TodoPage() {
                 {detail.priority && <Badge label={PRIORITY_STYLE[detail.priority].label} color={PRIORITY_STYLE[detail.priority].color} />}
                 {detail.sourceType && detail.sourceType !== 'SELF' && <Badge label={SOURCE_LABELS[detail.sourceType]} color='#2B6CB0' />}
               </div>
-              {isManager && <Row label="담당자" value={detail.assignee} />}
+              {isManager && <Row label="담당자" value={nameOf(detail.assignee)} />}
               {detail.dueDate && <Row label="마감일" value={formatDate(detail.dueDate) ?? ''} warn={detail.status !== 'DONE' && detail.status !== 'HOLD' && isPast(detail.dueDate)} />}
               {detail.description && (
                 <div>
@@ -322,9 +324,10 @@ export default function TodoPage() {
   )
 }
 
-function TodoCard({ todo, showAssignee, onDetail, onEdit, onDelete, onDragStart, onDragEnd }: {
+function TodoCard({ todo, showAssignee, nameOf, onDetail, onEdit, onDelete, onDragStart, onDragEnd }: {
   todo: Todo
   showAssignee: boolean
+  nameOf: (username: string) => string
   onDetail: () => void
   onEdit: () => void
   onDelete: () => void
@@ -345,7 +348,7 @@ function TodoCard({ todo, showAssignee, onDetail, onEdit, onDelete, onDragStart,
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
         <div style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
           {showAssignee && (
-            <div style={{ fontSize: 10, color: '#3182ce', fontWeight: 600, marginBottom: 2 }}>{todo.assignee}</div>
+            <div style={{ fontSize: 10, color: '#3182ce', fontWeight: 600, marginBottom: 2 }}>{nameOf(todo.assignee)}</div>
           )}
           {todo.title}
         </div>
