@@ -21,6 +21,7 @@ public class TodoDto {
         private Todo.SourceType sourceType;
         private Long sourceId;
         private Long keyTaskId;
+        private String assignee; // 매니저가 타인에게 할당할 때 사용
     }
 
     @Getter

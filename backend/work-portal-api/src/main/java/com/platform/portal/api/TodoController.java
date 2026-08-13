@@ -28,7 +28,10 @@ public class TodoController {
     public TodoDto.Response create(
             @Valid @RequestBody TodoDto.SaveRequest req,
             @AuthenticationPrincipal UserDetails user) {
-        return service.create(req, user.getUsername());
+        boolean isManager = isManagerOrAdmin(user);
+        String assignee = (isManager && req.getAssignee() != null && !req.getAssignee().isBlank())
+                ? req.getAssignee() : user.getUsername();
+        return service.create(req, assignee);
     }
 
     @PutMapping("/{id}")
@@ -36,11 +39,19 @@ public class TodoController {
             @PathVariable Long id,
             @Valid @RequestBody TodoDto.SaveRequest req,
             @AuthenticationPrincipal UserDetails user) {
-        return service.update(id, req, user.getUsername());
+        boolean isManager = isManagerOrAdmin(user);
+        String assignee = (isManager && req.getAssignee() != null && !req.getAssignee().isBlank())
+                ? req.getAssignee() : null;
+        return service.update(id, req, assignee);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    private boolean isManagerOrAdmin(UserDetails user) {
+        return user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_MANAGER"));
     }
 }

@@ -34,8 +34,9 @@ public class TodoService {
     }
 
     @Transactional
-    public TodoDto.Response update(Long id, TodoDto.SaveRequest req, String requestor) {
+    public TodoDto.Response update(Long id, TodoDto.SaveRequest req, String assignee) {
         Todo t = repository.findById(id).orElseThrow();
+        if (assignee != null) t.setAssignee(assignee);
         apply(t, req);
         return new TodoDto.Response(repository.save(t));
     }

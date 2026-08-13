@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { todoApi, type Todo, type SaveTodoRequest, type TodoStatus, type TodoPriority, type TodoSourceType } from '../../api/todos'
 import { useAuth } from '../../context/useAuth'
+import { getUsers, type UserSummary } from '../../api/users'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string }[] = [
   { status: 'TODO',        label: '대기',   color: '#718096' },
@@ -53,6 +54,7 @@ function toRequest(todo: Todo): SaveTodoRequest {
     sourceType: todo.sourceType ?? 'SELF',
     sourceId: todo.sourceId ?? undefined,
     keyTaskId: todo.keyTaskId ?? undefined,
+    assignee: todo.assignee,
   }
 }
 
@@ -68,6 +70,12 @@ export default function TodoPage() {
   const { data: todos = [], isLoading } = useQuery({
     queryKey: ['todos'],
     queryFn: todoApi.list,
+  })
+
+  const { data: users = [] } = useQuery<UserSummary[]>({
+    queryKey: ['users'],
+    queryFn: getUsers,
+    enabled: isManager,
   })
 
   const createMut = useMutation({
@@ -243,6 +251,24 @@ export default function TodoPage() {
                   </select>
                 </label>
               </div>
+
+              {isManager && (
+                <label style={styles.label}>
+                  담당자
+                  <select
+                    style={styles.input}
+                    value={form.assignee ?? ''}
+                    onChange={e => setForm(f => ({ ...f, assignee: e.target.value || undefined }))}
+                  >
+                    <option value="">본인</option>
+                    {users.filter(u => u.active).map(u => (
+                      <option key={u.username} value={u.username}>
+                        {u.name ?? u.username}{u.dept ? ` (${u.dept})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
                 <button type="button" onClick={closeModal} style={styles.cancelBtn}>취소</button>

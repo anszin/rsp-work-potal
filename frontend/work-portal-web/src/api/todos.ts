@@ -28,6 +28,7 @@ export interface SaveTodoRequest {
   sourceType?: TodoSourceType
   sourceId?: number
   keyTaskId?: number
+  assignee?: string
 }
 
 export const todoApi = {
