@@ -11,6 +11,7 @@ import {
   WORK_UNIT_TYPE_LABELS, WORK_UNIT_STATUS_LABELS, WORK_UNIT_STATUS_COLOR,
   type WorkUnitType, type WorkUnitStatus,
 } from '../../api/workUnits'
+import WorkUnitTab from '../WorkUnit'
 
 interface WorkItem {
   id: string
@@ -79,9 +80,12 @@ function qKey(q: Quarter, suffix: string): keyof KeyTask {
   return `q${q}${suffix}` as keyof KeyTask
 }
 
+type PageTab = 'keytasks' | 'workunits'
+
 export default function KeyTaskPage() {
   const qc = useQueryClient()
   const now = new Date().getFullYear()
+  const [pageTab, setPageTab] = useState<PageTab>('keytasks')
 
   const { data: years = [] } = useQuery({ queryKey: ['key-task-years'], queryFn: getKeyTaskYears })
   const [selYear, setSelYear] = useState(now)
@@ -189,6 +193,11 @@ export default function KeyTaskPage() {
 
   // 컬럼 수: 구분(1) + 소속/담당자(1) + KPI(1) + 과제명(1) + quarters*4 + 액션(1)
   const totalCols = 5 + visibleQs.length * 4
+
+  const pageTabStyle = (active: boolean): React.CSSProperties => ({
+    padding: '5px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: active ? 600 : 400,
+    background: active ? '#1a1a2e' : 'transparent', color: active ? '#fff' : 'var(--c-text-muted)',
+  })
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: '6px 0', border: 'none',
@@ -461,17 +470,25 @@ export default function KeyTaskPage() {
       <div className="deploy-header" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>중점과제</h2>
-          <div style={{ display: 'flex', gap: 16 }}>
-            {displayYears.map(y => (
-              <button key={y} onClick={() => setSelYear(y)} style={tabStyle(selYear === y)}>{y}년</button>
-            ))}
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setPageTab('keytasks')} style={pageTabStyle(pageTab === 'keytasks')}>중점과제</button>
+            <button onClick={() => setPageTab('workunits')} style={pageTabStyle(pageTab === 'workunits')}>단위업무</button>
           </div>
+          {pageTab === 'keytasks' && (
+            <div style={{ display: 'flex', gap: 16 }}>
+              {displayYears.map(y => (
+                <button key={y} onClick={() => setSelYear(y)} style={tabStyle(selYear === y)}>{y}년</button>
+              ))}
+            </div>
+          )}
         </div>
-        <button style={s.btn} onClick={openCreate}>+ 과제 추가</button>
+        {pageTab === 'keytasks' && <button style={s.btn} onClick={openCreate}>+ 과제 추가</button>}
       </div>
 
+      {pageTab === 'workunits' && <WorkUnitTab />}
+
       {/* 레벨 탭 */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, padding: '12px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
+      {pageTab === 'keytasks' && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, padding: '12px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
         <button style={{ ...levelTabStyle('all'), padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20 }} onClick={() => setSelLevel('all')}>
           전체 <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginLeft: 4 }}>{tasks.length}</span>
         </button>
@@ -483,6 +500,7 @@ export default function KeyTaskPage() {
         ))}
       </div>
 
+      {pageTab === 'keytasks' && <>
       {/* 분기 탭 */}
       <div style={{ display: 'flex', gap: 20, marginBottom: 16, borderBottom: '1px solid var(--c-border)' }}>
         <button onClick={() => setSelQuarter('all')} style={tabStyle(selQuarter === 'all')}>전체</button>
@@ -588,6 +606,7 @@ export default function KeyTaskPage() {
           </tbody>
         </table>
       </div>
+      </>}
     </div>
   )
 }

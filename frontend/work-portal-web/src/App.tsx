@@ -16,7 +16,6 @@ import DailyCheckPage from './pages/DailyCheck'
 import SystemManagementPage from './pages/SystemManagement'
 import UserManagementPage from './pages/UserManagement'
 import KeyTaskPage from './pages/KeyTask'
-import WorkUnitPage from './pages/WorkUnit'
 import TodoPage from './pages/Todo'
 import Layout from './components/Layout'
 import NotificationPage from './pages/Notification'
@@ -51,7 +50,6 @@ export default function App() {
             <Route path="reports/weekly" element={<WeeklyReportPage />} />
             <Route path="reports/daily" element={<DailyCheckPage />} />
             <Route path="key-tasks" element={<KeyTaskPage />} />
-            <Route path="work-units" element={<WorkUnitPage />} />
             <Route path="todos" element={<TodoPage />} />
             <Route path="admin/systems" element={<SystemManagementPage />} />
             <Route path="admin/users" element={<UserManagementPage />} />
