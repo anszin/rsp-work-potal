@@ -66,6 +66,7 @@ export default function TodoPage() {
   const [editing, setEditing] = useState<Todo | null>(null)
   const [form, setForm] = useState<SaveTodoRequest>(emptyForm())
   const [dragging, setDragging] = useState<number | null>(null)
+  const [detail, setDetail] = useState<Todo | null>(null)
 
   const { data: todos = [], isLoading } = useQuery({
     queryKey: ['todos'],
@@ -176,6 +177,7 @@ export default function TodoPage() {
                   key={todo.id}
                   todo={todo}
                   showAssignee={isManager}
+                  onDetail={() => setDetail(todo)}
                   onEdit={() => openEdit(todo)}
                   onDelete={() => { if (confirm(`"${todo.title}" 삭제할까요?`)) deleteMut.mutate(todo.id) }}
                   onDragStart={() => setDragging(todo.id)}
@@ -189,6 +191,42 @@ export default function TodoPage() {
           </div>
         ))}
       </div>
+
+      {/* 상세 팝업 */}
+      {detail && (
+        <div style={styles.overlay} onClick={e => e.target === e.currentTarget && setDetail(null)}>
+          <div style={{ ...styles.modal, maxWidth: 440 }}>
+            <div style={styles.modalHeader}>
+              <span style={{ fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => { setDetail(null); openEdit(detail) }} style={{ ...styles.cancelBtn, fontSize: 12, padding: '4px 10px' }}>수정</button>
+                <button onClick={() => setDetail(null)} style={styles.closeBtn}>✕</button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <Badge label={COLUMNS.find(c => c.status === detail.status)?.label ?? detail.status} color={COLUMNS.find(c => c.status === detail.status)?.color ?? '#718096'} />
+                {detail.priority && <Badge label={PRIORITY_STYLE[detail.priority].label} color={PRIORITY_STYLE[detail.priority].color} />}
+                {detail.sourceType && detail.sourceType !== 'SELF' && <Badge label={SOURCE_LABELS[detail.sourceType]} color='#2B6CB0' />}
+              </div>
+              {isManager && <Row label="담당자" value={detail.assignee} />}
+              {detail.dueDate && <Row label="마감일" value={formatDate(detail.dueDate) ?? ''} warn={detail.status !== 'DONE' && detail.status !== 'HOLD' && isPast(detail.dueDate)} />}
+              {detail.description && (
+                <div>
+                  <div style={{ fontSize: 11, color: '#a0aec0', marginBottom: 4 }}>설명</div>
+                  <div style={{ fontSize: 13, color: '#2d3748', whiteSpace: 'pre-wrap', lineHeight: 1.6, background: 'var(--bg-input, #f7fafc)', padding: '10px 12px', borderRadius: 6 }}>
+                    {detail.description}
+                  </div>
+                </div>
+              )}
+              <div style={{ fontSize: 11, color: '#a0aec0', marginTop: 4 }}>
+                등록 {detail.createdAt?.slice(0, 10)}
+                {detail.updatedAt && ` · 수정 ${detail.updatedAt.slice(0, 10)}`}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {modalOpen && (
@@ -284,9 +322,10 @@ export default function TodoPage() {
   )
 }
 
-function TodoCard({ todo, showAssignee, onEdit, onDelete, onDragStart, onDragEnd }: {
+function TodoCard({ todo, showAssignee, onDetail, onEdit, onDelete, onDragStart, onDragEnd }: {
   todo: Todo
   showAssignee: boolean
+  onDetail: () => void
   onEdit: () => void
   onDelete: () => void
   onDragStart: () => void
@@ -296,7 +335,13 @@ function TodoCard({ todo, showAssignee, onEdit, onDelete, onDragStart, onDragEnd
   const overdue = todo.status !== 'DONE' && todo.status !== 'HOLD' && isPast(todo.dueDate)
 
   return (
-    <div draggable onDragStart={onDragStart} onDragEnd={onDragEnd} style={styles.card}>
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onClick={onDetail}
+      style={{ ...styles.card, cursor: 'pointer' }}
+    >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
         <div style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
           {showAssignee && (
@@ -304,17 +349,11 @@ function TodoCard({ todo, showAssignee, onEdit, onDelete, onDragStart, onDragEnd
           )}
           {todo.title}
         </div>
-        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
           <button onClick={onEdit} style={styles.iconBtn} title="수정">✏️</button>
           <button onClick={onDelete} style={styles.iconBtn} title="삭제">🗑</button>
         </div>
       </div>
-
-      {todo.description && (
-        <div style={{ fontSize: 11, color: '#718096', marginTop: 4, lineHeight: 1.4 }}>
-          {todo.description.length > 60 ? todo.description.slice(0, 60) + '…' : todo.description}
-        </div>
-      )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
         {pStyle && (
@@ -327,12 +366,32 @@ function TodoCard({ todo, showAssignee, onEdit, onDelete, onDragStart, onDragEnd
             {SOURCE_LABELS[todo.sourceType]}
           </span>
         )}
+        {todo.description && (
+          <span style={{ fontSize: 10, color: '#a0aec0' }}>📝</span>
+        )}
         {todo.dueDate && (
           <span style={{ fontSize: 10, color: overdue ? '#e53e3e' : '#718096', marginLeft: 'auto' }}>
             {overdue ? '⚠ ' : ''}{formatDate(todo.dueDate)}
           </span>
         )}
       </div>
+    </div>
+  )
+}
+
+function Badge({ label, color }: { label: string; color: string }) {
+  return (
+    <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: color + '22', color, fontWeight: 600, border: `1px solid ${color}44` }}>
+      {label}
+    </span>
+  )
+}
+
+function Row({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+      <span style={{ fontSize: 11, color: '#a0aec0', minWidth: 48 }}>{label}</span>
+      <span style={{ fontSize: 13, color: warn ? '#e53e3e' : '#2d3748' }}>{warn ? '⚠ ' : ''}{value}</span>
     </div>
   )
 }
