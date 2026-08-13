@@ -16,8 +16,8 @@ public class WorkUnitController {
     private final WorkUnitService service;
 
     @GetMapping
-    public List<WorkUnitDto.Response> list(@RequestParam Long keyTaskId) {
-        return service.findByKeyTask(keyTaskId);
+    public List<WorkUnitDto.Response> list(@RequestParam(required = false) Long keyTaskId) {
+        return keyTaskId != null ? service.findByKeyTask(keyTaskId) : service.findAll();
     }
 
     @PostMapping

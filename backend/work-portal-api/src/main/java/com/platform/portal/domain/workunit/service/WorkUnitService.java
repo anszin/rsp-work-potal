@@ -20,6 +20,11 @@ public class WorkUnitService {
                 .stream().map(WorkUnitDto.Response::new).toList();
     }
 
+    public List<WorkUnitDto.Response> findAll() {
+        return repository.findAllByOrderByCreatedAtDesc()
+                .stream().map(WorkUnitDto.Response::new).toList();
+    }
+
     @Transactional
     public WorkUnitDto.Response create(WorkUnitDto.SaveRequest req) {
         WorkUnit w = new WorkUnit();

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface WorkUnitRepository extends JpaRepository<WorkUnit, Long> {
     List<WorkUnit> findByKeyTaskIdOrderByCreatedAtAsc(Long keyTaskId);
+    List<WorkUnit> findAllByOrderByCreatedAtDesc();
 }

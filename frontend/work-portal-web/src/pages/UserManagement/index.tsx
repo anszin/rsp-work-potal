@@ -14,7 +14,7 @@ const ROLE_LABELS: Record<string, string> = { ADMIN: '관리자', MANAGER: '매�
 const MENU_LABELS: Record<string, string> = {
   change_requests: '변경 관리', deploys: '배포 관리', inventory: '인벤토리',
   meeting_minutes: '회의록', weekly_report: '주간보고', daily_check: '일일점검',
-  finance: '손익 관리', key_tasks: '중점과제', todos: 'Todo', system_mgmt: '시스템 관리',
+  finance: '손익 관리', key_tasks: '중점과제', work_units: '단위업무', todos: 'Todo', system_mgmt: '시스템 관리',
   user_mgmt: '사용자 관리', notifications: '공지 발송',
 }
 const ROLES: UserRole[] = ['ADMIN', 'MANAGER', 'MEMBER', 'EXTERNAL']

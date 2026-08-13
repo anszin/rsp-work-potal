@@ -41,7 +41,9 @@ export interface SaveWorkUnitRequest {
 }
 
 export const workUnitApi = {
-  list: (keyTaskId: number) =>
+  listAll: () =>
+    client.get<WorkUnit[]>('/work-units').then(r => r.data),
+  listByKeyTask: (keyTaskId: number) =>
     client.get<WorkUnit[]>('/work-units', { params: { keyTaskId } }).then(r => r.data),
   create: (data: SaveWorkUnitRequest) =>
     client.post<WorkUnit>('/work-units', data).then(r => r.data),

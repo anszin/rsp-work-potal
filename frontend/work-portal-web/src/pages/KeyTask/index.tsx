@@ -109,7 +109,7 @@ export default function KeyTaskPage() {
 
   const { data: workUnits = [] } = useQuery({
     queryKey: ['work-units', workUnitTask?.id],
-    queryFn: () => workUnitApi.list(workUnitTask!.id),
+    queryFn: () => workUnitApi.listByKeyTask(workUnitTask!.id),
     enabled: !!workUnitTask,
   })
 
@@ -331,7 +331,7 @@ export default function KeyTaskPage() {
           <div style={{ ...s.modal, maxWidth: 600 }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 2 }}>업무단위</div>
+                <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 2 }}>단위업무</div>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{workUnitTask.taskName}</h3>
               </div>
               <button style={s.btnSecondary} onClick={() => { setWorkUnitTask(null); setWuForm(null); setEditingWu(null) }}>✕</button>
@@ -340,7 +340,7 @@ export default function KeyTaskPage() {
             {/* 업무단위 목록 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
               {workUnits.length === 0 && !wuForm && (
-                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 업무단위가 없습니다.</div>
+                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 단위업무가 없습니다.</div>
               )}
               {workUnits.map(wu => (
                 <div key={wu.id} style={{ border: '1px solid var(--c-border)', borderRadius: 8, padding: '10px 14px' }}>
@@ -388,7 +388,7 @@ export default function KeyTaskPage() {
             ) : (
               !editingWu && (
                 <button style={s.btn} onClick={() => setWuForm({ keyTaskId: workUnitTask.id, title: '', type: 'PROJECT', status: 'IN_PROGRESS', description: '' })}>
-                  + 업무단위 추가
+                  + 단위업무 추가
                 </button>
               )
             )}
@@ -576,7 +576,7 @@ export default function KeyTaskPage() {
                   <td style={s.td}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       <button style={{ ...s.btnSm, color: '#1976d2', borderColor: '#90caf9' }} onClick={() => setProgressTask(t)}>실적</button>
-                      <button style={{ ...s.btnSm, color: '#6b46c1', borderColor: '#d6bcfa' }} onClick={() => { setWorkUnitTask(t); setWuForm(null); setEditingWu(null) }}>업무단위</button>
+                      <button style={{ ...s.btnSm, color: '#6b46c1', borderColor: '#d6bcfa' }} onClick={() => { setWorkUnitTask(t); setWuForm(null); setEditingWu(null) }}>단위업무</button>
                       <button style={s.btnSm} onClick={() => openEdit(t)}>수정</button>
                       <button style={{ ...s.btnSm, color: '#e53e3e' }}
                         onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</button>
