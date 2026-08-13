@@ -676,14 +676,14 @@ export default function WeeklyReportPage() {
             )}
             <div style={{ position: 'relative' }}>
               {writeMenuOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setWriteMenuOpen(false)} />}
-              <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: '1px solid #1565c0' }}>
                 <button onClick={() => { setWriteMenuOpen(false); openForm({}) }}
                   style={{ padding: '6px 12px', background: '#1976d2', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
                   + 작성
                 </button>
                 <button onClick={() => setWriteMenuOpen(o => !o)}
-                  style={{ padding: '6px 8px', background: '#1565c0', color: '#fff', border: 'none', borderLeft: '1px solid #1565c088', cursor: 'pointer', fontSize: 10 }}>
-                  ▼
+                  style={{ padding: '6px 10px', background: '#1976d2', color: '#fff', border: 'none', borderLeft: '2px solid rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: 13, lineHeight: 1 }}>
+                  ⌄
                 </button>
               </div>
               {writeMenuOpen && (
