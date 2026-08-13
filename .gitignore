@@ -22,5 +22,6 @@ Thumbs.db
 
 # Env / secrets
 *.env
+*.env.local
 application-prod.yml
 .claude/
