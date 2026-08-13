@@ -5,9 +5,9 @@ import { todoApi, type Todo, type SaveTodoRequest, type TodoStatus, type TodoPri
 const COLUMNS: { status: TodoStatus; label: string; color: string }[] = [
   { status: 'TODO',        label: '대기',   color: '#718096' },
   { status: 'IN_PROGRESS', label: '진행중', color: '#3182ce' },
-  { status: 'HOLD',        label: '보류',   color: '#c05621' },
   { status: 'REVIEW',      label: '검토',   color: '#d69e2e' },
   { status: 'DONE',        label: '완료',   color: '#38a169' },
+  { status: 'HOLD',        label: '보류',   color: '#c05621' },
 ]
 
 const PRIORITY_STYLE: Record<TodoPriority, { bg: string; color: string; label: string }> = {
