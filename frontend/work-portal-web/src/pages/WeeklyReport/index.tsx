@@ -535,6 +535,9 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, onSave, onCa
   const removeItem = (sec: ContentKey, itemId: string) =>
     setConForm(f => ({ ...f, [sec]: f[sec].filter(i => i.id !== itemId) }))
 
+  const updateItem = (sec: ContentKey, itemId: string, content: string) =>
+    setConForm(f => ({ ...f, [sec]: f[sec].map(i => i.id === itemId ? { ...i, content } : i) }))
+
   const totalRight = SECTION_KEYS.reduce((acc, sec) => acc + conForm[sec].length, 0)
 
   return (
@@ -641,9 +644,13 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, onSave, onCa
                         ) : items.map(item => {
                           const { bg, color: badgeColor, label: badgeLabel } = itemBadge(item)
                           return (
-                            <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', borderRadius: 6, marginBottom: 3, background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
-                              <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor }}>{badgeLabel}</span>
-                              <span style={{ flex: 1, fontSize: 12, lineHeight: 1.5, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
+                            <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', borderRadius: 6, marginBottom: 3, background: 'var(--c-bg)', border: '1px solid var(--c-border-in)' }}>
+                              <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 3, background: bg, color: badgeColor }}>{badgeLabel}</span>
+                              <textarea value={item.content}
+                                onChange={e => updateItem(sec, item.id, e.target.value)}
+                                onInput={e => { const t = e.currentTarget; t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px' }}
+                                ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }}
+                                style={{ flex: 1, fontSize: 12, lineHeight: 1.6, color: 'var(--c-text)', background: 'transparent', border: 'none', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', padding: 0, minHeight: 20 }} />
                               <button onClick={() => removeItem(sec, item.id)}
                                 style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 16, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.7, marginTop: 1 }}>×</button>
                             </div>
