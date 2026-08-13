@@ -498,7 +498,7 @@ export default function KeyTaskPage() {
             {lv} <span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>{countByLevel(lv)}</span>
           </button>
         ))}
-      </div>
+      </div>}
 
       {pageTab === 'keytasks' && <>
       {/* 분기 탭 */}
