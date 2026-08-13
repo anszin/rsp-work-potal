@@ -528,7 +528,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, onSave, onCa
     const key = `${reportId}_${sec}_${item.id}`
     if (addedKeys.has(key)) return
     setAddedKeys(prev => new Set([...prev, key]))
-    const added: WorkItem = { ...item, id: Math.random().toString(36).slice(2), content: `[${author}] ${item.content}` }
+    const added: WorkItem = { ...item, id: Math.random().toString(36).slice(2) }
     setConForm(f => ({ ...f, [sec]: [...f[sec], added] }))
   }
 
