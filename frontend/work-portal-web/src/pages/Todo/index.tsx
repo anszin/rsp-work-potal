@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { todoApi, type Todo, type SaveTodoRequest, type TodoStatus, type TodoPriority, type TodoSourceType } from '../../api/todos'
+import { useAuth } from '../../context/useAuth'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string }[] = [
   { status: 'TODO',        label: '대기',   color: '#718096' },
@@ -57,6 +58,8 @@ function toRequest(todo: Todo): SaveTodoRequest {
 
 export default function TodoPage() {
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const isManager = ['ADMIN', 'MANAGER'].includes(user?.role ?? '')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Todo | null>(null)
   const [form, setForm] = useState<SaveTodoRequest>(emptyForm())
@@ -164,6 +167,7 @@ export default function TodoPage() {
                 <TodoCard
                   key={todo.id}
                   todo={todo}
+                  showAssignee={isManager}
                   onEdit={() => openEdit(todo)}
                   onDelete={() => { if (confirm(`"${todo.title}" 삭제할까요?`)) deleteMut.mutate(todo.id) }}
                   onDragStart={() => setDragging(todo.id)}
@@ -254,8 +258,9 @@ export default function TodoPage() {
   )
 }
 
-function TodoCard({ todo, onEdit, onDelete, onDragStart, onDragEnd }: {
+function TodoCard({ todo, showAssignee, onEdit, onDelete, onDragStart, onDragEnd }: {
   todo: Todo
+  showAssignee: boolean
   onEdit: () => void
   onDelete: () => void
   onDragStart: () => void
@@ -268,6 +273,9 @@ function TodoCard({ todo, onEdit, onDelete, onDragStart, onDragEnd }: {
     <div draggable onDragStart={onDragStart} onDragEnd={onDragEnd} style={styles.card}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
         <div style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
+          {showAssignee && (
+            <div style={{ fontSize: 10, color: '#3182ce', fontWeight: 600, marginBottom: 2 }}>{todo.assignee}</div>
+          )}
           {todo.title}
         </div>
         <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>

@@ -20,6 +20,11 @@ public class TodoService {
                 .stream().map(TodoDto.Response::new).toList();
     }
 
+    public List<TodoDto.Response> findAll() {
+        return repository.findAllByOrderByCreatedAtDesc()
+                .stream().map(TodoDto.Response::new).toList();
+    }
+
     @Transactional
     public TodoDto.Response create(TodoDto.SaveRequest req, String assignee) {
         Todo t = new Todo();

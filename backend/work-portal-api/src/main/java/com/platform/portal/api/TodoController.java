@@ -19,7 +19,9 @@ public class TodoController {
 
     @GetMapping
     public List<TodoDto.Response> list(@AuthenticationPrincipal UserDetails user) {
-        return service.findMine(user.getUsername());
+        boolean isManager = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_MANAGER"));
+        return isManager ? service.findAll() : service.findMine(user.getUsername());
     }
 
     @PostMapping
