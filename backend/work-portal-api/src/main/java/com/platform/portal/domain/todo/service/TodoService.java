@@ -49,6 +49,5 @@ public class TodoService {
         if (req.getSourceType() != null) t.setSourceType(req.getSourceType());
         t.setSourceId(req.getSourceId());
         t.setKeyTaskId(req.getKeyTaskId());
-        t.setOnHold(req.isOnHold());
     }
 }

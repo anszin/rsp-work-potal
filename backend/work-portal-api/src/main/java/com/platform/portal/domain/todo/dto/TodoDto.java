@@ -21,7 +21,6 @@ public class TodoDto {
         private Todo.SourceType sourceType;
         private Long sourceId;
         private Long keyTaskId;
-        private boolean onHold;
     }
 
     @Getter
@@ -35,7 +34,6 @@ public class TodoDto {
         private final String sourceType;
         private final Long sourceId;
         private final Long keyTaskId;
-        private final boolean onHold;
         private final String assignee;
         private final LocalDateTime createdAt;
         private final LocalDateTime updatedAt;
@@ -50,7 +48,6 @@ public class TodoDto {
             this.sourceType = t.getSourceType() != null ? t.getSourceType().name() : null;
             this.sourceId = t.getSourceId();
             this.keyTaskId = t.getKeyTaskId();
-            this.onHold = t.isOnHold();
             this.assignee = t.getAssignee();
             this.createdAt = t.getCreatedAt();
             this.updatedAt = t.getUpdatedAt();

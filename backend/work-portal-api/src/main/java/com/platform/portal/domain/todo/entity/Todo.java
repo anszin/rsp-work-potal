@@ -42,9 +42,6 @@ public class Todo {
 
     private Long keyTaskId;
 
-    @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean onHold = false;
-
     @Column(nullable = false)
     private String assignee;
 
@@ -54,7 +51,7 @@ public class Todo {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public enum Status { TODO, IN_PROGRESS, REVIEW, DONE }
+    public enum Status { TODO, IN_PROGRESS, HOLD, REVIEW, DONE }
     public enum Priority { HIGH, MEDIUM, LOW }
     public enum SourceType { SELF, CHANGE_REQUEST, DEPLOY, EXTERNAL }
 }

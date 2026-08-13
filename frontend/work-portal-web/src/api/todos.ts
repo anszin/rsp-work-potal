@@ -1,6 +1,6 @@
 import client from './client'
 
-export type TodoStatus = 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE'
+export type TodoStatus = 'TODO' | 'IN_PROGRESS' | 'HOLD' | 'REVIEW' | 'DONE'
 export type TodoPriority = 'HIGH' | 'MEDIUM' | 'LOW'
 export type TodoSourceType = 'SELF' | 'CHANGE_REQUEST' | 'DEPLOY' | 'EXTERNAL'
 
@@ -14,7 +14,6 @@ export interface Todo {
   sourceType: TodoSourceType | null
   sourceId: number | null
   keyTaskId: number | null
-  onHold: boolean
   assignee: string
   createdAt: string
   updatedAt: string | null
@@ -29,7 +28,6 @@ export interface SaveTodoRequest {
   sourceType?: TodoSourceType
   sourceId?: number
   keyTaskId?: number
-  onHold?: boolean
 }
 
 export const todoApi = {
