@@ -109,6 +109,26 @@ function weekLabel(weekStart: string) {
   return `${thu.getMonth() + 1}월 ${Math.ceil(thu.getDate() / 7)}주차`
 }
 
+function getPastWeeks(n: number): { weekStart: string; weekEnd: string; label: string; weekLabel: string }[] {
+  const result = []
+  const today = new Date()
+  const day = today.getDay()
+  for (let i = 0; i < n; i++) {
+    const mon = new Date(today)
+    mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1) - i * 7)
+    const fri = new Date(mon); fri.setDate(mon.getDate() + 4)
+    const thu = getThursday(mon)
+    const wl = `${thu.getMonth() + 1}월 ${Math.ceil(thu.getDate() / 7)}주차`
+    result.push({
+      weekStart: mon.toISOString().slice(0, 10),
+      weekEnd: fri.toISOString().slice(0, 10),
+      label: i === 0 ? `이번 주 (${wl})` : `${i}주 전 (${wl})`,
+      weekLabel: wl,
+    })
+  }
+  return result
+}
+
 interface WeekGroup {
   weekStart: string
   weekEnd: string
@@ -501,6 +521,7 @@ export default function WeeklyReportPage() {
   const isManager = ['ADMIN', 'MANAGER'].includes(user?.role ?? '')
 
   const [masterTab, setMasterTab] = useState<'mine' | 'overview'>('mine')
+  const [writeMenuOpen, setWriteMenuOpen] = useState(false)
   const [selectedWeek, setSelectedWeek] = useState<string>(() => currentWeekRange().weekStart)
   const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(() => new Set([currentWeekRange().weekStart]))
   const [detail, setDetail] = useState<DetailMode>({ type: 'none' })
@@ -653,10 +674,31 @@ export default function WeeklyReportPage() {
                 🖨
               </button>
             )}
-            <button onClick={() => { setForm(emptyFormState()); setDetail({ type: 'form', editing: null, isConsolidated: false }) }}
-              style={{ padding: '6px 14px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
-              + 작성
-            </button>
+            <div style={{ position: 'relative' }}>
+              {writeMenuOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setWriteMenuOpen(false)} />}
+              <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden' }}>
+                <button onClick={() => { setWriteMenuOpen(false); openForm({}) }}
+                  style={{ padding: '6px 12px', background: '#1976d2', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                  + 작성
+                </button>
+                <button onClick={() => setWriteMenuOpen(o => !o)}
+                  style={{ padding: '6px 8px', background: '#1565c0', color: '#fff', border: 'none', borderLeft: '1px solid #1565c088', cursor: 'pointer', fontSize: 10 }}>
+                  ▼
+                </button>
+              </div>
+              {writeMenuOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 100, background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.15)', minWidth: 210, overflow: 'hidden' }}>
+                  {getPastWeeks(5).map((w, i) => (
+                    <div key={w.weekStart} onClick={() => { setWriteMenuOpen(false); openForm({ weekStart: w.weekStart, weekEnd: w.weekEnd, weekLabel: w.weekLabel }) }}
+                      style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid var(--c-border-in)', color: i === 0 ? '#1976d2' : 'var(--c-text)', fontWeight: i === 0 ? 600 : 400, background: 'transparent' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-bg)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      {w.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
