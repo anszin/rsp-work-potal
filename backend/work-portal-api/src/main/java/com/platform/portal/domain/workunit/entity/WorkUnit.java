@@ -1,4 +1,4 @@
-package com.platform.portal.domain.todo.entity;
+package com.platform.portal.domain.workunit.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,43 +8,33 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "todos")
+@Table(name = "work_units")
 @Getter @Setter @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Todo {
+public class WorkUnit {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
+    private Long keyTaskId;
+
+    @Column(nullable = false)
     private String title;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Type type = Type.OTHER;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status = Status.IN_PROGRESS;
 
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status = Status.TODO;
-
-    @Enumerated(EnumType.STRING)
-    private Priority priority = Priority.MEDIUM;
-
-    private LocalDate dueDate;
-
-    @Enumerated(EnumType.STRING)
-    private SourceType sourceType = SourceType.SELF;
-
-    private Long sourceId;
-
-    private Long keyTaskId;
-    private Long workUnitId;
-
-    @Column(nullable = false)
-    private String assignee;
 
     @CreatedDate @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -52,7 +42,6 @@ public class Todo {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public enum Status { TODO, IN_PROGRESS, HOLD, REVIEW, DONE }
-    public enum Priority { HIGH, MEDIUM, LOW }
-    public enum SourceType { SELF, CHANGE_REQUEST, DEPLOY, EXTERNAL }
+    public enum Type { PROJECT, OPERATION, OTHER }
+    public enum Status { IN_PROGRESS, ON_HOLD, DONE }
 }

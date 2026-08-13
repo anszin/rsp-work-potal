@@ -6,6 +6,11 @@ import {
   type KeyTask, type SaveKeyTaskRequest,
 } from '../../api/keyTasks'
 import { weeklyApi, type WeeklyReport } from '../../api/reports'
+import {
+  workUnitApi, type WorkUnit, type SaveWorkUnitRequest,
+  WORK_UNIT_TYPE_LABELS, WORK_UNIT_STATUS_LABELS, WORK_UNIT_STATUS_COLOR,
+  type WorkUnitType, type WorkUnitStatus,
+} from '../../api/workUnits'
 
 interface WorkItem {
   id: string
@@ -98,6 +103,28 @@ export default function KeyTaskPage() {
   const [editing, setEditing] = useState<KeyTask | null>(null)
   const [form, setForm] = useState<FormData>(emptyForm())
   const [progressTask, setProgressTask] = useState<KeyTask | null>(null)
+  const [workUnitTask, setWorkUnitTask] = useState<KeyTask | null>(null)
+  const [wuForm, setWuForm] = useState<SaveWorkUnitRequest | null>(null)
+  const [editingWu, setEditingWu] = useState<WorkUnit | null>(null)
+
+  const { data: workUnits = [] } = useQuery({
+    queryKey: ['work-units', workUnitTask?.id],
+    queryFn: () => workUnitApi.list(workUnitTask!.id),
+    enabled: !!workUnitTask,
+  })
+
+  const wuCreateMut = useMutation({
+    mutationFn: (data: SaveWorkUnitRequest) => workUnitApi.create(data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['work-units', workUnitTask?.id] }); setWuForm(null) },
+  })
+  const wuUpdateMut = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: SaveWorkUnitRequest }) => workUnitApi.update(id, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['work-units', workUnitTask?.id] }); setEditingWu(null); setWuForm(null) },
+  })
+  const wuDeleteMut = useMutation({
+    mutationFn: (id: number) => workUnitApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['work-units', workUnitTask?.id] }),
+  })
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['key-tasks', selYear] })
@@ -298,6 +325,77 @@ export default function KeyTaskPage() {
         </div>
       )}
 
+      {/* 업무단위 모달 */}
+      {workUnitTask && (
+        <div style={s.overlay} onClick={() => { setWorkUnitTask(null); setWuForm(null); setEditingWu(null) }}>
+          <div style={{ ...s.modal, maxWidth: 600 }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 2 }}>업무단위</div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{workUnitTask.taskName}</h3>
+              </div>
+              <button style={s.btnSecondary} onClick={() => { setWorkUnitTask(null); setWuForm(null); setEditingWu(null) }}>✕</button>
+            </div>
+
+            {/* 업무단위 목록 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+              {workUnits.length === 0 && !wuForm && (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 업무단위가 없습니다.</div>
+              )}
+              {workUnits.map(wu => (
+                <div key={wu.id} style={{ border: '1px solid var(--c-border)', borderRadius: 8, padding: '10px 14px' }}>
+                  {editingWu?.id === wu.id && wuForm ? (
+                    <WuForm
+                      form={wuForm}
+                      onChange={setWuForm}
+                      onSubmit={() => wuUpdateMut.mutate({ id: wu.id, data: wuForm })}
+                      onCancel={() => { setEditingWu(null); setWuForm(null) }}
+                      isPending={wuUpdateMut.isPending}
+                    />
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>{wu.title}</span>
+                          <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 8, background: '#EBF8FF', color: '#2B6CB0' }}>
+                            {WORK_UNIT_TYPE_LABELS[wu.type]}
+                          </span>
+                          <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 8, background: WORK_UNIT_STATUS_COLOR[wu.status] + '22', color: WORK_UNIT_STATUS_COLOR[wu.status], fontWeight: 600 }}>
+                            {WORK_UNIT_STATUS_LABELS[wu.status]}
+                          </span>
+                        </div>
+                        {wu.description && <div style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>{wu.description}</div>}
+                      </div>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button style={s.btnSm} onClick={() => { setEditingWu(wu); setWuForm({ keyTaskId: workUnitTask.id, title: wu.title, type: wu.type, status: wu.status, description: wu.description ?? '' }) }}>수정</button>
+                        <button style={{ ...s.btnSm, color: '#e53e3e' }} onClick={() => { if (confirm('삭제할까요?')) wuDeleteMut.mutate(wu.id) }}>삭제</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* 추가 폼 */}
+            {wuForm && !editingWu ? (
+              <WuForm
+                form={wuForm}
+                onChange={setWuForm}
+                onSubmit={() => wuCreateMut.mutate(wuForm)}
+                onCancel={() => setWuForm(null)}
+                isPending={wuCreateMut.isPending}
+              />
+            ) : (
+              !editingWu && (
+                <button style={s.btn} onClick={() => setWuForm({ keyTaskId: workUnitTask.id, title: '', type: 'PROJECT', status: 'IN_PROGRESS', description: '' })}>
+                  + 업무단위 추가
+                </button>
+              )
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 주간 실적 모달 */}
       {progressTask && (() => {
         const SECTIONS = [
@@ -478,6 +576,7 @@ export default function KeyTaskPage() {
                   <td style={s.td}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       <button style={{ ...s.btnSm, color: '#1976d2', borderColor: '#90caf9' }} onClick={() => setProgressTask(t)}>실적</button>
+                      <button style={{ ...s.btnSm, color: '#6b46c1', borderColor: '#d6bcfa' }} onClick={() => { setWorkUnitTask(t); setWuForm(null); setEditingWu(null) }}>업무단위</button>
                       <button style={s.btnSm} onClick={() => openEdit(t)}>수정</button>
                       <button style={{ ...s.btnSm, color: '#e53e3e' }}
                         onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</button>
@@ -491,6 +590,53 @@ export default function KeyTaskPage() {
       </div>
     </div>
   )
+}
+
+function WuForm({ form, onChange, onSubmit, onCancel, isPending }: {
+  form: SaveWorkUnitRequest
+  onChange: (f: SaveWorkUnitRequest) => void
+  onSubmit: () => void
+  onCancel: () => void
+  isPending: boolean
+}) {
+  return (
+    <div style={{ border: '1px dashed #a0aec0', borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <input
+        style={wuInput}
+        placeholder="업무단위명 *"
+        value={form.title}
+        onChange={e => onChange({ ...form, title: e.target.value })}
+        autoFocus
+      />
+      <div style={{ display: 'flex', gap: 8 }}>
+        <select style={wuInput} value={form.type} onChange={e => onChange({ ...form, type: e.target.value as WorkUnitType })}>
+          {(Object.entries(WORK_UNIT_TYPE_LABELS) as [WorkUnitType, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+        <select style={wuInput} value={form.status} onChange={e => onChange({ ...form, status: e.target.value as WorkUnitStatus })}>
+          {(Object.entries(WORK_UNIT_STATUS_LABELS) as [WorkUnitStatus, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+      </div>
+      <textarea
+        style={{ ...wuInput, height: 56, resize: 'vertical' }}
+        placeholder="설명 (선택)"
+        value={form.description ?? ''}
+        onChange={e => onChange({ ...form, description: e.target.value })}
+      />
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <button style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #e2e8f0', background: 'transparent', cursor: 'pointer', fontSize: 13 }} onClick={onCancel}>취소</button>
+        <button
+          style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: '#6b46c1', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+          onClick={onSubmit}
+          disabled={isPending || !form.title.trim()}
+        >저장</button>
+      </div>
+    </div>
+  )
+}
+
+const wuInput: React.CSSProperties = {
+  padding: '7px 10px', borderRadius: 6, border: '1px solid #e2e8f0',
+  fontSize: 13, outline: 'none', background: 'var(--c-bg, #fff)', color: 'inherit', width: '100%', boxSizing: 'border-box',
 }
 
 const s: Record<string, React.CSSProperties> = {
