@@ -400,21 +400,25 @@ const NEXT_SECTIONS: { key: ContentKey; label: string }[] = [
   { key: 'nextWeekWork', label: '수행' }, { key: 'nextWeekProposal', label: '제안' }, { key: 'nextWeekEtc', label: '기타사항' },
 ]
 
-function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCancel, saving, keyTasks, lastReport }: {
+function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCancel, saving, keyTasks, pastReports }: {
   form: WeeklyFormState; setForm: React.Dispatch<React.SetStateAction<WeeklyFormState>>
-  isConsolidated: boolean; isEditing: boolean; onSubmit: (e: React.FormEvent) => void; onCancel: () => void; saving: boolean; keyTasks: KeyTask[]; lastReport?: WeeklyReport
+  isConsolidated: boolean; isEditing: boolean; onSubmit: (e: React.FormEvent) => void; onCancel: () => void; saving: boolean; keyTasks: KeyTask[]; pastReports?: WeeklyReport[]
 }) {
   const setSection = (key: ContentKey, items: WorkItem[]) => setForm(f => ({ ...f, [key]: items }))
   const setThisWeekDates = (start: string, end: string) => setForm(f => ({ ...f, weekStart: start, weekEnd: end }))
   const setNextWeekDates = (start: string, end: string) => setForm(f => ({ ...f, nextWeekStart: start, nextWeekEnd: end }))
+  const [copySourceId, setCopySourceId] = useState('')
 
-  const copyFromLast = () => {
-    if (!lastReport) return
+  const copyFromReport = (reportId: string) => {
+    setCopySourceId(reportId)
+    if (!reportId || !pastReports) return
+    const source = pastReports.find(r => String(r.id) === reportId)
+    if (!source) return
     setForm(f => ({
       ...f,
-      thisWeekWork:     parseItems(lastReport.nextWeekWork),
-      thisWeekProposal: parseItems(lastReport.nextWeekProposal),
-      thisWeekEtc:      parseItems(lastReport.nextWeekEtc),
+      thisWeekWork:     parseItems(source.nextWeekWork),
+      thisWeekProposal: parseItems(source.nextWeekProposal),
+      thisWeekEtc:      parseItems(source.nextWeekEtc),
     }))
   }
 
@@ -425,11 +429,18 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
           {isConsolidated && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700, border: '1px solid #7c3aed33' }}>통합</span>}
           <h3 style={{ margin: 0 }}>{isConsolidated ? '통합 주간보고' : (isEditing ? '주간보고 수정' : '새 주간보고 작성')}</h3>
         </div>
-        {!isEditing && !isConsolidated && lastReport && (
-          <button type="button" onClick={copyFromLast}
-            style={{ fontSize: 12, padding: '5px 12px', border: '1px solid #1976d255', borderRadius: 6, background: '#1976d210', color: '#1976d2', cursor: 'pointer', fontWeight: 600 }}>
-            📋 지난주 차주 → 금주 복사
-          </button>
+        {!isEditing && !isConsolidated && pastReports && pastReports.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>📋 이전 보고서 차주</span>
+            <select value={copySourceId} onChange={e => copyFromReport(e.target.value)}
+              style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #1976d255', background: 'var(--c-bg)', color: '#1976d2', cursor: 'pointer' }}>
+              <option value="">주차 선택...</option>
+              {pastReports.map(r => (
+                <option key={r.id} value={String(r.id)}>{weekLabel(r.weekStart)}</option>
+              ))}
+            </select>
+            <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>→ 금주 복사</span>
+          </div>
         )}
       </div>
       <form onSubmit={onSubmit}>
@@ -569,10 +580,10 @@ export default function WeeklyReportPage() {
 
   const saving = createMut.isPending || createConsMut.isPending || updateMut.isPending
 
-  // 본인의 가장 최근 개인 보고서 (지난주 복사용)
-  const lastMyReport = myReports
+  // 본인의 개인 보고서 목록 (주차 선택 복사용, 최신순)
+  const myPastReports = myReports
     .filter(r => r.reportType === 'INDIVIDUAL' && r.author === user?.username)
-    .sort((a, b) => b.weekStart.localeCompare(a.weekStart))[0]
+    .sort((a, b) => b.weekStart.localeCompare(a.weekStart))
 
   // ── 선택된 주의 팀원 보고서 (overview용, 이미 myReports에 매니저라면 전원 있음)
   const weekReports = myReports.filter(r => r.weekStart === selectedWeek)
@@ -808,7 +819,7 @@ export default function WeeklyReportPage() {
             onCancel={() => setDetail({ type: 'none' })}
             saving={saving}
             keyTasks={keyTasks}
-            lastReport={lastMyReport}
+            pastReports={myPastReports}
           />
         ) : detail.type === 'view' ? (
           <ReportDetail
