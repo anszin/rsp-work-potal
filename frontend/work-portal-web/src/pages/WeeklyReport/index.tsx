@@ -525,7 +525,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
   const toggleExpand = (author: string) =>
     setExpanded(prev => { const next = new Set(prev); next.has(author) ? next.delete(author) : next.add(author); return next })
 
-  const addItem = (reportId: number, sec: ContentKey, item: WorkItem, author: string) => {
+  const addItem = (reportId: number, sec: ContentKey, item: WorkItem, _author: string) => {
     const key = `${reportId}_${sec}_${item.id}`
     if (addedKeys.has(key)) return
     setAddedKeys(prev => new Set([...prev, key]))
