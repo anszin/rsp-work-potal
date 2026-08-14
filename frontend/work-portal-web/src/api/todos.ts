@@ -13,6 +13,7 @@ export interface Todo {
   dueDate: string | null
   sourceType: TodoSourceType | null
   sourceId: number | null
+  startDate: string | null
   keyTaskId: number | null
   workUnitId: number | null
   assignee: string
@@ -25,6 +26,7 @@ export interface SaveTodoRequest {
   description?: string
   status?: TodoStatus
   priority?: TodoPriority
+  startDate?: string
   dueDate?: string
   sourceType?: TodoSourceType
   sourceId?: number

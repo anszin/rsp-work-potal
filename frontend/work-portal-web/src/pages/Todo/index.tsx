@@ -32,6 +32,7 @@ const emptyForm = (): SaveTodoRequest => ({
   description: '',
   status: 'TODO',
   priority: 'MEDIUM',
+  startDate: '',
   dueDate: '',
   sourceType: 'SELF',
   keyTaskId: undefined,
@@ -54,6 +55,7 @@ function toRequest(todo: Todo): SaveTodoRequest {
     description: todo.description ?? '',
     status: todo.status,
     priority: todo.priority ?? 'MEDIUM',
+    startDate: todo.startDate ?? '',
     dueDate: todo.dueDate ?? '',
     sourceType: todo.sourceType ?? 'SELF',
     sourceId: todo.sourceId ?? undefined,
@@ -270,6 +272,10 @@ export default function TodoPage() {
                   </select>
                 </label>
 
+                <label style={styles.label}>
+                  시작일
+                  <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+                </label>
                 <label style={styles.label}>
                   마감일
                   <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />

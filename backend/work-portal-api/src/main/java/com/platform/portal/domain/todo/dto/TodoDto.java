@@ -17,6 +17,7 @@ public class TodoDto {
         private String description;
         private Todo.Status status;
         private Todo.Priority priority;
+        private LocalDate startDate;
         private LocalDate dueDate;
         private Todo.SourceType sourceType;
         private Long sourceId;
@@ -32,6 +33,7 @@ public class TodoDto {
         private final String description;
         private final String status;
         private final String priority;
+        private final LocalDate startDate;
         private final LocalDate dueDate;
         private final String sourceType;
         private final Long sourceId;
@@ -47,6 +49,7 @@ public class TodoDto {
             this.description = t.getDescription();
             this.status = t.getStatus().name();
             this.priority = t.getPriority() != null ? t.getPriority().name() : null;
+            this.startDate = t.getStartDate();
             this.dueDate = t.getDueDate();
             this.sourceType = t.getSourceType() != null ? t.getSourceType().name() : null;
             this.sourceId = t.getSourceId();

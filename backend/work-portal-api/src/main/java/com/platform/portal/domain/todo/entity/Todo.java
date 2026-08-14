@@ -33,6 +33,7 @@ public class Todo {
     @Enumerated(EnumType.STRING)
     private Priority priority = Priority.MEDIUM;
 
+    private LocalDate startDate;
     private LocalDate dueDate;
 
     @Enumerated(EnumType.STRING)
