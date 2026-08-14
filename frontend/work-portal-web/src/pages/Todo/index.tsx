@@ -14,11 +14,7 @@ const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string
   { status: 'HOLD',        label: '보류',   color: '#c05621', guide: '이슈·사정으로 잠시 보류된 업무' },
 ]
 
-const PRIORITY_STYLE: Record<TodoPriority, { bg: string; color: string; label: string }> = {
-  HIGH:   { bg: '#FFF5F5', color: '#c53030', label: '상' },
-  MEDIUM: { bg: '#FFFAF0', color: '#c05621', label: '중' },
-  LOW:    { bg: '#F0FFF4', color: '#276749', label: '하' },
-}
+const PRIORITY_LABEL: Record<TodoPriority, string> = { HIGH: '상', MEDIUM: '중', LOW: '하' }
 
 const SOURCE_LABELS: Record<TodoSourceType, string> = {
   SELF:           '자체',
@@ -102,11 +98,11 @@ export default function TodoPage() {
   function getTypeBadge(todo: Todo): { label: string; color: string; bg: string } | null {
     if (todo.workUnitId) {
       const wu = allWorkUnits.find(w => w.id === todo.workUnitId)
-      if (wu?.type === 'PROJECT')   return { label: '중점', color: '#6b46c1', bg: '#F5F0FF' }
-      if (wu?.type === 'OPERATION') return { label: 'KPI',  color: '#2B6CB0', bg: '#EBF8FF' }
-      return { label: '기타', color: '#718096', bg: '#EDF2F7' }
+      if (wu?.type === 'PROJECT')   return { label: '중점', color: 'var(--c-tag-pri-t)', bg: 'var(--c-tag-pri-bg)' }
+      if (wu?.type === 'OPERATION') return { label: 'KPI',  color: 'var(--c-tag-sys-t)', bg: 'var(--c-tag-sys)' }
+      return { label: '기타', color: 'var(--c-tag-draft-t)', bg: 'var(--c-tag-draft-bg)' }
     }
-    if (todo.keyTaskId) return { label: '중점', color: '#6b46c1', bg: '#F5F0FF' }
+    if (todo.keyTaskId) return { label: '중점', color: 'var(--c-tag-pri-t)', bg: 'var(--c-tag-pri-bg)' }
     return null
   }
 
@@ -184,7 +180,7 @@ export default function TodoPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Todo</h2>
-          <div style={{ fontSize: 12, color: '#718096', marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 2 }}>
             총 {todos.length}개 · 완료 {grouped.DONE.length}개
             {grouped.HOLD.length > 0 && <span style={{ color: '#c05621', marginLeft: 8 }}>· 보류 {grouped.HOLD.length}개</span>}
           </div>
@@ -204,9 +200,9 @@ export default function TodoPage() {
             <div style={{ ...styles.colHeader, borderTop: `3px solid ${col.color}` }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ fontWeight: 700, fontSize: 14, color: col.color }}>{col.label}</span>
-                <span style={{ fontSize: 13, color: '#a0aec0', marginLeft: 6 }}>{grouped[col.status].length}</span>
+                <span style={{ fontSize: 13, color: 'var(--c-text-muted)', marginLeft: 6 }}>{grouped[col.status].length}</span>
               </div>
-              <div style={{ fontSize: 11, color: '#a0aec0', marginTop: 2 }}>{col.guide}</div>
+              <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{col.guide}</div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0', flex: 1, overflowY: 'auto' }}>
@@ -223,7 +219,7 @@ export default function TodoPage() {
                 />
               ))}
               {grouped[col.status].length === 0 && (
-                <div style={{ textAlign: 'center', padding: '24px 0', color: '#cbd5e0', fontSize: 12 }}>없음</div>
+                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--c-text-muted)', fontSize: 12 }}>없음</div>
               )}
             </div>
           </div>
@@ -341,7 +337,7 @@ export default function TodoPage() {
               {/* 시작일 · 목표일 · 완료일 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'end' }}>
                 <label style={styles.label}>
-                  <span>시작일 <span style={{ fontSize: 10, color: '#a0aec0', fontWeight: 400 }}>(실제)</span></span>
+                  <span>시작일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
                   <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
                 </label>
                 <label style={styles.label}>
@@ -349,7 +345,7 @@ export default function TodoPage() {
                   <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
                 </label>
                 <label style={styles.label}>
-                  <span>완료일 <span style={{ fontSize: 10, color: '#a0aec0', fontWeight: 400 }}>(실제)</span></span>
+                  <span>완료일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
                   <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
                 </label>
               </div>
@@ -385,7 +381,6 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
   onDragStart: () => void
   onDragEnd: () => void
 }) {
-  const pColor = todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.color : '#e2e8f0'
   const overdue = todo.status !== 'DONE' && todo.status !== 'HOLD' && isPast(todo.dueDate)
   const faded = todo.status === 'DONE' || todo.status === 'HOLD'
   const [hovered, setHovered] = useState(false)
@@ -401,7 +396,6 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
       style={{
         ...styles.card,
         cursor: 'pointer',
-        borderLeft: `3px solid ${pColor}`,
         opacity: faded ? 0.45 : 1,
         boxShadow: hovered ? '0 4px 12px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.05)',
         transform: hovered ? 'translateY(-1px)' : 'none',
@@ -417,7 +411,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
         {overdue && (
-          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: '#FFF5F5', color: '#c53030', fontWeight: 700, border: '1px solid #FED7D7' }}>
+          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-err-bg)', color: 'var(--c-tag-err-t)', fontWeight: 700, border: '1px solid var(--c-tag-err-t)' }}>
             지연
           </span>
         )}
@@ -429,20 +423,20 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
         {todo.priority && (
           <span style={{
             fontSize: 11, padding: '2px 7px', borderRadius: 10, fontWeight: 600,
-            background: todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.bg : 'transparent',
-            color: todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.color : '#a0aec0',
-            border: todo.priority === 'HIGH' ? 'none' : '1px solid #e2e8f0',
+            background: todo.priority === 'HIGH' ? 'var(--c-tag-err-bg)' : 'transparent',
+            color: todo.priority === 'HIGH' ? 'var(--c-tag-err-t)' : 'var(--c-text-muted)',
+            border: todo.priority === 'HIGH' ? 'none' : '1px solid var(--c-border)',
           }}>
-            {PRIORITY_STYLE[todo.priority].label}
+            {PRIORITY_LABEL[todo.priority]}
           </span>
         )}
         {todo.sourceType && todo.sourceType !== 'SELF' && (
-          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: '#EBF8FF', color: '#2B6CB0' }}>
+          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }}>
             {SOURCE_LABELS[todo.sourceType]}
           </span>
         )}
         {todo.dueDate && (
-          <span style={{ fontSize: 11, color: overdue ? '#e53e3e' : '#718096', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 11, color: overdue ? 'var(--c-tag-err-t)' : 'var(--c-text-muted)', marginLeft: 'auto' }}>
             {overdue ? '⚠ ' : ''}{formatDate(todo.dueDate)}
           </span>
         )}
@@ -459,12 +453,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   colHeader: {
     padding: '10px 12px', borderRadius: '6px 6px 0 0',
-    background: 'var(--bg-card, #f7fafc)', borderLeft: '1px solid #e2e8f0',
-    borderRight: '1px solid #e2e8f0',
+    background: 'var(--c-thead)', borderLeft: '1px solid var(--c-border)',
+    borderRight: '1px solid var(--c-border)',
   },
   card: {
-    background: 'var(--bg-card, #fff)', borderRadius: 6,
-    border: '1px solid #e2e8f0', padding: '10px 12px',
+    background: 'var(--c-card)', borderRadius: 6,
+    border: '1px solid var(--c-border)', padding: '10px 12px',
     cursor: 'grab', boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
   },
   iconBtn: {
@@ -476,33 +470,33 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
   },
   modal: {
-    background: 'var(--bg-card, #fff)', borderRadius: 10, padding: 24,
+    background: 'var(--c-card)', borderRadius: 10, padding: 24,
     width: '100%', maxWidth: 480, boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
   },
   modalHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
   },
   closeBtn: {
-    background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', color: '#718096',
+    background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--c-text-muted)',
   },
   label: {
-    display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: '#4a5568', fontWeight: 500,
+    display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--c-text-sub)', fontWeight: 500,
   },
   input: {
-    padding: '8px 10px', borderRadius: 6, border: '1px solid #e2e8f0',
-    fontSize: 13, outline: 'none', background: 'var(--bg-input, #fff)', color: 'inherit',
+    padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border)',
+    fontSize: 13, outline: 'none', background: 'var(--c-input-bg)', color: 'inherit',
     width: '100%', boxSizing: 'border-box',
   },
   cancelBtn: {
-    padding: '8px 16px', borderRadius: 6, border: '1px solid #e2e8f0',
-    background: 'transparent', cursor: 'pointer', fontSize: 13, color: '#718096',
+    padding: '8px 16px', borderRadius: 6, border: '1px solid var(--c-border)',
+    background: 'transparent', cursor: 'pointer', fontSize: 13, color: 'var(--c-text-muted)',
   },
   submitBtn: {
     padding: '8px 20px', borderRadius: 6, border: 'none',
     background: '#3182ce', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600,
   },
   deleteBtn: {
-    padding: '8px 14px', borderRadius: 6, border: '1px solid #fed7d7',
-    background: 'transparent', cursor: 'pointer', fontSize: 13, color: '#e53e3e',
+    padding: '8px 14px', borderRadius: 6, border: '1px solid var(--c-tag-err-t)',
+    background: 'transparent', cursor: 'pointer', fontSize: 13, color: 'var(--c-tag-err-t)',
   },
 }

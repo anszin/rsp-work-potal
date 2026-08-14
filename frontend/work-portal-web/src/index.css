@@ -20,6 +20,8 @@
   --c-tag-done-t:   #285E61;
   --c-tag-err-bg:   #FFF5F5;
   --c-tag-err-t:    #9B2C2C;
+  --c-tag-pri-bg:   #F5F0FF;
+  --c-tag-pri-t:    #6b46c1;
 }
 
 [data-theme="dark"] {
@@ -44,6 +46,8 @@
   --c-tag-done-t:   #81e6d9;
   --c-tag-err-bg:   #3a1a1a;
   --c-tag-err-t:    #fc8181;
+  --c-tag-pri-bg:   #2d1f4a;
+  --c-tag-pri-t:    #b794f4;
 }
 
 * {
