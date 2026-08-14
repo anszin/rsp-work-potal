@@ -351,7 +351,11 @@ export default function TodoPage() {
                   <select
                     style={styles.input}
                     value={form.workUnitId ?? ''}
-                    onChange={e => setForm(f => ({ ...f, workUnitId: e.target.value ? Number(e.target.value) : undefined }))}
+                    onChange={e => {
+                      const wuId = e.target.value ? Number(e.target.value) : undefined
+                      const wu = allWorkUnits.find(w => w.id === wuId)
+                      setForm(f => ({ ...f, workUnitId: wuId, keyTaskId: wu ? wu.keyTaskId : f.keyTaskId }))
+                    }}
                     disabled={filteredWorkUnits.length === 0}
                   >
                     <option value="">선택 안 함</option>
