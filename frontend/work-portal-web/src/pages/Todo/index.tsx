@@ -295,7 +295,7 @@ export default function TodoPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={styles.label}>
-                  출처
+                  요청유형
                   <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))}>
                     {(Object.entries(SOURCE_LABELS) as [TodoSourceType, string][]).map(([k, v]) => (
                       <option key={k} value={k}>{v}</option>
