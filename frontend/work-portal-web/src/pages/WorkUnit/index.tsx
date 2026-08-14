@@ -30,6 +30,10 @@ export default function WorkUnitPage() {
   const [editing, setEditing] = useState<WorkUnit | null>(null)
   const [form, setForm] = useState<SaveWorkUnitRequest>(emptyForm())
 
+  const createMut = useMutation({
+    mutationFn: (data: SaveWorkUnitRequest) => workUnitApi.create(data),
+    onSuccess: () => { invalidate(); closeModal() },
+  })
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: SaveWorkUnitRequest }) => workUnitApi.update(id, data),
     onSuccess: () => { invalidate(); closeModal() },
@@ -42,6 +46,12 @@ export default function WorkUnitPage() {
   function invalidate() {
     qc.invalidateQueries({ queryKey: ['work-units-all'] })
     qc.invalidateQueries({ queryKey: ['work-units'] })
+  }
+
+  function openCreate() {
+    setEditing(null)
+    setForm({ ...emptyForm(), keyTaskId: keyTasks[0]?.id ?? 0 })
+    setModalOpen(true)
   }
 
   function openEdit(wu: WorkUnit) {
@@ -58,8 +68,12 @@ export default function WorkUnitPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.title.trim()) return
-    if (editing) updateMut.mutate({ id: editing.id, data: form })
+    if (!form.title.trim() || !form.keyTaskId) return
+    if (editing) {
+      updateMut.mutate({ id: editing.id, data: form })
+    } else {
+      createMut.mutate(form)
+    }
   }
 
   const keyTaskMap = Object.fromEntries(keyTasks.map(t => [t.id, t.taskName]))
@@ -87,6 +101,7 @@ export default function WorkUnitPage() {
             전체 {workUnits.length}개 · 진행중 {grouped.IN_PROGRESS.length}개 · 보류 {grouped.ON_HOLD.length}개 · 완료 {grouped.DONE.length}개
           </div>
         </div>
+        <button onClick={openCreate} style={styles.addBtn}>+ 추가</button>
       </div>
 
       {/* 필터 */}
@@ -152,19 +167,26 @@ export default function WorkUnitPage() {
 
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: '48px 0', color: '#a0aec0', fontSize: 14 }}>
-          단위업무가 없습니다. 중점과제 페이지에서 추가할 수 있습니다.
+          단위업무가 없습니다. 우측 상단 "+ 추가" 버튼으로 등록하세요.
         </div>
       )}
 
-      {/* 수정 모달 */}
-      {modalOpen && editing && (
+      {/* 추가/수정 모달 */}
+      {modalOpen && (
         <div style={styles.overlay} onClick={e => e.target === e.currentTarget && closeModal()}>
           <div style={styles.modal}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontWeight: 600, fontSize: 15 }}>단위업무 수정</span>
+              <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? '단위업무 수정' : '단위업무 추가'}</span>
               <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', color: '#718096' }}>✕</button>
             </div>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <label style={styles.label}>
+                중점과제 *
+                <select style={styles.input} value={form.keyTaskId} onChange={e => setForm(f => ({ ...f, keyTaskId: Number(e.target.value) }))}>
+                  <option value={0} disabled>중점과제 선택</option>
+                  {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
+                </select>
+              </label>
               <label style={styles.label}>
                 이름 *
                 <input style={styles.input} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} autoFocus />
@@ -189,7 +211,7 @@ export default function WorkUnitPage() {
               </label>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={closeModal} style={styles.cancelBtn}>취소</button>
-                <button type="submit" style={styles.submitBtn} disabled={updateMut.isPending}>저장</button>
+                <button type="submit" style={styles.submitBtn} disabled={createMut.isPending || updateMut.isPending}>저장</button>
               </div>
             </form>
           </div>
@@ -214,4 +236,5 @@ const styles: Record<string, React.CSSProperties> = {
   input: { padding: '8px 10px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, outline: 'none', background: 'var(--bg-input, #fff)', color: 'inherit', width: '100%', boxSizing: 'border-box' },
   cancelBtn: { padding: '8px 16px', borderRadius: 6, border: '1px solid #e2e8f0', background: 'transparent', cursor: 'pointer', fontSize: 13, color: '#718096' },
   submitBtn: { padding: '8px 20px', borderRadius: 6, border: 'none', background: '#6b46c1', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 },
+  addBtn: { padding: '7px 16px', borderRadius: 6, border: 'none', background: '#6b46c1', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 },
 }
