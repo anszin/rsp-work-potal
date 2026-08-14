@@ -95,9 +95,6 @@ export default function TodoPage() {
     queryFn: workUnitApi.listAll,
   })
 
-  const keyTaskMap = Object.fromEntries(keyTasks.map(t => [t.id, t.taskName]))
-  const workUnitMap = Object.fromEntries(allWorkUnits.map(w => [w.id, w.title]))
-
   function getTypeBadge(todo: Todo): { label: string; color: string; bg: string } | null {
     if (todo.workUnitId) {
       const wu = allWorkUnits.find(w => w.id === todo.workUnitId)
@@ -415,22 +412,6 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
   )
 }
 
-function Badge({ label, color }: { label: string; color: string }) {
-  return (
-    <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: color + '22', color, fontWeight: 600, border: `1px solid ${color}44` }}>
-      {label}
-    </span>
-  )
-}
-
-function Row({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
-  return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-      <span style={{ fontSize: 11, color: '#a0aec0', minWidth: 48 }}>{label}</span>
-      <span style={{ fontSize: 13, color: warn ? '#e53e3e' : '#2d3748' }}>{warn ? '⚠ ' : ''}{value}</span>
-    </div>
-  )
-}
 
 const styles: Record<string, React.CSSProperties> = {
   addBtn: {
