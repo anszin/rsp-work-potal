@@ -400,6 +400,11 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+        {overdue && (
+          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: '#FFF5F5', color: '#c53030', fontWeight: 700, border: '1px solid #FED7D7' }}>
+            지연
+          </span>
+        )}
         {typeBadge && (
           <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: typeBadge.bg, color: typeBadge.color, fontWeight: 700 }}>
             {typeBadge.label}
