@@ -279,7 +279,7 @@ export default function TodoPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'end' }}>
                 <label style={styles.label}>
-                  시작일 <span style={{ fontSize: 10, color: '#a0aec0' }}>(실제)</span>
+                  <span>시작일 <span style={{ fontSize: 10, color: '#a0aec0', fontWeight: 400 }}>(실제)</span></span>
                   <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
                 </label>
                 <label style={styles.label}>
@@ -287,7 +287,7 @@ export default function TodoPage() {
                   <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
                 </label>
                 <label style={styles.label}>
-                  완료일 <span style={{ fontSize: 10, color: '#a0aec0' }}>(실제)</span>
+                  <span>완료일 <span style={{ fontSize: 10, color: '#a0aec0', fontWeight: 400 }}>(실제)</span></span>
                   <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
                 </label>
 
