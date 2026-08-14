@@ -6,12 +6,12 @@ import { getUsers, type UserSummary } from '../../api/users'
 import { getKeyTasks } from '../../api/keyTasks'
 import { workUnitApi } from '../../api/workUnits'
 
-const COLUMNS: { status: TodoStatus; label: string; color: string }[] = [
-  { status: 'TODO',        label: '대기',   color: '#718096' },
-  { status: 'IN_PROGRESS', label: '진행중', color: '#3182ce' },
-  { status: 'REVIEW',      label: '검토',   color: '#d69e2e' },
-  { status: 'DONE',        label: '완료',   color: '#38a169' },
-  { status: 'HOLD',        label: '보류',   color: '#c05621' },
+const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
+  { status: 'TODO',        label: '대기',   color: '#718096', guide: '아직 시작하지 않은 업무' },
+  { status: 'IN_PROGRESS', label: '진행중', color: '#3182ce', guide: '현재 작업 중인 업무' },
+  { status: 'REVIEW',      label: '검토',   color: '#d69e2e', guide: '완료 후 확인·승인 대기' },
+  { status: 'DONE',        label: '완료',   color: '#38a169', guide: '모든 처리가 끝난 업무' },
+  { status: 'HOLD',        label: '보류',   color: '#c05621', guide: '사정으로 중단된 업무' },
 ]
 
 const PRIORITY_STYLE: Record<TodoPriority, { bg: string; color: string; label: string }> = {
@@ -202,8 +202,11 @@ export default function TodoPage() {
             style={{ display: 'flex', flexDirection: 'column', minWidth: 160 }}
           >
             <div style={{ ...styles.colHeader, borderTop: `3px solid ${col.color}` }}>
-              <span style={{ fontWeight: 700, fontSize: 14, color: col.color }}>{col.label}</span>
-              <span style={{ fontSize: 13, color: '#a0aec0', marginLeft: 6 }}>{grouped[col.status].length}</span>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontWeight: 700, fontSize: 14, color: col.color }}>{col.label}</span>
+                <span style={{ fontSize: 13, color: '#a0aec0', marginLeft: 6 }}>{grouped[col.status].length}</span>
+              </div>
+              <div style={{ fontSize: 11, color: '#a0aec0', marginTop: 2 }}>{col.guide}</div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0', flex: 1, overflowY: 'auto' }}>
