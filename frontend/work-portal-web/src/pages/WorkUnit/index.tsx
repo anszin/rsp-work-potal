@@ -9,7 +9,7 @@ import { getKeyTasks } from '../../api/keyTasks'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
-export default function WorkUnitPage() {
+export default function WorkUnitPage({ initialKeyTaskId }: { initialKeyTaskId?: number } = {}) {
   const qc = useQueryClient()
   const now = new Date().getFullYear()
 
@@ -25,7 +25,7 @@ export default function WorkUnitPage() {
 
   const [filterType, setFilterType] = useState<WorkUnitType | 'ALL'>('ALL')
   const [filterStatus, setFilterStatus] = useState<WorkUnitStatus | 'ALL'>('ALL')
-  const [filterKeyTask, setFilterKeyTask] = useState<number | 'ALL'>('ALL')
+  const [filterKeyTask, setFilterKeyTask] = useState<number | 'ALL'>(initialKeyTaskId ?? 'ALL')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<WorkUnit | null>(null)
   const [form, setForm] = useState<SaveWorkUnitRequest>(emptyForm())
