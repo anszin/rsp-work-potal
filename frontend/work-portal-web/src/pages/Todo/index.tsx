@@ -246,7 +246,7 @@ export default function TodoPage() {
               <label style={styles.label}>
                 설명
                 <textarea
-                  style={{ ...styles.input, height: 72, resize: 'vertical' }}
+                  style={{ ...styles.input, height: 140, resize: 'vertical' }}
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="상세 내용"
