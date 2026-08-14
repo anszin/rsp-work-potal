@@ -202,8 +202,8 @@ export default function TodoPage() {
             style={{ display: 'flex', flexDirection: 'column', minWidth: 160 }}
           >
             <div style={{ ...styles.colHeader, borderTop: `3px solid ${col.color}` }}>
-              <span style={{ fontWeight: 600, fontSize: 13, color: col.color }}>{col.label}</span>
-              <span style={{ fontSize: 12, color: '#a0aec0', marginLeft: 6 }}>{grouped[col.status].length}</span>
+              <span style={{ fontWeight: 700, fontSize: 14, color: col.color }}>{col.label}</span>
+              <span style={{ fontSize: 13, color: '#a0aec0', marginLeft: 6 }}>{grouped[col.status].length}</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0', flex: 1, overflowY: 'auto' }}>
@@ -394,27 +394,27 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
       onClick={onDetail}
       style={{ ...styles.card, cursor: 'pointer', borderLeft: `3px solid ${pColor}`, opacity: faded ? 0.45 : 1 }}
     >
-      <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
+      <div style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word' }}>
         {showAssignee && (
-          <div style={{ fontSize: 10, color: '#3182ce', fontWeight: 600, marginBottom: 2 }}>{nameOf(todo.assignee)}</div>
+          <div style={{ fontSize: 11, color: '#3182ce', fontWeight: 600, marginBottom: 3 }}>{nameOf(todo.assignee)}</div>
         )}
         {todo.title}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
         {overdue && (
-          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: '#FFF5F5', color: '#c53030', fontWeight: 700, border: '1px solid #FED7D7' }}>
+          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: '#FFF5F5', color: '#c53030', fontWeight: 700, border: '1px solid #FED7D7' }}>
             지연
           </span>
         )}
         {typeBadge && (
-          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: typeBadge.bg, color: typeBadge.color, fontWeight: 700 }}>
+          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: typeBadge.bg, color: typeBadge.color, fontWeight: 700 }}>
             {typeBadge.label}
           </span>
         )}
         {todo.priority && (
           <span style={{
-            fontSize: 10, padding: '2px 6px', borderRadius: 10, fontWeight: 600,
+            fontSize: 11, padding: '2px 7px', borderRadius: 10, fontWeight: 600,
             background: todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.bg : 'transparent',
             color: todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.color : '#a0aec0',
             border: todo.priority === 'HIGH' ? 'none' : '1px solid #e2e8f0',
@@ -423,12 +423,12 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
           </span>
         )}
         {todo.sourceType && todo.sourceType !== 'SELF' && (
-          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: '#EBF8FF', color: '#2B6CB0' }}>
+          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: '#EBF8FF', color: '#2B6CB0' }}>
             {SOURCE_LABELS[todo.sourceType]}
           </span>
         )}
         {todo.dueDate && (
-          <span style={{ fontSize: 10, color: overdue ? '#e53e3e' : '#718096', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 11, color: overdue ? '#e53e3e' : '#718096', marginLeft: 'auto' }}>
             {overdue ? '⚠ ' : ''}{formatDate(todo.dueDate)}
           </span>
         )}
