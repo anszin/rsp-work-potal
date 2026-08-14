@@ -420,9 +420,6 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
             {SOURCE_LABELS[todo.sourceType]}
           </span>
         )}
-        {todo.description && (
-          <span style={{ fontSize: 10, color: '#a0aec0' }}>📝</span>
-        )}
         {todo.dueDate && (
           <span style={{ fontSize: 10, color: overdue ? '#e53e3e' : '#718096', marginLeft: 'auto' }}>
             {overdue ? '⚠ ' : ''}{formatDate(todo.dueDate)}
