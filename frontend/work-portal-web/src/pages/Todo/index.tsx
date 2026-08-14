@@ -232,7 +232,7 @@ export default function TodoPage() {
         <div style={styles.overlay} onClick={e => e.target === e.currentTarget && closeModal()}>
           <div style={styles.modal}>
             <div style={styles.modalHeader}>
-              <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? 'Todo 수정' : 'Todo 추가'}</span>
+              <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? 'To-Do 수정' : 'To-Do 추가'}</span>
               <button onClick={closeModal} style={styles.closeBtn}>✕</button>
             </div>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
