@@ -382,8 +382,9 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
   onDragStart: () => void
   onDragEnd: () => void
 }) {
-  const pStyle = todo.priority ? PRIORITY_STYLE[todo.priority] : null
+  const pColor = todo.priority ? PRIORITY_STYLE[todo.priority].color : '#e2e8f0'
   const overdue = todo.status !== 'DONE' && todo.status !== 'HOLD' && isPast(todo.dueDate)
+  const faded = todo.status === 'DONE' || todo.status === 'HOLD'
 
   return (
     <div
@@ -391,9 +392,8 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onDetail}
-      style={{ ...styles.card, cursor: 'pointer' }}
+      style={{ ...styles.card, cursor: 'pointer', borderLeft: `3px solid ${pColor}`, opacity: faded ? 0.45 : 1 }}
     >
-
       <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
         {showAssignee && (
           <div style={{ fontSize: 10, color: '#3182ce', fontWeight: 600, marginBottom: 2 }}>{nameOf(todo.assignee)}</div>
@@ -410,11 +410,6 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
         {typeBadge && (
           <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: typeBadge.bg, color: typeBadge.color, fontWeight: 700 }}>
             {typeBadge.label}
-          </span>
-        )}
-        {pStyle && (
-          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: pStyle.bg, color: pStyle.color, fontWeight: 600 }}>
-            {pStyle.label}
           </span>
         )}
         {todo.sourceType && todo.sourceType !== 'SELF' && (
