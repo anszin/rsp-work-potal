@@ -257,70 +257,7 @@ export default function TodoPage() {
                 />
               </label>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <label style={styles.label}>
-                  상태
-                  <select style={styles.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as TodoStatus }))}>
-                    {COLUMNS.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
-                  </select>
-                </label>
-
-                <label style={styles.label}>
-                  우선순위
-                  <select style={styles.input} value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TodoPriority }))}>
-                    <option value="HIGH">상</option>
-                    <option value="MEDIUM">중</option>
-                    <option value="LOW">하</option>
-                  </select>
-                </label>
-
-
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'end' }}>
-                <label style={styles.label}>
-                  <span>시작일 <span style={{ fontSize: 10, color: '#a0aec0', fontWeight: 400 }}>(실제)</span></span>
-                  <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
-                </label>
-                <label style={styles.label}>
-                  목표일
-                  <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
-                </label>
-                <label style={styles.label}>
-                  <span>완료일 <span style={{ fontSize: 10, color: '#a0aec0', fontWeight: 400 }}>(실제)</span></span>
-                  <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
-                </label>
-
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <label style={styles.label}>
-                  요청유형
-                  <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))}>
-                    {(Object.entries(SOURCE_LABELS) as [TodoSourceType, string][]).map(([k, v]) => (
-                      <option key={k} value={k}>{v}</option>
-                    ))}
-                  </select>
-                </label>
-                {isManager && (
-                  <label style={styles.label}>
-                    담당자
-                    <select
-                      style={styles.input}
-                      value={form.assignee ?? ''}
-                      onChange={e => setForm(f => ({ ...f, assignee: e.target.value || undefined }))}
-                    >
-                      <option value="">본인</option>
-                      {users.filter(u => u.active).map(u => (
-                        <option key={u.username} value={u.username}>
-                          {u.name ?? u.username}{u.dept ? ` (${u.dept})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-              </div>
-
+              {/* 중점과제 · 단위업무 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={styles.label}>
                   중점과제
@@ -348,6 +285,69 @@ export default function TodoPage() {
                     <option value="">선택 안 함</option>
                     {filteredWorkUnits.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
                   </select>
+                </label>
+              </div>
+
+              {/* 상태 · 우선순위 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label style={styles.label}>
+                  상태
+                  <select style={styles.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as TodoStatus }))}>
+                    {COLUMNS.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
+                  </select>
+                </label>
+                <label style={styles.label}>
+                  우선순위
+                  <select style={styles.input} value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TodoPriority }))}>
+                    <option value="HIGH">상</option>
+                    <option value="MEDIUM">중</option>
+                    <option value="LOW">하</option>
+                  </select>
+                </label>
+              </div>
+
+              {/* 담당자 · 요청유형 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {isManager && (
+                  <label style={styles.label}>
+                    담당자
+                    <select
+                      style={styles.input}
+                      value={form.assignee ?? ''}
+                      onChange={e => setForm(f => ({ ...f, assignee: e.target.value || undefined }))}
+                    >
+                      <option value="">본인</option>
+                      {users.filter(u => u.active).map(u => (
+                        <option key={u.username} value={u.username}>
+                          {u.name ?? u.username}{u.dept ? ` (${u.dept})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                <label style={styles.label}>
+                  요청유형
+                  <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))}>
+                    {(Object.entries(SOURCE_LABELS) as [TodoSourceType, string][]).map(([k, v]) => (
+                      <option key={k} value={k}>{v}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              {/* 시작일 · 목표일 · 완료일 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'end' }}>
+                <label style={styles.label}>
+                  <span>시작일 <span style={{ fontSize: 10, color: '#a0aec0', fontWeight: 400 }}>(실제)</span></span>
+                  <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+                </label>
+                <label style={styles.label}>
+                  목표일
+                  <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+                </label>
+                <label style={styles.label}>
+                  <span>완료일 <span style={{ fontSize: 10, color: '#a0aec0', fontWeight: 400 }}>(실제)</span></span>
+                  <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
                 </label>
               </div>
 
