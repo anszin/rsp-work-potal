@@ -6,11 +6,6 @@ import {
   type KeyTask, type SaveKeyTaskRequest,
 } from '../../api/keyTasks'
 import { weeklyApi, type WeeklyReport } from '../../api/reports'
-import {
-  workUnitApi, type WorkUnit, type SaveWorkUnitRequest,
-  WORK_UNIT_TYPE_LABELS, WORK_UNIT_STATUS_LABELS, WORK_UNIT_STATUS_COLOR,
-  type WorkUnitType, type WorkUnitStatus,
-} from '../../api/workUnits'
 import WorkUnitTab from '../WorkUnit'
 
 interface WorkItem {
@@ -520,52 +515,6 @@ export default function KeyTaskPage() {
   )
 }
 
-function WuForm({ form, onChange, onSubmit, onCancel, isPending }: {
-  form: SaveWorkUnitRequest
-  onChange: (f: SaveWorkUnitRequest) => void
-  onSubmit: () => void
-  onCancel: () => void
-  isPending: boolean
-}) {
-  return (
-    <div style={{ border: '1px dashed #a0aec0', borderRadius: 8, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <input
-        style={wuInput}
-        placeholder="업무단위명 *"
-        value={form.title}
-        onChange={e => onChange({ ...form, title: e.target.value })}
-        autoFocus
-      />
-      <div style={{ display: 'flex', gap: 8 }}>
-        <select style={wuInput} value={form.type} onChange={e => onChange({ ...form, type: e.target.value as WorkUnitType })}>
-          {(Object.entries(WORK_UNIT_TYPE_LABELS) as [WorkUnitType, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <select style={wuInput} value={form.status} onChange={e => onChange({ ...form, status: e.target.value as WorkUnitStatus })}>
-          {(Object.entries(WORK_UNIT_STATUS_LABELS) as [WorkUnitStatus, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-      </div>
-      <textarea
-        style={{ ...wuInput, height: 56, resize: 'vertical' }}
-        placeholder="설명 (선택)"
-        value={form.description ?? ''}
-        onChange={e => onChange({ ...form, description: e.target.value })}
-      />
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #e2e8f0', background: 'transparent', cursor: 'pointer', fontSize: 13 }} onClick={onCancel}>취소</button>
-        <button
-          style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: '#6b46c1', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-          onClick={onSubmit}
-          disabled={isPending || !form.title.trim()}
-        >저장</button>
-      </div>
-    </div>
-  )
-}
-
-const wuInput: React.CSSProperties = {
-  padding: '7px 10px', borderRadius: 6, border: '1px solid #e2e8f0',
-  fontSize: 13, outline: 'none', background: 'var(--c-bg, #fff)', color: 'inherit', width: '100%', boxSizing: 'border-box',
-}
 
 const s: Record<string, React.CSSProperties> = {
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
