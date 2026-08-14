@@ -11,7 +11,7 @@ const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string
   { status: 'IN_PROGRESS', label: '진행중', color: '#3182ce', guide: '현재 작업 중인 업무' },
   { status: 'REVIEW',      label: '검토',   color: '#d69e2e', guide: '완료 후 확인·승인 대기' },
   { status: 'DONE',        label: '완료',   color: '#38a169', guide: '모든 처리가 끝난 업무' },
-  { status: 'HOLD',        label: '보류',   color: '#c05621', guide: '사정으로 중단된 업무' },
+  { status: 'HOLD',        label: '보류',   color: '#c05621', guide: '이슈·사정으로 잠시 보류된 업무' },
 ]
 
 const PRIORITY_STYLE: Record<TodoPriority, { bg: string; color: string; label: string }> = {
