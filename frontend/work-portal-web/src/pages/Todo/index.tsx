@@ -385,6 +385,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
   const pColor = todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.color : '#e2e8f0'
   const overdue = todo.status !== 'DONE' && todo.status !== 'HOLD' && isPast(todo.dueDate)
   const faded = todo.status === 'DONE' || todo.status === 'HOLD'
+  const [hovered, setHovered] = useState(false)
 
   return (
     <div
@@ -392,7 +393,17 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onDetail}
-      style={{ ...styles.card, cursor: 'pointer', borderLeft: `3px solid ${pColor}`, opacity: faded ? 0.45 : 1 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        ...styles.card,
+        cursor: 'pointer',
+        borderLeft: `3px solid ${pColor}`,
+        opacity: faded ? 0.45 : 1,
+        boxShadow: hovered ? '0 4px 12px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.05)',
+        transform: hovered ? 'translateY(-1px)' : 'none',
+        transition: 'box-shadow 0.15s, transform 0.15s',
+      }}
     >
       <div style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word' }}>
         {showAssignee && (
