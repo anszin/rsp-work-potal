@@ -382,7 +382,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
   onDragStart: () => void
   onDragEnd: () => void
 }) {
-  const pColor = todo.priority ? PRIORITY_STYLE[todo.priority].color : '#e2e8f0'
+  const pColor = todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.color : '#e2e8f0'
   const overdue = todo.status !== 'DONE' && todo.status !== 'HOLD' && isPast(todo.dueDate)
   const faded = todo.status === 'DONE' || todo.status === 'HOLD'
 
@@ -413,7 +413,12 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
           </span>
         )}
         {todo.priority && (
-          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: PRIORITY_STYLE[todo.priority].bg, color: PRIORITY_STYLE[todo.priority].color, fontWeight: 600 }}>
+          <span style={{
+            fontSize: 10, padding: '2px 6px', borderRadius: 10, fontWeight: 600,
+            background: todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.bg : 'transparent',
+            color: todo.priority === 'HIGH' ? PRIORITY_STYLE.HIGH.color : '#a0aec0',
+            border: todo.priority === 'HIGH' ? 'none' : '1px solid #e2e8f0',
+          }}>
             {PRIORITY_STYLE[todo.priority].label}
           </span>
         )}
