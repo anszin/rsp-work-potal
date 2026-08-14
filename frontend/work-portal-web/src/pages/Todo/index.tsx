@@ -391,10 +391,6 @@ export default function TodoPage() {
   )
 }
 
-function truncate(s: string, n = 14) {
-  return s.length > n ? s.slice(0, n) + '…' : s
-}
-
 function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onEdit, onDelete, onDragStart, onDragEnd }: {
   todo: Todo
   showAssignee: boolean
