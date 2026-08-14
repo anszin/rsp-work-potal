@@ -53,6 +53,7 @@ public class TodoService {
         if (req.getPriority() != null) t.setPriority(req.getPriority());
         t.setStartDate(req.getStartDate());
         t.setDueDate(req.getDueDate());
+        t.setCompletedDate(req.getCompletedDate());
         if (req.getSourceType() != null) t.setSourceType(req.getSourceType());
         t.setSourceId(req.getSourceId());
         t.setKeyTaskId(req.getKeyTaskId());

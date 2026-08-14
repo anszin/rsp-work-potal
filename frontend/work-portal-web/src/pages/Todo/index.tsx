@@ -34,6 +34,7 @@ const emptyForm = (): SaveTodoRequest => ({
   priority: 'MEDIUM',
   startDate: '',
   dueDate: '',
+  completedDate: '',
   sourceType: 'SELF',
   keyTaskId: undefined,
   workUnitId: undefined,
@@ -57,6 +58,7 @@ function toRequest(todo: Todo): SaveTodoRequest {
     priority: todo.priority ?? 'MEDIUM',
     startDate: todo.startDate ?? '',
     dueDate: todo.dueDate ?? '',
+    completedDate: todo.completedDate ?? '',
     sourceType: todo.sourceType ?? 'SELF',
     sourceId: todo.sourceId ?? undefined,
     keyTaskId: todo.keyTaskId ?? undefined,
@@ -272,13 +274,21 @@ export default function TodoPage() {
                   </select>
                 </label>
 
+
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                 <label style={styles.label}>
-                  시작일
+                  시작일 <span style={{ fontSize: 10, color: '#a0aec0' }}>(실제)</span>
                   <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
                 </label>
                 <label style={styles.label}>
-                  마감일
+                  목표일
                   <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+                </label>
+                <label style={styles.label}>
+                  완료일 <span style={{ fontSize: 10, color: '#a0aec0' }}>(실제)</span>
+                  <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
                 </label>
 
                 <label style={styles.label}>

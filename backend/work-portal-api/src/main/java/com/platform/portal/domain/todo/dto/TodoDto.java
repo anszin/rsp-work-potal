@@ -19,6 +19,7 @@ public class TodoDto {
         private Todo.Priority priority;
         private LocalDate startDate;
         private LocalDate dueDate;
+        private LocalDate completedDate;
         private Todo.SourceType sourceType;
         private Long sourceId;
         private Long keyTaskId;
@@ -35,6 +36,7 @@ public class TodoDto {
         private final String priority;
         private final LocalDate startDate;
         private final LocalDate dueDate;
+        private final LocalDate completedDate;
         private final String sourceType;
         private final Long sourceId;
         private final Long keyTaskId;
@@ -51,6 +53,7 @@ public class TodoDto {
             this.priority = t.getPriority() != null ? t.getPriority().name() : null;
             this.startDate = t.getStartDate();
             this.dueDate = t.getDueDate();
+            this.completedDate = t.getCompletedDate();
             this.sourceType = t.getSourceType() != null ? t.getSourceType().name() : null;
             this.sourceId = t.getSourceId();
             this.keyTaskId = t.getKeyTaskId();

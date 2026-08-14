@@ -10,10 +10,11 @@ export interface Todo {
   description: string | null
   status: TodoStatus
   priority: TodoPriority | null
+  startDate: string | null
   dueDate: string | null
+  completedDate: string | null
   sourceType: TodoSourceType | null
   sourceId: number | null
-  startDate: string | null
   keyTaskId: number | null
   workUnitId: number | null
   assignee: string
@@ -28,6 +29,7 @@ export interface SaveTodoRequest {
   priority?: TodoPriority
   startDate?: string
   dueDate?: string
+  completedDate?: string
   sourceType?: TodoSourceType
   sourceId?: number
   keyTaskId?: number

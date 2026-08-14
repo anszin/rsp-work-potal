@@ -35,6 +35,7 @@ public class Todo {
 
     private LocalDate startDate;
     private LocalDate dueDate;
+    private LocalDate completedDate;
 
     @Enumerated(EnumType.STRING)
     private SourceType sourceType = SourceType.SELF;
