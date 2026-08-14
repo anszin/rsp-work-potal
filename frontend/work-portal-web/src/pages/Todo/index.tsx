@@ -202,6 +202,8 @@ export default function TodoPage() {
                   showAssignee={isManager}
                   onDetail={() => setDetail(todo)}
                   nameOf={nameOf}
+                  keyTaskName={todo.keyTaskId ? keyTaskMap[todo.keyTaskId] : undefined}
+                  workUnitName={todo.workUnitId ? workUnitMap[todo.workUnitId] : undefined}
                   onEdit={() => openEdit(todo)}
                   onDelete={() => { if (confirm(`"${todo.title}" 삭제할까요?`)) deleteMut.mutate(todo.id) }}
                   onDragStart={() => setDragging(todo.id)}
@@ -378,10 +380,16 @@ export default function TodoPage() {
   )
 }
 
-function TodoCard({ todo, showAssignee, nameOf, onDetail, onEdit, onDelete, onDragStart, onDragEnd }: {
+function truncate(s: string, n = 14) {
+  return s.length > n ? s.slice(0, n) + '…' : s
+}
+
+function TodoCard({ todo, showAssignee, nameOf, keyTaskName, workUnitName, onDetail, onEdit, onDelete, onDragStart, onDragEnd }: {
   todo: Todo
   showAssignee: boolean
   nameOf: (username: string) => string
+  keyTaskName?: string
+  workUnitName?: string
   onDetail: () => void
   onEdit: () => void
   onDelete: () => void
@@ -399,6 +407,21 @@ function TodoCard({ todo, showAssignee, nameOf, onDetail, onEdit, onDelete, onDr
       onClick={onDetail}
       style={{ ...styles.card, cursor: 'pointer' }}
     >
+      {(keyTaskName || workUnitName) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 6 }}>
+          {keyTaskName && (
+            <span style={{ fontSize: 10, color: '#6b46c1', fontWeight: 600, lineHeight: 1.3 }}>
+              ▸ {truncate(keyTaskName, 20)}
+            </span>
+          )}
+          {workUnitName && (
+            <span style={{ fontSize: 10, color: '#2B6CB0', lineHeight: 1.3 }}>
+              └ {truncate(workUnitName, 20)}
+            </span>
+          )}
+        </div>
+      )}
+
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
         <div style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
           {showAssignee && (
