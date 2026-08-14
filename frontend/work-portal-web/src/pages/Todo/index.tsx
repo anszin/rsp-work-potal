@@ -15,9 +15,9 @@ const COLUMNS: { status: TodoStatus; label: string; color: string }[] = [
 ]
 
 const PRIORITY_STYLE: Record<TodoPriority, { bg: string; color: string; label: string }> = {
-  HIGH:   { bg: '#FFF5F5', color: '#c53030', label: '높음' },
-  MEDIUM: { bg: '#FFFAF0', color: '#c05621', label: '중간' },
-  LOW:    { bg: '#F0FFF4', color: '#276749', label: '낮음' },
+  HIGH:   { bg: '#FFF5F5', color: '#c53030', label: '상' },
+  MEDIUM: { bg: '#FFFAF0', color: '#c05621', label: '중' },
+  LOW:    { bg: '#F0FFF4', color: '#276749', label: '하' },
 }
 
 const SOURCE_LABELS: Record<TodoSourceType, string> = {
@@ -308,9 +308,9 @@ export default function TodoPage() {
                 <label style={styles.label}>
                   우선순위
                   <select style={styles.input} value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TodoPriority }))}>
-                    <option value="HIGH">높음</option>
-                    <option value="MEDIUM">중간</option>
-                    <option value="LOW">낮음</option>
+                    <option value="HIGH">상</option>
+                    <option value="MEDIUM">중</option>
+                    <option value="LOW">하</option>
                   </select>
                 </label>
 
