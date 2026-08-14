@@ -412,6 +412,11 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
             {typeBadge.label}
           </span>
         )}
+        {todo.priority && (
+          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: PRIORITY_STYLE[todo.priority].bg, color: PRIORITY_STYLE[todo.priority].color, fontWeight: 600 }}>
+            {PRIORITY_STYLE[todo.priority].label}
+          </span>
+        )}
         {todo.sourceType && todo.sourceType !== 'SELF' && (
           <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: '#EBF8FF', color: '#2B6CB0' }}>
             {SOURCE_LABELS[todo.sourceType]}
