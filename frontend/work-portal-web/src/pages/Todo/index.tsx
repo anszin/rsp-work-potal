@@ -98,6 +98,18 @@ export default function TodoPage() {
 
   const keyTaskMap = Object.fromEntries(keyTasks.map(t => [t.id, t.taskName]))
   const workUnitMap = Object.fromEntries(allWorkUnits.map(w => [w.id, w.title]))
+
+  function getTypeBadge(todo: Todo): { label: string; color: string; bg: string } | null {
+    if (todo.workUnitId) {
+      const wu = allWorkUnits.find(w => w.id === todo.workUnitId)
+      if (wu?.type === 'PROJECT')   return { label: '중점', color: '#6b46c1', bg: '#F5F0FF' }
+      if (wu?.type === 'OPERATION') return { label: 'KPI',  color: '#2B6CB0', bg: '#EBF8FF' }
+      return { label: '기타', color: '#718096', bg: '#EDF2F7' }
+    }
+    if (todo.keyTaskId) return { label: '중점', color: '#6b46c1', bg: '#F5F0FF' }
+    return null
+  }
+
   const filteredWorkUnits = form.keyTaskId
     ? allWorkUnits.filter(w => w.keyTaskId === form.keyTaskId)
     : allWorkUnits
@@ -202,8 +214,7 @@ export default function TodoPage() {
                   showAssignee={isManager}
                   onDetail={() => setDetail(todo)}
                   nameOf={nameOf}
-                  keyTaskName={todo.keyTaskId ? keyTaskMap[todo.keyTaskId] : undefined}
-                  workUnitName={todo.workUnitId ? workUnitMap[todo.workUnitId] : undefined}
+                  typeBadge={getTypeBadge(todo)}
                   onEdit={() => openEdit(todo)}
                   onDelete={() => { if (confirm(`"${todo.title}" 삭제할까요?`)) deleteMut.mutate(todo.id) }}
                   onDragStart={() => setDragging(todo.id)}
@@ -384,12 +395,11 @@ function truncate(s: string, n = 14) {
   return s.length > n ? s.slice(0, n) + '…' : s
 }
 
-function TodoCard({ todo, showAssignee, nameOf, keyTaskName, workUnitName, onDetail, onEdit, onDelete, onDragStart, onDragEnd }: {
+function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onEdit, onDelete, onDragStart, onDragEnd }: {
   todo: Todo
   showAssignee: boolean
   nameOf: (username: string) => string
-  keyTaskName?: string
-  workUnitName?: string
+  typeBadge?: { label: string; color: string; bg: string } | null
   onDetail: () => void
   onEdit: () => void
   onDelete: () => void
@@ -407,20 +417,6 @@ function TodoCard({ todo, showAssignee, nameOf, keyTaskName, workUnitName, onDet
       onClick={onDetail}
       style={{ ...styles.card, cursor: 'pointer' }}
     >
-      {(keyTaskName || workUnitName) && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 6 }}>
-          {keyTaskName && (
-            <span style={{ fontSize: 10, color: '#6b46c1', fontWeight: 600, lineHeight: 1.3 }}>
-              ▸ {truncate(keyTaskName, 20)}
-            </span>
-          )}
-          {workUnitName && (
-            <span style={{ fontSize: 10, color: '#2B6CB0', lineHeight: 1.3 }}>
-              └ {truncate(workUnitName, 20)}
-            </span>
-          )}
-        </div>
-      )}
 
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
         <div style={{ flex: 1, fontSize: 13, fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
@@ -436,6 +432,11 @@ function TodoCard({ todo, showAssignee, nameOf, keyTaskName, workUnitName, onDet
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+        {typeBadge && (
+          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: typeBadge.bg, color: typeBadge.color, fontWeight: 700 }}>
+            {typeBadge.label}
+          </span>
+        )}
         {pStyle && (
           <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 10, background: pStyle.bg, color: pStyle.color, fontWeight: 600 }}>
             {pStyle.label}
