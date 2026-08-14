@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { todoApi, type Todo, type SaveTodoRequest, type TodoStatus, type TodoPriority, type TodoSourceType } from '../../api/todos'
 import { useAuth } from '../../context/useAuth'
 import { getUsers, type UserSummary } from '../../api/users'
+import { getKeyTasks } from '../../api/keyTasks'
+import { workUnitApi } from '../../api/workUnits'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string }[] = [
   { status: 'TODO',        label: '대기',   color: '#718096' },
@@ -32,6 +34,8 @@ const emptyForm = (): SaveTodoRequest => ({
   priority: 'MEDIUM',
   dueDate: '',
   sourceType: 'SELF',
+  keyTaskId: undefined,
+  workUnitId: undefined,
 })
 
 function formatDate(d: string | null) {
@@ -54,6 +58,7 @@ function toRequest(todo: Todo): SaveTodoRequest {
     sourceType: todo.sourceType ?? 'SELF',
     sourceId: todo.sourceId ?? undefined,
     keyTaskId: todo.keyTaskId ?? undefined,
+    workUnitId: todo.workUnitId ?? undefined,
     assignee: todo.assignee,
   }
 }
@@ -61,6 +66,7 @@ function toRequest(todo: Todo): SaveTodoRequest {
 export default function TodoPage() {
   const qc = useQueryClient()
   const { user } = useAuth()
+  const now = new Date().getFullYear()
   const isManager = ['ADMIN', 'MANAGER'].includes(user?.role ?? '')
   const nameOf = (username: string) => users.find(u => u.username === username)?.name ?? username
   const [modalOpen, setModalOpen] = useState(false)
@@ -79,6 +85,22 @@ export default function TodoPage() {
     queryFn: getUsers,
     enabled: isManager,
   })
+
+  const { data: keyTasks = [] } = useQuery({
+    queryKey: ['key-tasks', now],
+    queryFn: () => getKeyTasks(now),
+  })
+
+  const { data: allWorkUnits = [] } = useQuery({
+    queryKey: ['work-units-all'],
+    queryFn: workUnitApi.listAll,
+  })
+
+  const keyTaskMap = Object.fromEntries(keyTasks.map(t => [t.id, t.taskName]))
+  const workUnitMap = Object.fromEntries(allWorkUnits.map(w => [w.id, w.title]))
+  const filteredWorkUnits = form.keyTaskId
+    ? allWorkUnits.filter(w => w.keyTaskId === form.keyTaskId)
+    : allWorkUnits
 
   const createMut = useMutation({
     mutationFn: (data: SaveTodoRequest) => todoApi.create(data),
@@ -212,6 +234,8 @@ export default function TodoPage() {
                 {detail.sourceType && detail.sourceType !== 'SELF' && <Badge label={SOURCE_LABELS[detail.sourceType]} color='#2B6CB0' />}
               </div>
               {isManager && <Row label="담당자" value={nameOf(detail.assignee)} />}
+              {detail.keyTaskId && keyTaskMap[detail.keyTaskId] && <Row label="중점과제" value={keyTaskMap[detail.keyTaskId]} />}
+              {detail.workUnitId && workUnitMap[detail.workUnitId] && <Row label="단위업무" value={workUnitMap[detail.workUnitId]} />}
               {detail.dueDate && <Row label="마감일" value={formatDate(detail.dueDate) ?? ''} warn={detail.status !== 'DONE' && detail.status !== 'HOLD' && isPast(detail.dueDate)} />}
               {detail.description && (
                 <div>
@@ -309,6 +333,32 @@ export default function TodoPage() {
                   </select>
                 </label>
               )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label style={styles.label}>
+                  중점과제
+                  <select
+                    style={styles.input}
+                    value={form.keyTaskId ?? ''}
+                    onChange={e => setForm(f => ({ ...f, keyTaskId: e.target.value ? Number(e.target.value) : undefined, workUnitId: undefined }))}
+                  >
+                    <option value="">선택 안 함</option>
+                    {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
+                  </select>
+                </label>
+                <label style={styles.label}>
+                  단위업무
+                  <select
+                    style={styles.input}
+                    value={form.workUnitId ?? ''}
+                    onChange={e => setForm(f => ({ ...f, workUnitId: e.target.value ? Number(e.target.value) : undefined }))}
+                    disabled={filteredWorkUnits.length === 0}
+                  >
+                    <option value="">선택 안 함</option>
+                    {filteredWorkUnits.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
+                  </select>
+                </label>
+              </div>
 
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
                 <button type="button" onClick={closeModal} style={styles.cancelBtn}>취소</button>
