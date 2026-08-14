@@ -291,6 +291,9 @@ export default function TodoPage() {
                   <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
                 </label>
 
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={styles.label}>
                   출처
                   <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))}>
@@ -299,25 +302,24 @@ export default function TodoPage() {
                     ))}
                   </select>
                 </label>
+                {isManager && (
+                  <label style={styles.label}>
+                    담당자
+                    <select
+                      style={styles.input}
+                      value={form.assignee ?? ''}
+                      onChange={e => setForm(f => ({ ...f, assignee: e.target.value || undefined }))}
+                    >
+                      <option value="">본인</option>
+                      {users.filter(u => u.active).map(u => (
+                        <option key={u.username} value={u.username}>
+                          {u.name ?? u.username}{u.dept ? ` (${u.dept})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
               </div>
-
-              {isManager && (
-                <label style={styles.label}>
-                  담당자
-                  <select
-                    style={styles.input}
-                    value={form.assignee ?? ''}
-                    onChange={e => setForm(f => ({ ...f, assignee: e.target.value || undefined }))}
-                  >
-                    <option value="">본인</option>
-                    {users.filter(u => u.active).map(u => (
-                      <option key={u.username} value={u.username}>
-                        {u.name ?? u.username}{u.dept ? ` (${u.dept})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={styles.label}>
