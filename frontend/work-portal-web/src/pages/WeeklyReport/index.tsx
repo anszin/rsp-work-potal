@@ -756,7 +756,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
           <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', marginBottom: 8, letterSpacing: '0.05em' }}>통합 보고서 (편집 중)</div>
           <input value={conForm.title} onChange={e => setConForm(f => ({ ...f, title: e.target.value }))}
             style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-text)', marginBottom: 12, boxSizing: 'border-box' }} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={conForm} onChange={setSection} onDateChange={setThisWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
             <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={conForm} onChange={setSection} onDateChange={setNextWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
           </div>
