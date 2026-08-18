@@ -18,8 +18,7 @@ interface WorkItem {
 }
 
 function itemBadge(item: WorkItem): { bg: string; color: string; label: string } {
-  if (item.workUnitId) return { bg: '#1976d218', color: '#1976d2', label: item.workUnitName || item.type || '단위업무' }
-  if (item.keyTaskId) return { bg: '#1976d218', color: '#1976d2', label: item.type || '중점' }
+  if (item.workUnitId || item.keyTaskId) return { bg: '#1976d218', color: '#1976d2', label: item.type || '중점' }
   return { bg: 'var(--c-thead)', color: 'var(--c-text-muted)', label: '기타' }
 }
 
