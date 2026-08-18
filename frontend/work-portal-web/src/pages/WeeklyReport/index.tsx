@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
@@ -195,6 +195,8 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   value: string; onChange: (v: string) => void; keyTasks: KeyTask[]; workUnits: WorkUnit[]
 }) {
   const [open, setOpen] = useState(false)
+  const [popupPos, setPopupPos] = useState({ top: 0, left: 0, width: 400 })
+  const btnRef = useRef<HTMLButtonElement>(null)
 
   const selectedWuId = value.startsWith('wu:') ? parseInt(value.slice(3)) : null
   const selectedWu = selectedWuId != null ? workUnits.find(w => w.id === selectedWuId) : null
@@ -208,6 +210,16 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   for (const wu of workUnits) {
     if (!wuByKt.has(wu.keyTaskId)) wuByKt.set(wu.keyTaskId, [])
     wuByKt.get(wu.keyTaskId)!.push(wu)
+  }
+
+  const handleOpen = () => {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect()
+      // 버튼 왼쪽부터 뷰포트 오른쪽 끝까지 (최대 640px)
+      const width = Math.min(window.innerWidth - r.left - 12, 640)
+      setPopupPos({ top: r.bottom + 3, left: r.left, width })
+    }
+    setOpen(o => !o)
   }
 
   const wuRowStyle = (active: boolean): React.CSSProperties => ({
@@ -227,7 +239,7 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   return (
     <div style={{ position: 'relative', flexShrink: 0, width: 88 }}>
       {open && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setOpen(false)} />}
-      <button type="button" onClick={() => setOpen(o => !o)}
+      <button ref={btnRef} type="button" onClick={handleOpen}
         style={{
           width: '100%', padding: '5px 7px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
           border: `1px solid ${isLinked ? '#1976d255' : 'var(--c-border-in)'}`,
@@ -242,10 +254,10 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
       </button>
       {open && (
         <div style={{
-          position: 'absolute', top: 'calc(100% + 3px)', left: 0, zIndex: 100,
+          position: 'fixed', top: popupPos.top, left: popupPos.left, width: popupPos.width, zIndex: 100,
           background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
           borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-          minWidth: 360, maxHeight: 320, overflowY: 'auto',
+          maxHeight: 320, overflowY: 'auto',
         }}>
           {/* 기타 */}
           <div onClick={() => { onChange(''); setOpen(false) }}
