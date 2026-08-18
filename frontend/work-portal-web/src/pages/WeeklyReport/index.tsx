@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -248,7 +249,6 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
 
   return (
     <div style={{ position: 'relative', flexShrink: 0, width: 88 }}>
-      {open && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setOpen(false)} />}
       <button ref={btnRef} type="button" onClick={handleOpen}
         style={{
           width: '100%', padding: '5px 7px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
@@ -262,13 +262,15 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, textAlign: 'left' }}>{shortLabel}</span>
         <span style={{ fontSize: 8, opacity: 0.5, flexShrink: 0 }}>▼</span>
       </button>
-      {open && (
-        <div style={{
-          position: 'fixed', top: popupPos.top, bottom: popupPos.bottom, left: popupPos.left, width: popupPos.width, zIndex: 100,
-          background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
-          borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-          maxHeight: 320, overflowY: 'auto',
-        }}>
+      {open && createPortal(
+        <div>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
+          <div style={{
+            position: 'fixed', top: popupPos.top, bottom: popupPos.bottom, left: popupPos.left, width: popupPos.width, zIndex: 9999,
+            background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
+            borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+            maxHeight: 320, overflowY: 'auto',
+          }}>
           {/* 기타 */}
           <div onClick={() => { onChange(''); setOpen(false) }}
             style={{ ...wuRowStyle(!value), paddingLeft: 12, borderBottom: '1px solid var(--c-border-in)' }}>
@@ -296,7 +298,9 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
               </div>
             )
           })}
-        </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   )
