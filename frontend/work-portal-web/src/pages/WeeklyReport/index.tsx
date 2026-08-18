@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
+import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
 
 // ── 업무 아이템 ───────────────────────────────────────────────────────────────
@@ -12,9 +13,12 @@ interface WorkItem {
   content: string
   keyTaskId?: number
   keyTaskName?: string
+  workUnitId?: number
+  workUnitName?: string
 }
 
 function itemBadge(item: WorkItem): { bg: string; color: string; label: string } {
+  if (item.workUnitId) return { bg: '#1976d218', color: '#1976d2', label: item.workUnitName || item.type || '단위업무' }
   if (item.keyTaskId) return { bg: '#1976d218', color: '#1976d2', label: item.type || '중점' }
   return { bg: 'var(--c-thead)', color: 'var(--c-text-muted)', label: '기타' }
 }
@@ -187,23 +191,38 @@ function formToRequest(f: WeeklyFormState): SaveWeeklyRequest {
 
 // ── KPI 커스텀 드롭다운 ───────────────────────────────────────────────────────
 
-function KpiSelect({ value, onChange, keyTasks }: {
-  value: string; onChange: (v: string) => void; keyTasks: KeyTask[]
+function KpiSelect({ value, onChange, keyTasks, workUnits }: {
+  value: string; onChange: (v: string) => void; keyTasks: KeyTask[]; workUnits: WorkUnit[]
 }) {
   const [open, setOpen] = useState(false)
-  const selected = keyTasks.find(k => String(k.id) === value)
-  const isLinked = !!selected
-  const shortLabel = selected
-    ? (selected.kpi || (selected.taskName.length > 8 ? selected.taskName.slice(0, 8) + '…' : selected.taskName))
+
+  const selectedWuId = value.startsWith('wu:') ? parseInt(value.slice(3)) : null
+  const selectedWu = selectedWuId != null ? workUnits.find(w => w.id === selectedWuId) : null
+  const isLinked = !!selectedWu
+  const shortLabel = selectedWu
+    ? (selectedWu.title.length > 8 ? selectedWu.title.slice(0, 8) + '…' : selectedWu.title)
     : '기타'
 
-  const rowStyle = (active: boolean): React.CSSProperties => ({
-    padding: '7px 12px', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+  // workUnit을 keyTaskId별로 그룹화
+  const wuByKt = new Map<number, WorkUnit[]>()
+  for (const wu of workUnits) {
+    if (!wuByKt.has(wu.keyTaskId)) wuByKt.set(wu.keyTaskId, [])
+    wuByKt.get(wu.keyTaskId)!.push(wu)
+  }
+
+  const wuRowStyle = (active: boolean): React.CSSProperties => ({
+    padding: '7px 12px 7px 24px', cursor: 'pointer', fontSize: 13,
+    display: 'flex', alignItems: 'center', gap: 6,
     background: active ? '#1976d20a' : 'transparent',
     color: active ? '#1976d2' : 'var(--c-text)',
     fontWeight: active ? 600 : 400,
-    borderBottom: '1px solid var(--c-border-in)',
   })
+
+  const groupHeaderStyle: React.CSSProperties = {
+    padding: '5px 12px', fontSize: 11, fontWeight: 700,
+    color: 'var(--c-text-muted)', background: 'var(--c-thead)',
+    borderTop: '1px solid var(--c-border-in)', display: 'flex', alignItems: 'center', gap: 5,
+  }
 
   return (
     <div style={{ position: 'relative', flexShrink: 0, width: 88 }}>
@@ -226,17 +245,35 @@ function KpiSelect({ value, onChange, keyTasks }: {
           position: 'absolute', top: 'calc(100% + 3px)', left: 0, zIndex: 100,
           background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
           borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-          minWidth: 360, maxHeight: 300, overflowY: 'auto',
+          minWidth: 360, maxHeight: 320, overflowY: 'auto',
         }}>
-          <div onClick={() => { onChange(''); setOpen(false) }} style={rowStyle(!value)}>
+          {/* 기타 */}
+          <div onClick={() => { onChange(''); setOpen(false) }}
+            style={{ ...wuRowStyle(!value), paddingLeft: 12, borderBottom: '1px solid var(--c-border-in)' }}>
             <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: 'var(--c-thead)', color: 'var(--c-text-muted)', fontWeight: 600 }}>기타</span>
           </div>
-          {keyTasks.map(kt => (
-            <div key={kt.id} onClick={() => { onChange(String(kt.id)); setOpen(false) }} style={rowStyle(value === String(kt.id))}>
-              {kt.kpi && <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 6px', borderRadius: 8, background: '#1976d215', color: '#1976d2', fontWeight: 700 }}>{kt.kpi}</span>}
-              <span style={{ fontSize: 12 }}>{kt.taskName}</span>
-            </div>
-          ))}
+          {/* 중점과제 그룹헤더 → 단위업무 항목 */}
+          {keyTasks.map(kt => {
+            const wus = wuByKt.get(kt.id) ?? []
+            if (wus.length === 0) return null
+            return (
+              <div key={kt.id}>
+                <div style={groupHeaderStyle}>
+                  {kt.kpi && (
+                    <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: '#1976d215', color: '#1976d2', fontWeight: 700 }}>{kt.kpi}</span>
+                  )}
+                  <span>{kt.taskName}</span>
+                </div>
+                {wus.map(wu => (
+                  <div key={wu.id} onClick={() => { onChange(`wu:${wu.id}`); setOpen(false) }}
+                    style={wuRowStyle(value === `wu:${wu.id}`)}>
+                    <span style={{ fontSize: 11, opacity: 0.35, marginRight: 2 }}>└</span>
+                    <span>{wu.title}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
@@ -245,19 +282,21 @@ function KpiSelect({ value, onChange, keyTasks }: {
 
 // ── 행 입력 컴포넌트 ──────────────────────────────────────────────────────────
 
-function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }: {
-  label: string; sectionColor: string; items: WorkItem[]; onChange: (items: WorkItem[]) => void; keyTasks?: KeyTask[]
+function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], workUnits = [] }: {
+  label: string; sectionColor: string; items: WorkItem[]; onChange: (items: WorkItem[]) => void; keyTasks?: KeyTask[]; workUnits?: WorkUnit[]
 }) {
   const add = () => onChange([...items, newItem()])
   const update = (idx: number, next: WorkItem) => onChange(items.map((it, i) => i === idx ? next : it))
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx))
 
-  const selectTask = (idx: number, taskId: string) => {
-    if (!taskId) {
-      update(idx, { ...items[idx], type: '기타', keyTaskId: undefined, keyTaskName: undefined })
-    } else {
-      const kt = keyTasks.find(k => String(k.id) === taskId)
-      if (kt) update(idx, { ...items[idx], type: kt.kpi || '중점', keyTaskId: kt.id, keyTaskName: kt.taskName })
+  const selectTask = (idx: number, val: string) => {
+    if (!val) {
+      update(idx, { ...items[idx], type: '기타', keyTaskId: undefined, keyTaskName: undefined, workUnitId: undefined, workUnitName: undefined })
+    } else if (val.startsWith('wu:')) {
+      const wuId = parseInt(val.slice(3))
+      const wu = workUnits.find(w => w.id === wuId)
+      const kt = wu ? keyTasks.find(k => k.id === wu.keyTaskId) : undefined
+      if (wu) update(idx, { ...items[idx], type: kt?.kpi || '단위업무', keyTaskId: kt?.id, keyTaskName: kt?.taskName, workUnitId: wu.id, workUnitName: wu.title })
     }
   }
 
@@ -279,9 +318,10 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
           {items.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
               <KpiSelect
-                value={item.keyTaskId ? String(item.keyTaskId) : ''}
+                value={item.workUnitId ? `wu:${item.workUnitId}` : ''}
                 onChange={v => selectTask(i, v)}
                 keyTasks={keyTasks}
+                workUnits={workUnits}
               />
               <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                 onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
@@ -297,10 +337,10 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [] }
   )
 }
 
-function WeekFormBlock({ week, color, sections, form, onChange, onDateChange, keyTasks }: {
+function WeekFormBlock({ week, color, sections, form, onChange, onDateChange, keyTasks, workUnits }: {
   week: '금주' | '차주'; color: string; sections: { key: ContentKey; label: string }[]
   form: WeeklyFormState; onChange: (key: ContentKey, items: WorkItem[]) => void
-  onDateChange: (start: string, end: string) => void; keyTasks: KeyTask[]
+  onDateChange: (start: string, end: string) => void; keyTasks: KeyTask[]; workUnits: WorkUnit[]
 }) {
   const isThis = week === '금주'
   const startVal = isThis ? form.weekStart : form.nextWeekStart
@@ -319,7 +359,7 @@ function WeekFormBlock({ week, color, sections, form, onChange, onDateChange, ke
       </div>
       <div style={{ padding: '14px' }}>
         {sections.map(({ key, label }) => (
-          <WorkSectionForm key={key} label={label} sectionColor={color} items={form[key]} onChange={items => onChange(key, items)} keyTasks={keyTasks} />
+          <WorkSectionForm key={key} label={label} sectionColor={color} items={form[key]} onChange={items => onChange(key, items)} keyTasks={keyTasks} workUnits={workUnits} />
         ))}
       </div>
     </div>
@@ -420,9 +460,9 @@ const NEXT_SECTIONS: { key: ContentKey; label: string }[] = [
   { key: 'nextWeekWork', label: '수행' }, { key: 'nextWeekProposal', label: '제안' }, { key: 'nextWeekEtc', label: '기타사항' },
 ]
 
-function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCancel, saving, keyTasks, pastReports }: {
+function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCancel, saving, keyTasks, workUnits, pastReports }: {
   form: WeeklyFormState; setForm: React.Dispatch<React.SetStateAction<WeeklyFormState>>
-  isConsolidated: boolean; isEditing: boolean; onSubmit: (e: React.FormEvent) => void; onCancel: () => void; saving: boolean; keyTasks: KeyTask[]; pastReports?: WeeklyReport[]
+  isConsolidated: boolean; isEditing: boolean; onSubmit: (e: React.FormEvent) => void; onCancel: () => void; saving: boolean; keyTasks: KeyTask[]; workUnits: WorkUnit[]; pastReports?: WeeklyReport[]
 }) {
   const setSection = (key: ContentKey, items: WorkItem[]) => setForm(f => ({ ...f, [key]: items }))
   const setThisWeekDates = (start: string, end: string) => setForm(f => ({ ...f, weekStart: start, weekEnd: end }))
@@ -470,8 +510,8 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
             style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, background: 'var(--c-bg)', color: 'var(--c-text)' }} />
         </label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={form} onChange={setSection} onDateChange={setThisWeekDates} keyTasks={keyTasks} />
-          <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={form} onChange={setSection} onDateChange={setNextWeekDates} keyTasks={keyTasks} />
+          <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={form} onChange={setSection} onDateChange={setThisWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
+          <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={form} onChange={setSection} onDateChange={setNextWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
           <button type="submit" disabled={saving}
@@ -746,8 +786,15 @@ export default function WeeklyReportPage() {
     queryKey: ['key-tasks', new Date().getFullYear()],
     queryFn: () => getKeyTasks(new Date().getFullYear()),
   })
+  const { data: allWorkUnits = [] } = useQuery({
+    queryKey: ['work-units'],
+    queryFn: () => workUnitApi.listAll(),
+  })
   // 팀 과제 제외, 담당부서/담당자 레벨 과제만 표시
   const keyTasks = allKeyTasks.filter(kt => kt.taskLevel === '담당부서' || kt.taskLevel === '담당자')
+  // 드롭다운용 단위업무 (위 keyTasks에 속하는 것만)
+  const ktIds = new Set(keyTasks.map(k => k.id))
+  const workUnits = allWorkUnits.filter(wu => ktIds.has(wu.keyTaskId))
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['weekly-reports'] })
@@ -1085,6 +1132,7 @@ export default function WeeklyReportPage() {
             onCancel={() => setDetail({ type: 'none' })}
             saving={saving}
             keyTasks={keyTasks}
+            workUnits={workUnits}
             pastReports={myPastReports}
           />
         ) : detail.type === 'view' ? (
