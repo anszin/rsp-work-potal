@@ -15,6 +15,7 @@ interface WorkItem {
   keyTaskName?: string
   workUnitId?: number
   workUnitName?: string
+  author?: string     // 통합보고서에서 개인 보고서 복사 시 원작성자
 }
 
 function itemBadge(item: WorkItem): { bg: string; color: string; label: string } {
@@ -341,6 +342,11 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], 
                 keyTasks={keyTasks}
                 workUnits={workUnits}
               />
+              {item.author && (
+                <span style={{ flexShrink: 0, fontSize: 11, padding: '4px 7px', borderRadius: 6, background: '#7c3aed15', color: '#7c3aed', fontWeight: 600, whiteSpace: 'nowrap', marginTop: 1 }}>
+                  {item.author}
+                </span>
+              )}
               <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                 onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                 placeholder="업무 내용 입력..." rows={1}
@@ -399,6 +405,11 @@ function WorkSectionDetail({ label, color, items }: { label: string; color: stri
               <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {badgeLabel}
               </span>
+              {item.author && (
+                <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 600, marginTop: 2, background: '#7c3aed15', color: '#7c3aed', whiteSpace: 'nowrap' }}>
+                  {item.author}
+                </span>
+              )}
               <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text-sub)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
             </div>
           )
@@ -584,11 +595,11 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
   const toggleExpand = (author: string) =>
     setExpanded(prev => { const next = new Set(prev); next.has(author) ? next.delete(author) : next.add(author); return next })
 
-  const addItem = (reportId: number, sec: ContentKey, item: WorkItem, _author: string) => {
+  const addItem = (reportId: number, sec: ContentKey, item: WorkItem, author: string) => {
     const key = `${reportId}_${sec}_${item.id}`
     if (addedKeys.has(key)) return
     setAddedKeys(prev => new Set([...prev, key]))
-    const added: WorkItem = { ...item, id: Math.random().toString(36).slice(2) }
+    const added: WorkItem = { ...item, id: Math.random().toString(36).slice(2), author }
     setConForm(f => ({ ...f, [sec]: [...f[sec], added] }))
   }
 
