@@ -823,11 +823,8 @@ export default function WeeklyReportPage() {
     queryKey: ['work-units'],
     queryFn: () => workUnitApi.listAll(),
   })
-  // 팀 과제 제외, 담당부서/담당자 레벨 과제만 표시
-  const keyTasks = allKeyTasks.filter(kt => kt.taskLevel === '담당부서' || kt.taskLevel === '담당자')
-  // 드롭다운용 단위업무 (위 keyTasks에 속하는 것만)
-  const ktIds = new Set(keyTasks.map(k => k.id))
-  const workUnits = allWorkUnits.filter(wu => ktIds.has(wu.keyTaskId))
+  // 단위업무 드롭다운: 모든 단위업무 표시 (보류/완료 포함, 레벨 무관)
+  const workUnits = allWorkUnits
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['weekly-reports'] })
@@ -911,7 +908,7 @@ export default function WeeklyReportPage() {
           individualReports={myReports.filter(r => r.weekStart === editorConfig.weekStart && r.reportType === 'INDIVIDUAL')}
           existing={editorConfig.existing}
           pastConsolidated={consolidated.filter(r => r.weekStart < editorConfig.weekStart).sort((a, b) => b.weekStart.localeCompare(a.weekStart))}
-          keyTasks={keyTasks}
+          keyTasks={allKeyTasks}
           workUnits={workUnits}
           onSave={handleEditorSave}
           onCancel={() => setEditorConfig(null)}
@@ -1166,7 +1163,7 @@ export default function WeeklyReportPage() {
             onSubmit={handleSubmit}
             onCancel={() => setDetail({ type: 'none' })}
             saving={saving}
-            keyTasks={keyTasks}
+            keyTasks={allKeyTasks}
             workUnits={workUnits}
             pastReports={myPastReports}
           />
