@@ -1,4 +1,7 @@
 import { useState, useRef } from 'react'
+import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
@@ -301,21 +304,62 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
 
 // ── 행 입력 컴포넌트 ──────────────────────────────────────────────────────────
 
-function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], workUnits = [] }: {
-  label: string; sectionColor: string; items: WorkItem[]; onChange: (items: WorkItem[]) => void; keyTasks?: KeyTask[]; workUnits?: WorkUnit[]
+function SortableRow({ item, keyTasks, workUnits, onUpdate, onRemove }: {
+  item: WorkItem; keyTasks: KeyTask[]; workUnits: WorkUnit[]
+  onUpdate: (next: WorkItem) => void; onRemove: () => void
 }) {
-  const add = () => onChange([...items, newItem()])
-  const update = (idx: number, next: WorkItem) => onChange(items.map((it, i) => i === idx ? next : it))
-  const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx))
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
 
-  const selectTask = (idx: number, val: string) => {
+  const selectTask = (val: string) => {
     if (!val) {
-      update(idx, { ...items[idx], type: '기타', keyTaskId: undefined, keyTaskName: undefined, workUnitId: undefined, workUnitName: undefined })
+      onUpdate({ ...item, type: '기타', keyTaskId: undefined, keyTaskName: undefined, workUnitId: undefined, workUnitName: undefined })
     } else if (val.startsWith('wu:')) {
       const wuId = parseInt(val.slice(3))
       const wu = workUnits.find(w => w.id === wuId)
       const kt = wu ? keyTasks.find(k => k.id === wu.keyTaskId) : undefined
-      if (wu) update(idx, { ...items[idx], type: kt?.kpi || '단위업무', keyTaskId: kt?.id, keyTaskName: kt?.taskName, workUnitId: wu.id, workUnitName: wu.title })
+      if (wu) onUpdate({ ...item, type: kt?.kpi || '단위업무', keyTaskId: kt?.id, keyTaskName: kt?.taskName, workUnitId: wu.id, workUnitName: wu.title })
+    }
+  }
+
+  return (
+    <div ref={setNodeRef} style={{ display: 'flex', gap: 5, alignItems: 'flex-start', opacity: isDragging ? 0.4 : 1, transform: CSS.Transform.toString(transform), transition }}>
+      <div {...attributes} {...listeners} style={{ flexShrink: 0, cursor: 'grab', color: 'var(--c-text-muted)', fontSize: 15, paddingTop: 6, opacity: 0.4, userSelect: 'none', touchAction: 'none' }}>⠿</div>
+      <KpiSelect
+        value={item.workUnitId ? `wu:${item.workUnitId}` : ''}
+        onChange={selectTask}
+        keyTasks={keyTasks}
+        workUnits={workUnits}
+      />
+      {item.author && (
+        <span style={{ flexShrink: 0, fontSize: 11, padding: '4px 7px', borderRadius: 6, background: '#7c3aed15', color: '#7c3aed', fontWeight: 600, whiteSpace: 'nowrap', marginTop: 1 }}>
+          {item.author}
+        </span>
+      )}
+      <textarea value={item.content}
+        onChange={e => { onUpdate({ ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+        onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+        placeholder="업무 내용 입력..." rows={1}
+        style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
+      <button type="button" onClick={onRemove}
+        style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6, marginTop: 4 }}>×</button>
+    </div>
+  )
+}
+
+function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], workUnits = [] }: {
+  label: string; sectionColor: string; items: WorkItem[]; onChange: (items: WorkItem[]) => void; keyTasks?: KeyTask[]; workUnits?: WorkUnit[]
+}) {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+  const add = () => onChange([...items, newItem()])
+  const update = (id: string, next: WorkItem) => onChange(items.map(it => it.id === id ? next : it))
+  const remove = (id: string) => onChange(items.filter(it => it.id !== id))
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      const oldIdx = items.findIndex(i => i.id === active.id)
+      const newIdx = items.findIndex(i => i.id === over.id)
+      onChange(arrayMove(items, oldIdx, newIdx))
     }
   }
 
@@ -333,29 +377,22 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], 
           + 클릭하여 추가
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {items.map((item, i) => (
-            <div key={item.id} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
-              <KpiSelect
-                value={item.workUnitId ? `wu:${item.workUnitId}` : ''}
-                onChange={v => selectTask(i, v)}
-                keyTasks={keyTasks}
-                workUnits={workUnits}
-              />
-              {item.author && (
-                <span style={{ flexShrink: 0, fontSize: 11, padding: '4px 7px', borderRadius: 6, background: '#7c3aed15', color: '#7c3aed', fontWeight: 600, whiteSpace: 'nowrap', marginTop: 1 }}>
-                  {item.author}
-                </span>
-              )}
-              <textarea value={item.content} onChange={e => { update(i, { ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-                onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
-                placeholder="업무 내용 입력..." rows={1}
-                style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
-              <button type="button" onClick={() => remove(i)}
-                style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6, marginTop: 4 }}>×</button>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {items.map(item => (
+                <SortableRow
+                  key={item.id}
+                  item={item}
+                  keyTasks={keyTasks}
+                  workUnits={workUnits}
+                  onUpdate={next => update(item.id, next)}
+                  onRemove={() => remove(item.id)}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   )
