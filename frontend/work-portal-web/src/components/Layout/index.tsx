@@ -13,7 +13,7 @@ const MENU_ITEMS = [
   { key: 'daily_check',     to: '/reports/daily',   label: '일일점검' },
   { key: 'finance',         to: '/finance',         label: '손익 관리' },
   { key: 'key_tasks',      to: '/key-tasks',       label: '중점과제' },
-  { key: 'todos',          to: '/todos',           label: 'Todo' },
+  { key: 'todos',          to: '/todos',           label: 'TO-DO' },
 ]
 
 const SETTINGS_ITEMS = [
