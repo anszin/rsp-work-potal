@@ -7,6 +7,7 @@ import {
 } from '../../api/keyTasks'
 import { weeklyApi, type WeeklyReport } from '../../api/reports'
 import WorkUnitTab from '../WorkUnit'
+import PerformanceTab from './PerformanceTab'
 
 interface WorkItem {
   id: string
@@ -75,7 +76,7 @@ function qKey(q: Quarter, suffix: string): keyof KeyTask {
   return `q${q}${suffix}` as keyof KeyTask
 }
 
-type PageTab = 'keytasks' | 'workunits'
+type PageTab = 'keytasks' | 'workunits' | 'performance'
 
 export default function KeyTaskPage() {
   const qc = useQueryClient()
@@ -377,6 +378,7 @@ export default function KeyTaskPage() {
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setPageTab('keytasks')} style={pageTabStyle(pageTab === 'keytasks')}>중점과제</button>
             <button onClick={() => setPageTab('workunits')} style={pageTabStyle(pageTab === 'workunits')}>단위업무</button>
+            <button onClick={() => setPageTab('performance')} style={pageTabStyle(pageTab === 'performance')}>성과 현황</button>
           </div>
           {pageTab === 'keytasks' && (
             <div style={{ display: 'flex', gap: 16 }}>
@@ -390,6 +392,7 @@ export default function KeyTaskPage() {
       </div>
 
       {pageTab === 'workunits' && <WorkUnitTab key={workUnitFilterId ?? 'all'} initialKeyTaskId={workUnitFilterId} />}
+      {pageTab === 'performance' && <PerformanceTab keyTasks={tasks} />}
 
       {/* 레벨 탭 */}
       {pageTab === 'keytasks' && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, padding: '12px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
