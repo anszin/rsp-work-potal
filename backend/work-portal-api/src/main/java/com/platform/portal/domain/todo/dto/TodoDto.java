@@ -22,7 +22,6 @@ public class TodoDto {
         private LocalDate completedDate;
         private Todo.SourceType sourceType;
         private Long sourceId;
-        private Long keyTaskId;
         private Long workUnitId;
         private String assignee; // 매니저가 타인에게 할당할 때 사용
     }
@@ -39,7 +38,6 @@ public class TodoDto {
         private final LocalDate completedDate;
         private final String sourceType;
         private final Long sourceId;
-        private final Long keyTaskId;
         private final Long workUnitId;
         private final String assignee;
         private final LocalDateTime createdAt;
@@ -56,7 +54,6 @@ public class TodoDto {
             this.completedDate = t.getCompletedDate();
             this.sourceType = t.getSourceType() != null ? t.getSourceType().name() : null;
             this.sourceId = t.getSourceId();
-            this.keyTaskId = t.getKeyTaskId();
             this.workUnitId = t.getWorkUnitId();
             this.assignee = t.getAssignee();
             this.createdAt = t.getCreatedAt();

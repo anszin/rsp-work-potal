@@ -32,7 +32,6 @@ const emptyForm = (): SaveTodoRequest => ({
   dueDate: '',
   completedDate: '',
   sourceType: 'SELF',
-  keyTaskId: undefined,
   workUnitId: undefined,
 })
 
@@ -57,7 +56,6 @@ function toRequest(todo: Todo): SaveTodoRequest {
     completedDate: todo.completedDate ?? '',
     sourceType: todo.sourceType ?? 'SELF',
     sourceId: todo.sourceId ?? undefined,
-    keyTaskId: todo.keyTaskId ?? undefined,
     workUnitId: todo.workUnitId ?? undefined,
     assignee: todo.assignee,
   }
@@ -72,6 +70,7 @@ export default function TodoPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Todo | null>(null)
   const [form, setForm] = useState<SaveTodoRequest>(emptyForm())
+  const [filterKeyTaskId, setFilterKeyTaskId] = useState<number | undefined>(undefined)
   const [dragging, setDragging] = useState<number | null>(null)
 
   const { data: todos = [], isLoading } = useQuery({
@@ -96,18 +95,15 @@ export default function TodoPage() {
   })
 
   function getTypeBadge(todo: Todo): { label: string; color: string; bg: string } | null {
-    if (todo.workUnitId) {
-      const wu = allWorkUnits.find(w => w.id === todo.workUnitId)
-      if (wu?.type === 'PROJECT')   return { label: '중점', color: 'var(--c-tag-pri-t)', bg: 'var(--c-tag-pri-bg)' }
-      if (wu?.type === 'OPERATION') return { label: 'KPI',  color: 'var(--c-tag-sys-t)', bg: 'var(--c-tag-sys)' }
-      return { label: '기타', color: 'var(--c-tag-draft-t)', bg: 'var(--c-tag-draft-bg)' }
-    }
-    if (todo.keyTaskId) return { label: '중점', color: 'var(--c-tag-pri-t)', bg: 'var(--c-tag-pri-bg)' }
-    return null
+    if (!todo.workUnitId) return null
+    const wu = allWorkUnits.find(w => w.id === todo.workUnitId)
+    if (wu?.type === 'PROJECT')   return { label: '중점', color: 'var(--c-tag-pri-t)', bg: 'var(--c-tag-pri-bg)' }
+    if (wu?.type === 'OPERATION') return { label: 'KPI',  color: 'var(--c-tag-sys-t)', bg: 'var(--c-tag-sys)' }
+    return { label: '기타', color: 'var(--c-tag-draft-t)', bg: 'var(--c-tag-draft-bg)' }
   }
 
-  const filteredWorkUnits = form.keyTaskId
-    ? allWorkUnits.filter(w => w.keyTaskId === form.keyTaskId)
+  const filteredWorkUnits = filterKeyTaskId
+    ? allWorkUnits.filter(w => w.keyTaskId === filterKeyTaskId)
     : allWorkUnits
 
   const createMut = useMutation({
@@ -133,12 +129,15 @@ export default function TodoPage() {
   function openCreate() {
     setEditing(null)
     setForm(emptyForm())
+    setFilterKeyTaskId(undefined)
     setModalOpen(true)
   }
 
   function openEdit(todo: Todo) {
     setEditing(todo)
     setForm(toRequest(todo))
+    const wu = allWorkUnits.find(w => w.id === todo.workUnitId)
+    setFilterKeyTaskId(wu?.keyTaskId ?? undefined)
     setModalOpen(true)
   }
 
@@ -146,6 +145,7 @@ export default function TodoPage() {
     setModalOpen(false)
     setEditing(null)
     setForm(emptyForm())
+    setFilterKeyTaskId(undefined)
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -256,16 +256,19 @@ export default function TodoPage() {
                 />
               </label>
 
-              {/* 중점과제 · 단위업무 */}
+              {/* 중점과제(필터) · 단위업무 */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={styles.label}>
-                  중점과제
+                  <span>중점과제 <span style={{ fontWeight: 400, color: 'var(--c-text-muted)' }}>(필터)</span></span>
                   <select
                     style={styles.input}
-                    value={form.keyTaskId ?? ''}
-                    onChange={e => setForm(f => ({ ...f, keyTaskId: e.target.value ? Number(e.target.value) : undefined, workUnitId: undefined }))}
+                    value={filterKeyTaskId ?? ''}
+                    onChange={e => {
+                      setFilterKeyTaskId(e.target.value ? Number(e.target.value) : undefined)
+                      setForm(f => ({ ...f, workUnitId: undefined }))
+                    }}
                   >
-                    <option value="">선택 안 함</option>
+                    <option value="">전체</option>
                     {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
                   </select>
                 </label>
@@ -277,9 +280,9 @@ export default function TodoPage() {
                     onChange={e => {
                       const wuId = e.target.value ? Number(e.target.value) : undefined
                       const wu = allWorkUnits.find(w => w.id === wuId)
-                      setForm(f => ({ ...f, workUnitId: wuId, keyTaskId: wu ? wu.keyTaskId : f.keyTaskId }))
+                      if (wu && !filterKeyTaskId) setFilterKeyTaskId(wu.keyTaskId)
+                      setForm(f => ({ ...f, workUnitId: wuId }))
                     }}
-                    disabled={filteredWorkUnits.length === 0}
                   >
                     <option value="">선택 안 함</option>
                     {filteredWorkUnits.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}

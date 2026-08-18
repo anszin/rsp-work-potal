@@ -15,7 +15,6 @@ export interface Todo {
   completedDate: string | null
   sourceType: TodoSourceType | null
   sourceId: number | null
-  keyTaskId: number | null
   workUnitId: number | null
   assignee: string
   createdAt: string
@@ -32,7 +31,6 @@ export interface SaveTodoRequest {
   completedDate?: string
   sourceType?: TodoSourceType
   sourceId?: number
-  keyTaskId?: number
   workUnitId?: number
   assignee?: string
 }

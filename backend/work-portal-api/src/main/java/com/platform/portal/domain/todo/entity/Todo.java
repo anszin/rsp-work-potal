@@ -42,7 +42,6 @@ public class Todo {
 
     private Long sourceId;
 
-    private Long keyTaskId;
     private Long workUnitId;
 
     @Column(nullable = false)
