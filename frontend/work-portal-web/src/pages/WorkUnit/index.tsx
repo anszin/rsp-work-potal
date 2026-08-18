@@ -9,19 +9,22 @@ import { getKeyTasks } from '../../api/keyTasks'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
-export default function WorkUnitPage({ initialKeyTaskId }: { initialKeyTaskId?: number } = {}) {
+export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTaskId?: number; year?: number } = {}) {
   const qc = useQueryClient()
-  const now = new Date().getFullYear()
+  const selYear = year ?? new Date().getFullYear()
 
-  const { data: workUnits = [], isLoading } = useQuery({
+  const { data: allWorkUnits = [], isLoading } = useQuery({
     queryKey: ['work-units-all'],
     queryFn: workUnitApi.listAll,
   })
 
   const { data: keyTasks = [] } = useQuery({
-    queryKey: ['key-tasks', now],
-    queryFn: () => getKeyTasks(now),
+    queryKey: ['key-tasks', selYear],
+    queryFn: () => getKeyTasks(selYear),
   })
+
+  const ktIds = new Set(keyTasks.map(k => k.id))
+  const workUnits = allWorkUnits.filter(wu => ktIds.has(wu.keyTaskId))
 
   const [filterType, setFilterType] = useState<WorkUnitType | 'ALL'>('ALL')
   const [filterStatus, setFilterStatus] = useState<WorkUnitStatus | 'ALL'>('ALL')

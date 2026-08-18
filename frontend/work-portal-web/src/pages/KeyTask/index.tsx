@@ -380,18 +380,16 @@ export default function KeyTaskPage() {
             <button onClick={() => setPageTab('workunits')} style={pageTabStyle(pageTab === 'workunits')}>단위업무</button>
             <button onClick={() => setPageTab('performance')} style={pageTabStyle(pageTab === 'performance')}>성과 현황</button>
           </div>
-          {(pageTab === 'keytasks' || pageTab === 'performance') && (
-            <div style={{ display: 'flex', gap: 16 }}>
-              {displayYears.map(y => (
-                <button key={y} onClick={() => setSelYear(y)} style={tabStyle(selYear === y)}>{y}년</button>
-              ))}
-            </div>
-          )}
+          <div style={{ display: 'flex', gap: 16 }}>
+            {displayYears.map(y => (
+              <button key={y} onClick={() => setSelYear(y)} style={tabStyle(selYear === y)}>{y}년</button>
+            ))}
+          </div>
         </div>
         {pageTab === 'keytasks' && <button style={s.btn} onClick={openCreate}>+ 과제 추가</button>}
       </div>
 
-      {pageTab === 'workunits' && <WorkUnitTab key={workUnitFilterId ?? 'all'} initialKeyTaskId={workUnitFilterId} />}
+      {pageTab === 'workunits' && <WorkUnitTab key={`${workUnitFilterId ?? 'all'}-${selYear}`} initialKeyTaskId={workUnitFilterId} year={selYear} />}
       {pageTab === 'performance' && <PerformanceTab keyTasks={tasks} />}
 
       {/* 레벨 탭 */}
