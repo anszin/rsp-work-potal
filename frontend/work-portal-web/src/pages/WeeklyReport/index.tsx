@@ -199,7 +199,7 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   value: string; onChange: (v: string) => void; keyTasks: KeyTask[]; workUnits: WorkUnit[]
 }) {
   const [open, setOpen] = useState(false)
-  const [popupPos, setPopupPos] = useState<{ top?: number; bottom?: number; left: number; width: number }>({ left: 0, width: 400 })
+  const [popupPos, setPopupPos] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number }>({ left: 0, width: 400, maxHeight: 320 })
   const btnRef = useRef<HTMLButtonElement>(null)
 
   const selectedWuId = value.startsWith('wu:') ? parseInt(value.slice(3)) : null
@@ -221,13 +221,12 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect()
       const width = Math.min(window.innerWidth - r.left - 12, 640)
-      const maxPopupH = 320
-      const spaceBelow = window.innerHeight - r.bottom - 3
-      if (spaceBelow < maxPopupH && r.top > maxPopupH) {
-        // 공간 부족 시 위로 열기
-        setPopupPos({ bottom: window.innerHeight - r.top + 3, left: r.left, width })
+      const spaceBelow = window.innerHeight - r.bottom - 8
+      const spaceAbove = r.top - 8
+      if (spaceBelow >= spaceAbove) {
+        setPopupPos({ top: r.bottom + 3, left: r.left, width, maxHeight: Math.max(spaceBelow, 120) })
       } else {
-        setPopupPos({ top: r.bottom + 3, left: r.left, width })
+        setPopupPos({ bottom: window.innerHeight - r.top + 3, left: r.left, width, maxHeight: Math.max(spaceAbove, 120) })
       }
     }
     setOpen(o => !o)
@@ -269,7 +268,7 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
             position: 'fixed', top: popupPos.top, bottom: popupPos.bottom, left: popupPos.left, width: popupPos.width, zIndex: 9999,
             background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
             borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-            maxHeight: 320, overflowY: 'auto',
+            maxHeight: popupPos.maxHeight, overflowY: 'auto',
           }}>
           {/* 기타 */}
           <div onClick={() => { onChange(''); setOpen(false) }}
