@@ -555,11 +555,13 @@ const SECTION_COLOR: Record<ContentKey, string> = {
   nextWeekWork: '#4caf50', nextWeekProposal: '#4caf50', nextWeekEtc: '#4caf50',
 }
 
-function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolidated, onSave, onCancel }: {
+function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolidated, keyTasks, workUnits, onSave, onCancel }: {
   weekLbl: string
   individualReports: WeeklyReport[]
   existing?: WeeklyReport
   pastConsolidated?: WeeklyReport[]
+  keyTasks: KeyTask[]
+  workUnits: WorkUnit[]
   onSave: (form: WeeklyFormState) => void
   onCancel: () => void
 }) {
@@ -571,7 +573,6 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
     )
   )
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(individualReports.map(r => r.author)))
-  // 추가된 원본 항목 키 추적 (reportId_sec_itemId)
   const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set())
 
   const toggleExpand = (author: string) =>
@@ -585,11 +586,9 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
     setConForm(f => ({ ...f, [sec]: [...f[sec], added] }))
   }
 
-  const removeItem = (sec: ContentKey, itemId: string) =>
-    setConForm(f => ({ ...f, [sec]: f[sec].filter(i => i.id !== itemId) }))
-
-  const updateItem = (sec: ContentKey, itemId: string, content: string) =>
-    setConForm(f => ({ ...f, [sec]: f[sec].map(i => i.id === itemId ? { ...i, content } : i) }))
+  const setSection = (key: ContentKey, items: WorkItem[]) => setConForm(f => ({ ...f, [key]: items }))
+  const setThisWeekDates = (start: string, end: string) => setConForm(f => ({ ...f, weekStart: start, weekEnd: end }))
+  const setNextWeekDates = (start: string, end: string) => setConForm(f => ({ ...f, nextWeekStart: start, nextWeekEnd: end }))
 
   const totalRight = SECTION_KEYS.reduce((acc, sec) => acc + conForm[sec].length, 0)
 
@@ -697,48 +696,13 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
 
         {/* ── 오른쪽: 통합 보고서 ── */}
         <div style={{ overflowY: 'auto', padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', marginBottom: 6, letterSpacing: '0.05em' }}>통합 보고서 (편집 중)</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', marginBottom: 8, letterSpacing: '0.05em' }}>통합 보고서 (편집 중)</div>
           <input value={conForm.title} onChange={e => setConForm(f => ({ ...f, title: e.target.value }))}
             style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-text)', marginBottom: 12, boxSizing: 'border-box' }} />
-
-          {(['금주', '차주'] as const).map(week => {
-            const color = week === '금주' ? '#1976d2' : '#4caf50'
-            const secKeys: ContentKey[] = week === '금주'
-              ? ['thisWeekWork', 'thisWeekProposal', 'thisWeekEtc']
-              : ['nextWeekWork', 'nextWeekProposal', 'nextWeekEtc']
-            return (
-              <div key={week} style={{ marginBottom: 12, border: `1px solid ${color}33`, borderRadius: 8, overflow: 'hidden' }}>
-                <div style={{ padding: '7px 12px', background: color + '12', fontWeight: 700, fontSize: 13, color, borderBottom: `1px solid ${color}22` }}>{week}</div>
-                <div style={{ padding: '10px 12px' }}>
-                  {secKeys.map(sec => {
-                    const items = conForm[sec]
-                    return (
-                      <div key={sec} style={{ marginBottom: 10 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color, marginBottom: 4 }}>{SECTION_LABELS[sec]}</div>
-                        {items.length === 0 ? (
-                          <div style={{ fontSize: 12, color: 'var(--c-text-muted)', fontStyle: 'italic', padding: '3px 0' }}>없음 — 왼쪽에서 + 버튼으로 추가</div>
-                        ) : items.map(item => {
-                          const { bg, color: badgeColor, label: badgeLabel } = itemBadge(item)
-                          return (
-                            <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', borderRadius: 6, marginBottom: 3, background: 'var(--c-bg)', border: '1px solid var(--c-border-in)' }}>
-                              <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 3, background: bg, color: badgeColor }}>{badgeLabel}</span>
-                              <textarea value={item.content}
-                                onChange={e => updateItem(sec, item.id, e.target.value)}
-                                onInput={e => { const t = e.currentTarget; t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px' }}
-                                ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px' } }}
-                                style={{ flex: 1, fontSize: 12, lineHeight: 1.6, color: 'var(--c-text)', background: 'transparent', border: 'none', outline: 'none', resize: 'none', overflow: 'hidden', fontFamily: 'inherit', padding: 0, minHeight: 20 }} />
-                              <button onClick={() => removeItem(sec, item.id)}
-                                style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 16, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.7, marginTop: 1 }}>×</button>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )
-          })}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={conForm} onChange={setSection} onDateChange={setThisWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
+            <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={conForm} onChange={setSection} onDateChange={setNextWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
+          </div>
         </div>
       </div>
     </div>
@@ -890,6 +854,8 @@ export default function WeeklyReportPage() {
           individualReports={myReports.filter(r => r.weekStart === editorConfig.weekStart && r.reportType === 'INDIVIDUAL')}
           existing={editorConfig.existing}
           pastConsolidated={consolidated.filter(r => r.weekStart < editorConfig.weekStart).sort((a, b) => b.weekStart.localeCompare(a.weekStart))}
+          keyTasks={keyTasks}
+          workUnits={workUnits}
           onSave={handleEditorSave}
           onCancel={() => setEditorConfig(null)}
         />
