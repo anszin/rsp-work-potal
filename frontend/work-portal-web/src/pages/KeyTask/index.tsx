@@ -86,7 +86,7 @@ export default function KeyTaskPage() {
 
   const { data: years = [] } = useQuery({ queryKey: ['key-task-years'], queryFn: getKeyTaskYears })
   const [selYear, setSelYear] = useState(now)
-  const [selLevel, setSelLevel] = useState<SelLevel>('all')
+  const [selLevel, setSelLevel] = useState<SelLevel>('담당부서')
   const [selQuarter, setSelQuarter] = useState<SelQuarter>(currentQuarter())
   const displayYears = years.includes(selYear) ? years : [selYear, ...years].sort((a, b) => b - a)
 
