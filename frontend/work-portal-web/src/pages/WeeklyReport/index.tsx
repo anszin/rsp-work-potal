@@ -199,9 +199,10 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
 
   const selectedWuId = value.startsWith('wu:') ? parseInt(value.slice(3)) : null
   const selectedWu = selectedWuId != null ? workUnits.find(w => w.id === selectedWuId) : null
+  const selectedKt = selectedWu ? keyTasks.find(k => k.id === selectedWu.keyTaskId) : null
   const isLinked = !!selectedWu
   const shortLabel = selectedWu
-    ? (selectedWu.title.length > 8 ? selectedWu.title.slice(0, 8) + '…' : selectedWu.title)
+    ? (selectedKt?.kpi || (selectedKt?.taskName ? (selectedKt.taskName.length > 8 ? selectedKt.taskName.slice(0, 8) + '…' : selectedKt.taskName) : '중점'))
     : '기타'
 
   // workUnit을 keyTaskId별로 그룹화
