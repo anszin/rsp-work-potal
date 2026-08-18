@@ -380,11 +380,13 @@ export default function KeyTaskPage() {
             <button onClick={() => setPageTab('workunits')} style={pageTabStyle(pageTab === 'workunits')}>단위업무</button>
             <button onClick={() => setPageTab('performance')} style={pageTabStyle(pageTab === 'performance')}>성과 현황</button>
           </div>
-          <div style={{ display: 'flex', gap: 16 }}>
-            {displayYears.map(y => (
-              <button key={y} onClick={() => setSelYear(y)} style={tabStyle(selYear === y)}>{y}년</button>
-            ))}
-          </div>
+          <select
+            value={selYear}
+            onChange={e => setSelYear(Number(e.target.value))}
+            style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', background: 'var(--c-input-bg)', color: 'var(--c-text)', fontSize: 13, cursor: 'pointer' }}
+          >
+            {displayYears.map(y => <option key={y} value={y}>{y}년</option>)}
+          </select>
         </div>
         {pageTab === 'keytasks' && <button style={s.btn} onClick={openCreate}>+ 과제 추가</button>}
       </div>
