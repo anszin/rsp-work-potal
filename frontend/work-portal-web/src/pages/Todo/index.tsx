@@ -179,7 +179,7 @@ export default function TodoPage() {
     <div style={{ padding: 24, height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>TO-DO</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>To-Do</h2>
           <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 2 }}>
             총 {todos.length}개 · 완료 {grouped.DONE.length}개
             {grouped.HOLD.length > 0 && <span style={{ color: '#c05621', marginLeft: 8 }}>· 보류 {grouped.HOLD.length}개</span>}
