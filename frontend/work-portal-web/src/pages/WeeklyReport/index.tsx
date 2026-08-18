@@ -194,7 +194,7 @@ function KpiSelect({ value, onChange, keyTasks }: {
   const selected = keyTasks.find(k => String(k.id) === value)
   const isLinked = !!selected
   const shortLabel = selected
-    ? (selected.kpi || (selected.taskName.length > 16 ? selected.taskName.slice(0, 16) + '…' : selected.taskName))
+    ? (selected.kpi || (selected.taskName.length > 8 ? selected.taskName.slice(0, 8) + '…' : selected.taskName))
     : '기타'
 
   const rowStyle = (active: boolean): React.CSSProperties => ({
@@ -206,7 +206,7 @@ function KpiSelect({ value, onChange, keyTasks }: {
   })
 
   return (
-    <div style={{ position: 'relative', flexShrink: 0, width: 160 }}>
+    <div style={{ position: 'relative', flexShrink: 0, width: 88 }}>
       {open && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setOpen(false)} />}
       <button type="button" onClick={() => setOpen(o => !o)}
         style={{
@@ -226,7 +226,7 @@ function KpiSelect({ value, onChange, keyTasks }: {
           position: 'absolute', top: 'calc(100% + 3px)', left: 0, zIndex: 100,
           background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
           borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-          minWidth: 240, maxHeight: 220, overflowY: 'auto',
+          minWidth: 360, maxHeight: 300, overflowY: 'auto',
         }}>
           <div onClick={() => { onChange(''); setOpen(false) }} style={rowStyle(!value)}>
             <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: 'var(--c-thead)', color: 'var(--c-text-muted)', fontWeight: 600 }}>기타</span>
