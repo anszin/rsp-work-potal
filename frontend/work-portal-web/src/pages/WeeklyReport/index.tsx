@@ -194,7 +194,7 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   value: string; onChange: (v: string) => void; keyTasks: KeyTask[]; workUnits: WorkUnit[]
 }) {
   const [open, setOpen] = useState(false)
-  const [popupPos, setPopupPos] = useState({ top: 0, left: 0, width: 400 })
+  const [popupPos, setPopupPos] = useState<{ top?: number; bottom?: number; left: number; width: number }>({ left: 0, width: 400 })
   const btnRef = useRef<HTMLButtonElement>(null)
 
   const selectedWuId = value.startsWith('wu:') ? parseInt(value.slice(3)) : null
@@ -215,9 +215,15 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   const handleOpen = () => {
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect()
-      // 버튼 왼쪽부터 뷰포트 오른쪽 끝까지 (최대 640px)
       const width = Math.min(window.innerWidth - r.left - 12, 640)
-      setPopupPos({ top: r.bottom + 3, left: r.left, width })
+      const maxPopupH = 320
+      const spaceBelow = window.innerHeight - r.bottom - 3
+      if (spaceBelow < maxPopupH && r.top > maxPopupH) {
+        // 공간 부족 시 위로 열기
+        setPopupPos({ bottom: window.innerHeight - r.top + 3, left: r.left, width })
+      } else {
+        setPopupPos({ top: r.bottom + 3, left: r.left, width })
+      }
     }
     setOpen(o => !o)
   }
@@ -254,7 +260,7 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
       </button>
       {open && (
         <div style={{
-          position: 'fixed', top: popupPos.top, left: popupPos.left, width: popupPos.width, zIndex: 100,
+          position: 'fixed', top: popupPos.top, bottom: popupPos.bottom, left: popupPos.left, width: popupPos.width, zIndex: 100,
           background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
           borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
           maxHeight: 320, overflowY: 'auto',
