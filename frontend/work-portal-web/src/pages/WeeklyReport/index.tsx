@@ -450,8 +450,8 @@ function WeekCompareView({ report }: { report: WeeklyReport }) {
       ] : visible.flatMap(({ label, tw, nw }, idx, arr) => {
         const isLast = idx === arr.length - 1
         return [
-          <div key={`${label}-twl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: TW, background: TW+'08', borderTop: `1px solid ${TW}18`, borderRight: '1px solid var(--c-border)', letterSpacing: '0.04em' }}>{label}</div>,
-          <div key={`${label}-nwl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: NW, background: NW+'08', borderTop: `1px solid ${NW}18`, letterSpacing: '0.04em' }}>{label}</div>,
+          <div key={`${label}-twl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: TW, background: TW+'08', borderRight: '1px solid var(--c-border)', letterSpacing: '0.04em' }}>{label}</div>,
+          <div key={`${label}-nwl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: NW, background: NW+'08', letterSpacing: '0.04em' }}>{label}</div>,
           <div key={`${label}-twi`} style={{ padding: '8px 14px', background: TW+'03', borderRight: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 8 }}>{renderItems(tw)}</div>,
           <div key={`${label}-nwi`} style={{ padding: '8px 14px', background: NW+'03', paddingBottom: isLast ? 14 : 8 }}>{renderItems(nw)}</div>,
         ]
@@ -497,10 +497,10 @@ function WeekCompareForm({ form, setForm, keyTasks, workUnits }: {
       {pairs.flatMap(({ tw, nw, label }, idx) => {
         const isLast = idx === pairs.length - 1
         return [
-          <div key={`${tw}-cell`} style={{ padding: '12px 14px', borderRight: '1px solid var(--c-border)', borderTop: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 12 }}>
+          <div key={`${tw}-cell`} style={{ padding: '12px 14px', borderRight: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 12 }}>
             <WorkSectionForm label={label} sectionColor={TW} items={form[tw]} onChange={items => setSection(tw, items)} keyTasks={keyTasks} workUnits={workUnits} />
           </div>,
-          <div key={`${nw}-cell`} style={{ padding: '12px 14px', borderTop: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 12 }}>
+          <div key={`${nw}-cell`} style={{ padding: '12px 14px', paddingBottom: isLast ? 14 : 12 }}>
             <WorkSectionForm label={label} sectionColor={NW} items={form[nw]} onChange={items => setSection(nw, items)} keyTasks={keyTasks} workUnits={workUnits} />
           </div>,
         ]
