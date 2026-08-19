@@ -621,7 +621,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modal: {
     background: 'var(--c-card)', borderRadius: 10, padding: 24,
-    width: '100%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto',
+    width: '100%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto',
     boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
   },
   modalHeader: {
