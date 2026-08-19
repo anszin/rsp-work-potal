@@ -241,224 +241,241 @@ export default function TodoPage() {
               <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? 'To-Do 수정' : 'To-Do 추가'}</span>
               <IconButton variant="text" icon="✕" label="닫기" onClick={closeModal} />
             </div>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <label style={styles.label}>
-                제목 <span style={{ color: '#e53e3e' }}>*</span>
-                <input
-                  style={styles.input}
-                  value={form.title}
-                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  placeholder="Todo 제목"
-                  autoFocus
-                />
-              </label>
+            <form onSubmit={handleSubmit}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
 
-              <label style={styles.label}>
-                설명
-                <textarea
-                  style={{ ...styles.input, height: 140, resize: 'vertical' }}
-                  value={form.description}
-                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="상세 내용"
-                />
-              </label>
-
-              {/* 중점과제(필터) · 단위업무 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <label style={styles.label}>
-                  <span>중점과제 <span style={{ fontWeight: 400, color: 'var(--c-text-muted)' }}>(필터)</span></span>
-                  <select
-                    style={styles.input}
-                    value={filterKeyTaskId ?? ''}
-                    onChange={e => {
-                      setFilterKeyTaskId(e.target.value ? Number(e.target.value) : undefined)
-                      setForm(f => ({ ...f, workUnitId: undefined }))
-                    }}
-                  >
-                    <option value="">전체</option>
-                    {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
-                  </select>
-                </label>
-                <label style={styles.label}>
-                  단위업무
-                  <select
-                    style={styles.input}
-                    value={form.workUnitId ?? ''}
-                    onChange={e => {
-                      const wuId = e.target.value ? Number(e.target.value) : undefined
-                      const wu = allWorkUnits.find(w => w.id === wuId)
-                      if (wu && !filterKeyTaskId) setFilterKeyTaskId(wu.keyTaskId)
-                      setForm(f => ({ ...f, workUnitId: wuId }))
-                    }}
-                  >
-                    <option value="">선택 안 함</option>
-                    {filteredWorkUnits.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
-                  </select>
-                </label>
-              </div>
-
-              {/* 상태 · 우선순위 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <label style={styles.label}>
-                  상태
-                  <select style={styles.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as TodoStatus }))}>
-                    {COLUMNS.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
-                  </select>
-                </label>
-                <label style={styles.label}>
-                  우선순위
-                  <select style={styles.input} value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TodoPriority }))}>
-                    <option value="HIGH">상</option>
-                    <option value="MEDIUM">중</option>
-                    <option value="LOW">하</option>
-                  </select>
-                </label>
-              </div>
-
-              {/* 담당자 · 요청유형 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                {isManager && (
+                {/* ── 왼쪽: 기본 정보 ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <label style={styles.label}>
-                    담당자
-                    <select
+                    제목 <span style={{ color: '#e53e3e' }}>*</span>
+                    <input
                       style={styles.input}
-                      value={form.assignee ?? ''}
-                      onChange={e => setForm(f => ({ ...f, assignee: e.target.value || undefined }))}
-                    >
-                      <option value="">본인</option>
-                      {users.filter(u => u.active).map(u => (
-                        <option key={u.username} value={u.username}>
-                          {u.name ?? u.username}{u.dept ? ` (${u.dept})` : ''}
-                        </option>
-                      ))}
-                    </select>
+                      value={form.title}
+                      onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                      placeholder="Todo 제목"
+                      autoFocus
+                    />
                   </label>
-                )}
-                <label style={styles.label}>
-                  요청유형
-                  <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))}>
-                    {(Object.entries(SOURCE_LABELS) as [TodoSourceType, string][]).map(([k, v]) => (
-                      <option key={k} value={k}>{v}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
 
-              {/* 시작일 · 목표일 · 완료일 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'end' }}>
-                <label style={styles.label}>
-                  <span>시작일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
-                  <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
-                </label>
-                <label style={styles.label}>
-                  목표일
-                  <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
-                </label>
-                <label style={styles.label}>
-                  <span>완료일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
-                  <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
-                </label>
-              </div>
+                  <label style={styles.label}>
+                    설명
+                    <textarea
+                      style={{ ...styles.input, height: 100, resize: 'vertical' }}
+                      value={form.description}
+                      onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                      placeholder="상세 내용"
+                    />
+                  </label>
 
-              {/* 체크리스트 */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span style={{ ...styles.label, flexDirection: 'row', gap: 6 }}>
-                    체크리스트
-                    {(form.checkItems?.length ?? 0) > 0 && (
-                      <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>
-                        {form.checkItems!.filter(c => c.done).length}/{form.checkItems!.length}
-                      </span>
+                  {/* 중점과제(필터) · 단위업무 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <label style={styles.label}>
+                      <span>중점과제 <span style={{ fontWeight: 400, color: 'var(--c-text-muted)' }}>(필터)</span></span>
+                      <select
+                        style={styles.input}
+                        value={filterKeyTaskId ?? ''}
+                        onChange={e => {
+                          setFilterKeyTaskId(e.target.value ? Number(e.target.value) : undefined)
+                          setForm(f => ({ ...f, workUnitId: undefined }))
+                        }}
+                      >
+                        <option value="">전체</option>
+                        {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
+                      </select>
+                    </label>
+                    <label style={styles.label}>
+                      단위업무
+                      <select
+                        style={styles.input}
+                        value={form.workUnitId ?? ''}
+                        onChange={e => {
+                          const wuId = e.target.value ? Number(e.target.value) : undefined
+                          const wu = allWorkUnits.find(w => w.id === wuId)
+                          if (wu && !filterKeyTaskId) setFilterKeyTaskId(wu.keyTaskId)
+                          setForm(f => ({ ...f, workUnitId: wuId }))
+                        }}
+                      >
+                        <option value="">선택 안 함</option>
+                        {filteredWorkUnits.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
+                      </select>
+                    </label>
+                  </div>
+
+                  {/* 상태 · 우선순위 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <label style={styles.label}>
+                      상태
+                      <select style={styles.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as TodoStatus }))}>
+                        {COLUMNS.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
+                      </select>
+                    </label>
+                    <label style={styles.label}>
+                      우선순위
+                      <select style={styles.input} value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TodoPriority }))}>
+                        <option value="HIGH">상</option>
+                        <option value="MEDIUM">중</option>
+                        <option value="LOW">하</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  {/* 담당자 · 요청유형 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    {isManager && (
+                      <label style={styles.label}>
+                        담당자
+                        <select
+                          style={styles.input}
+                          value={form.assignee ?? ''}
+                          onChange={e => setForm(f => ({ ...f, assignee: e.target.value || undefined }))}
+                        >
+                          <option value="">본인</option>
+                          {users.filter(u => u.active).map(u => (
+                            <option key={u.username} value={u.username}>
+                              {u.name ?? u.username}{u.dept ? ` (${u.dept})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                     )}
-                  </span>
-                  <Button variant="text" size="sm" type="button"
-                    onClick={() => setForm(f => ({ ...f, checkItems: [...(f.checkItems ?? []), { text: '', done: false }] }))}>
-                    + 항목
-                  </Button>
-                </div>
-                {(form.checkItems ?? []).map((item, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <input type="checkbox" checked={item.done}
-                      onChange={() => setForm(f => {
-                        const items = [...(f.checkItems ?? [])]
-                        items[i] = { ...items[i], done: !items[i].done }
-                        return { ...f, checkItems: items }
-                      })}
-                      style={{ width: 15, height: 15, flexShrink: 0, cursor: 'pointer' }}
-                    />
-                    <input
-                      style={{ ...styles.input, textDecoration: item.done ? 'line-through' : 'none', color: item.done ? 'var(--c-text-muted)' : 'inherit' }}
-                      value={item.text}
-                      onChange={e => setForm(f => {
-                        const items = [...(f.checkItems ?? [])]
-                        items[i] = { ...items[i], text: e.target.value }
-                        return { ...f, checkItems: items }
-                      })}
-                      placeholder="항목 입력"
-                    />
-                    <IconButton variant="text" size="sm" icon="✕" label="제거"
-                      onClick={() => setForm(f => ({ ...f, checkItems: (f.checkItems ?? []).filter((_, idx) => idx !== i) }))} />
+                    <label style={styles.label}>
+                      요청유형
+                      <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))}>
+                        {(Object.entries(SOURCE_LABELS) as [TodoSourceType, string][]).map(([k, v]) => (
+                          <option key={k} value={k}>{v}</option>
+                        ))}
+                      </select>
+                    </label>
                   </div>
-                ))}
+
+                  {/* 시작일 · 목표일 · 완료일 */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                    <label style={styles.label}>
+                      <span>시작일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
+                      <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+                    </label>
+                    <label style={styles.label}>
+                      목표일
+                      <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+                    </label>
+                    <label style={styles.label}>
+                      <span>완료일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
+                      <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
+                    </label>
+                  </div>
+                </div>
+
+                {/* ── 오른쪽: 체크리스트 · 링크 · 이미지 ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, borderLeft: '1px solid var(--c-border)', paddingLeft: 20 }}>
+
+                  {/* 체크리스트 */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <span style={{ ...styles.label, flexDirection: 'row', gap: 6 }}>
+                        체크리스트
+                        {(form.checkItems?.length ?? 0) > 0 && (
+                          <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>
+                            {form.checkItems!.filter(c => c.done).length}/{form.checkItems!.length}
+                          </span>
+                        )}
+                      </span>
+                      <Button variant="text" size="sm" type="button"
+                        onClick={() => setForm(f => ({ ...f, checkItems: [...(f.checkItems ?? []), { text: '', done: false }] }))}>
+                        + 항목
+                      </Button>
+                    </div>
+                    {(form.checkItems ?? []).length === 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '6px 0' }}>항목을 추가하세요</div>
+                    )}
+                    {(form.checkItems ?? []).map((item, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <input type="checkbox" checked={item.done}
+                          onChange={() => setForm(f => {
+                            const items = [...(f.checkItems ?? [])]
+                            items[i] = { ...items[i], done: !items[i].done }
+                            return { ...f, checkItems: items }
+                          })}
+                          style={{ width: 15, height: 15, flexShrink: 0, cursor: 'pointer' }}
+                        />
+                        <input
+                          style={{ ...styles.input, textDecoration: item.done ? 'line-through' : 'none', color: item.done ? 'var(--c-text-muted)' : 'inherit' }}
+                          value={item.text}
+                          onChange={e => setForm(f => {
+                            const items = [...(f.checkItems ?? [])]
+                            items[i] = { ...items[i], text: e.target.value }
+                            return { ...f, checkItems: items }
+                          })}
+                          placeholder="항목 입력"
+                        />
+                        <IconButton variant="text" size="sm" icon="✕" label="제거"
+                          onClick={() => setForm(f => ({ ...f, checkItems: (f.checkItems ?? []).filter((_, idx) => idx !== i) }))} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 외부링크 */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <span style={styles.label}>외부링크</span>
+                      <Button variant="text" size="sm" type="button"
+                        onClick={() => setForm(f => ({ ...f, links: [...(f.links ?? []), { label: '', url: '' }] }))}>
+                        + 링크
+                      </Button>
+                    </div>
+                    {(form.links ?? []).length === 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '6px 0' }}>링크를 추가하세요</div>
+                    )}
+                    {(form.links ?? []).map((link, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
+                        <input
+                          style={{ ...styles.input, width: 80, flexShrink: 0 }}
+                          value={link.label}
+                          onChange={e => setForm(f => {
+                            const links = [...(f.links ?? [])]
+                            links[i] = { ...links[i], label: e.target.value }
+                            return { ...f, links }
+                          })}
+                          placeholder="이름"
+                        />
+                        <input
+                          style={{ ...styles.input, flex: 1 }}
+                          value={link.url}
+                          onChange={e => setForm(f => {
+                            const links = [...(f.links ?? [])]
+                            links[i] = { ...links[i], url: e.target.value }
+                            return { ...f, links }
+                          })}
+                          placeholder="https://..."
+                        />
+                        <IconButton variant="text" size="sm" icon="✕" label="제거"
+                          onClick={() => setForm(f => ({ ...f, links: (f.links ?? []).filter((_, idx) => idx !== i) }))} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 이미지 URL */}
+                  <label style={styles.label}>
+                    이미지 URL
+                    <input
+                      style={styles.input}
+                      value={form.imageUrl ?? ''}
+                      onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+                      placeholder="https://... (이미지 직접 링크)"
+                    />
+                    {form.imageUrl && (
+                      <img
+                        src={form.imageUrl}
+                        alt="미리보기"
+                        style={{ maxWidth: '100%', maxHeight: 140, borderRadius: 6, marginTop: 6, objectFit: 'contain', border: '1px solid var(--c-border)' }}
+                        onError={e => (e.currentTarget.style.display = 'none')}
+                      />
+                    )}
+                  </label>
+                </div>
               </div>
 
-              {/* 외부링크 */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span style={styles.label}>외부링크</span>
-                  <Button variant="text" size="sm" type="button"
-                    onClick={() => setForm(f => ({ ...f, links: [...(f.links ?? []), { label: '', url: '' }] }))}>
-                    + 링크
-                  </Button>
-                </div>
-                {(form.links ?? []).map((link, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
-                    <input
-                      style={{ ...styles.input, width: 90, flexShrink: 0 }}
-                      value={link.label}
-                      onChange={e => setForm(f => {
-                        const links = [...(f.links ?? [])]
-                        links[i] = { ...links[i], label: e.target.value }
-                        return { ...f, links }
-                      })}
-                      placeholder="이름"
-                    />
-                    <input
-                      style={{ ...styles.input, flex: 1 }}
-                      value={link.url}
-                      onChange={e => setForm(f => {
-                        const links = [...(f.links ?? [])]
-                        links[i] = { ...links[i], url: e.target.value }
-                        return { ...f, links }
-                      })}
-                      placeholder="https://..."
-                    />
-                    <IconButton variant="text" size="sm" icon="✕" label="제거"
-                      onClick={() => setForm(f => ({ ...f, links: (f.links ?? []).filter((_, idx) => idx !== i) }))} />
-                  </div>
-                ))}
-              </div>
-
-              {/* 이미지 URL */}
-              <label style={styles.label}>
-                이미지 URL
-                <input
-                  style={styles.input}
-                  value={form.imageUrl ?? ''}
-                  onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
-                  placeholder="https://... (이미지 직접 링크)"
-                />
-                {form.imageUrl && (
-                  <img
-                    src={form.imageUrl}
-                    alt="미리보기"
-                    style={{ maxWidth: '100%', maxHeight: 160, borderRadius: 6, marginTop: 6, objectFit: 'contain', border: '1px solid var(--c-border)' }}
-                    onError={e => (e.currentTarget.style.display = 'none')}
-                  />
-                )}
-              </label>
-
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 4, alignItems: 'center' }}>
+              {/* ── 버튼 ── */}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--c-border)', alignItems: 'center' }}>
                 {editing && (
                   <button type="button" className="ds-btn ds-btn--outlined ds-btn--md"
                     style={{ borderColor: 'var(--c-tag-err-t)', color: 'var(--c-tag-err-t)' }}
