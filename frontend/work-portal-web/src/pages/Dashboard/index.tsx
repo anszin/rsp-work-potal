@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Button } from '../../components/ui'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import client from '../../api/client'
@@ -199,10 +200,9 @@ export default function DashboardPage() {
           <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div style={{ fontWeight: 600, fontSize: 14 }}>오늘 점검 현황</div>
-              <button onClick={() => navigate('/reports/daily')}
-                style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              <Button variant="text" onClick={() => navigate('/reports/daily')} style={{ fontSize: 12, padding: 0 }}>
                 전체보기 →
-              </button>
+              </Button>
             </div>
             {systems.length === 0 ? (
               <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 시스템이 없습니다.</p>
@@ -249,10 +249,9 @@ export default function DashboardPage() {
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>시스템별 배포 현황</div>
-            <button onClick={() => navigate('/deploys')}
-              style={{ fontSize: 12, color: '#9c27b0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <Button variant="text" onClick={() => navigate('/deploys')} style={{ fontSize: 12, padding: 0 }}>
               전체보기 →
-            </button>
+            </Button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
             {systems.map((sys: any) => {
@@ -341,14 +340,8 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>최근 요청</div>
             <div style={{ display: 'flex', gap: 8 }}>
-              {can('change_requests') && <button onClick={() => navigate('/requests')}
-                style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                변경관리 →
-              </button>}
-              {can('deploys') && <button onClick={() => navigate('/deploys')}
-                style={{ fontSize: 12, color: '#9c27b0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                배포요청 →
-              </button>}
+              {can('change_requests') && <Button variant="text" onClick={() => navigate('/requests')} style={{ fontSize: 12, padding: 0 }}>변경관리 →</Button>}
+              {can('deploys') && <Button variant="text" onClick={() => navigate('/deploys')} style={{ fontSize: 12, padding: 0 }}>배포요청 →</Button>}
             </div>
           </div>
           {changeRequests.length === 0 && deployRequests.length === 0 ? (
@@ -391,10 +384,9 @@ export default function DashboardPage() {
           {can('meeting_minutes') && <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div style={{ fontWeight: 600, fontSize: 14 }}>최근 회의록</div>
-              <button onClick={() => navigate('/reports/meeting')}
-                style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              <Button variant="text" onClick={() => navigate('/reports/meeting')} style={{ fontSize: 12, padding: 0 }}>
                 전체보기 →
-              </button>
+              </Button>
             </div>
             {meetings.length === 0 ? (
               <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 회의록이 없습니다.</p>

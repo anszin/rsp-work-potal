@@ -11,6 +11,7 @@ import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../.
 import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
+import { Button, IconButton } from '../../components/ui'
 
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
   RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치',
@@ -292,8 +293,8 @@ export default function DeployRequestPage() {
                 autoFocus
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
-                <button style={s.btnSecondary} onClick={() => setActionModal(null)}>취소</button>
-                <button style={{ ...s.btn, background: cfg.btnColor }} onClick={submitActionModal}>{cfg.btnLabel}</button>
+                <Button variant="outlined" onClick={() => setActionModal(null)}>취소</Button>
+                <Button variant="filled" style={{ background: cfg.btnColor }} onClick={submitActionModal}>{cfg.btnLabel}</Button>
               </div>
             </div>
           </div>
@@ -312,7 +313,7 @@ export default function DeployRequestPage() {
             ))}
           </div>
         </div>
-        {tab === 'list' && <button style={s.btn} onClick={() => openCreate()}>+ 새 배포 요청</button>}
+        {tab === 'list' && <Button variant="filled" onClick={() => openCreate()}>+ 새 배포 요청</Button>}
       </div>
 
       {tab === 'dashboard' && <DeployDashboard requests={requests.filter(r => !r.parentDrId)} />}
@@ -385,9 +386,9 @@ export default function DeployRequestPage() {
                       ))}
                     </div>
                   )}
-                  <button type="button" onClick={openPicker} style={s.btnOutline}>
+                  <Button type="button" variant="outlined" onClick={openPicker}>
                     + 일감 선택
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <div style={{ padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 12, color: 'var(--c-text-muted)' }}>
@@ -399,10 +400,10 @@ export default function DeployRequestPage() {
             <textarea style={{ ...s.input, height: 100, resize: 'vertical' }} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="배포 내용 및 변경사항을 입력하세요" />
           </div>
           <div style={s.formActions}>
-            <button style={s.btnSecondary} onClick={closeForm}>취소</button>
-            <button style={s.btn} onClick={submit} disabled={createMut.isPending || updateMut.isPending}>
+            <Button variant="outlined" onClick={closeForm}>취소</Button>
+            <Button variant="filled" onClick={submit} disabled={createMut.isPending || updateMut.isPending}>
               {createMut.isPending || updateMut.isPending ? '저장 중...' : '저장'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -480,7 +481,7 @@ export default function DeployRequestPage() {
                     <td style={s.td} onClick={e => e.stopPropagation()}>
                       <div style={s.actions}>
                         {(row.status === 'DRAFT' || (row.status === 'COMPLETED' && isAdmin)) && (
-                          <button style={s.btnSm} onClick={() => openEdit(row)}>수정</button>
+                          <Button variant="outlined" size="sm" onClick={() => openEdit(row)}>수정</Button>
                         )}
                         {NEXT_STATUS[row.status]?.map(({ label, next }) => {
                           const isManagedSystem = managedSystemIds.includes(row.systemId)
@@ -490,23 +491,23 @@ export default function DeployRequestPage() {
                             (next === 'REQUESTED' || next === 'COMPLETED') ? (isManagedSystem || isAdmin) :
                             false
                           return canAct && (
-                            <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
+                            <Button key={next} variant="outlined" size="sm" style={actionStyle(next)}
                               onClick={() => handleStatus(row.id, next)}>
                               {label}
-                            </button>
+                            </Button>
                           )
                         })}
                         {row.status === 'COMPLETED' && row.deployScope === 'PARTIAL' && !requests.some(x => x.parentDrId === row.id) && (
-                          <button style={{ ...s.btnSm, color: '#285E61', borderColor: '#285E61' }}
+                          <Button variant="outlined" size="sm" style={{ color: '#285E61', borderColor: '#285E61' }}
                             onClick={() => openCreate({ systemId: row.systemId, subSystemId: row.subSystemId ?? undefined, title: row.title, version: row.version ?? '', deployType: row.deployType ?? 'RELEASE', deployScope: 'FULL', content: row.content ?? '', redmineIssues: row.redmineIssues, parentDrId: row.id })}>
                             전점 배포
-                          </button>
+                          </Button>
                         )}
                         {(row.status === 'DRAFT' || isAdmin) && (
-                          <button style={{ ...s.btnSm, color: '#e53e3e' }}
+                          <Button variant="outlined" size="sm" style={{ color: '#e53e3e', borderColor: '#e53e3e' }}
                             onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(row.id) }}>
                             삭제
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </td>
@@ -587,7 +588,7 @@ export default function DeployRequestPage() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
               <StatusBadge status={detail.status} />
-              <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
+              <Button variant="outlined" size="sm" onClick={() => setDetail(null)}>닫기</Button>
             </div>
           </div>
 
@@ -705,10 +706,10 @@ export default function DeployRequestPage() {
                   {detail.redmineSyncStatus === 'FAILED' && (
                     <>
                       <span style={{ fontSize: 12, color: '#9B2C2C', background: '#FFF5F5', border: '1px solid #FED7D7', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 실패</span>
-                      <button style={{ ...s.btnSm, color: '#C05621', borderColor: '#C05621', marginRight: 0 }}
+                      <Button variant="outlined" size="sm" style={{ color: '#C05621', borderColor: '#C05621' }}
                         onClick={() => syncMut.mutate(detail.id)} disabled={syncMut.isPending}>
                         {syncMut.isPending ? '재시도 중...' : '재시도'}
-                      </button>
+                      </Button>
                     </>
                   )}
                   {detail.redmineSyncStatus === 'SKIPPED' && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>미설정 (프로젝트키 또는 버전 없음)</span>}
@@ -747,13 +748,12 @@ export default function DeployRequestPage() {
                       )}
                     </div>
                     {step.status === 'PENDING' && (isAdmin || managedSystemIds.includes(detail.systemId)) && (
-                      <button
-                        style={{ ...s.btnSm, color: '#276749', borderColor: '#276749' }}
+                      <Button variant="outlined" size="sm" style={{ color: '#276749', borderColor: '#276749' }}
                         onClick={() => completeStepMut.mutate(step.id)}
                         disabled={completeStepMut.isPending}
                       >
                         배포 완료
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}
@@ -771,7 +771,7 @@ export default function DeployRequestPage() {
           <div style={s.modal} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
               <span style={{ fontWeight: 600, fontSize: 15 }}>레드마인 일감 선택</span>
-              <button onClick={() => setShowPicker(false)} style={s.modalClose}>✕</button>
+              <IconButton variant="text" icon="✕" label="닫기" onClick={() => setShowPicker(false)} />
             </div>
             <div style={{ ...s.modalFilter, flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -846,9 +846,9 @@ export default function DeployRequestPage() {
                   })}
                   {pickerAllIssues.length < pickerAllTotal && (
                     <div style={{ padding: '12px 20px', textAlign: 'center' }}>
-                      <button onClick={loadMoreAllIssues} disabled={pickerLoading} style={s.btnOutline}>
+                      <Button variant="outlined" onClick={loadMoreAllIssues} disabled={pickerLoading}>
                         {pickerLoading ? '불러오는 중...' : `더 불러오기 (${pickerAllTotal - pickerAllIssues.length}개 남음)`}
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </>
@@ -859,10 +859,10 @@ export default function DeployRequestPage() {
                 {pickerDraft.length > 0 ? `${pickerDraft.length}개 선택됨` : '일감을 선택하세요'}
               </span>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button style={s.btnSecondary} onClick={() => setShowPicker(false)}>취소</button>
-                <button style={s.btn} onClick={confirmPicker}>
+                <Button variant="outlined" onClick={() => setShowPicker(false)}>취소</Button>
+                <Button variant="filled" onClick={confirmPicker}>
                   선택 완료 {pickerDraft.length > 0 && `(${pickerDraft.length}개)`}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

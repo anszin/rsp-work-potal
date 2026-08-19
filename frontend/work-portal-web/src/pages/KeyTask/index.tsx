@@ -8,6 +8,7 @@ import {
 import { weeklyApi, type WeeklyReport } from '../../api/reports'
 import WorkUnitTab from '../WorkUnit'
 import PerformanceTab from './PerformanceTab'
+import { Button, IconButton } from '../../components/ui'
 
 interface WorkItem {
   id: string
@@ -211,7 +212,7 @@ export default function KeyTaskPage() {
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
                 {editing ? '중점과제 수정' : '중점과제 추가'} — {selYear}년
               </h3>
-              <button style={s.btnSecondary} onClick={closeModal}>✕</button>
+              <IconButton variant="text" icon="✕" label="닫기" onClick={closeModal} />
             </div>
 
             {/* 구분 선택 */}
@@ -300,10 +301,10 @@ export default function KeyTaskPage() {
               </table>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 20 }}>
-              <button style={s.btnSecondary} onClick={closeModal} disabled={isPending}>취소</button>
-              <button style={{ ...s.btn, opacity: isPending ? 0.6 : 1 }} onClick={submit} disabled={isPending}>
+              <Button variant="outlined" onClick={closeModal} disabled={isPending}>취소</Button>
+              <Button variant="filled" onClick={submit} disabled={isPending}>
                 {isPending ? '저장 중...' : '저장'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -338,7 +339,7 @@ export default function KeyTaskPage() {
                   <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 4 }}>주간 실적 — {progressTask.kpi || progressTask.taskLevel}</div>
                   <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{progressTask.taskName}</h3>
                 </div>
-                <button style={s.btnSecondary} onClick={() => setProgressTask(null)}>✕</button>
+                <IconButton variant="text" icon="✕" label="닫기" onClick={() => setProgressTask(null)} />
               </div>
               {linked.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--c-text-muted)', fontSize: 14 }}>
@@ -388,7 +389,7 @@ export default function KeyTaskPage() {
             {displayYears.map(y => <option key={y} value={y}>{y}년</option>)}
           </select>
         </div>
-        {pageTab === 'keytasks' && <button style={s.btn} onClick={openCreate}>+ 과제 추가</button>}
+        {pageTab === 'keytasks' && <Button variant="filled" onClick={openCreate}>+ 과제 추가</Button>}
       </div>
 
       {pageTab === 'workunits' && <WorkUnitTab key={`${workUnitFilterId ?? 'all'}-${selYear}`} initialKeyTaskId={workUnitFilterId} year={selYear} />}
@@ -500,11 +501,11 @@ export default function KeyTaskPage() {
                   {visibleQs.map((q, i) => <td key={`reason-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></td>)}
                   <td style={s.td}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      <button style={{ ...s.btnSm, color: '#1976d2', borderColor: '#90caf9' }} onClick={() => setProgressTask(t)}>실적</button>
-                      <button style={{ ...s.btnSm, color: '#6b46c1', borderColor: '#d6bcfa' }} onClick={() => { setWorkUnitFilterId(t.id); setPageTab('workunits') }}>단위업무</button>
-                      <button style={s.btnSm} onClick={() => openEdit(t)}>수정</button>
-                      <button style={{ ...s.btnSm, color: '#e53e3e' }}
-                        onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</button>
+                      <Button variant="outlined" size="sm" style={{ color: '#1976d2', borderColor: '#90caf9' }} onClick={() => setProgressTask(t)}>실적</Button>
+                      <Button variant="outlined" size="sm" style={{ color: '#6b46c1', borderColor: '#d6bcfa' }} onClick={() => { setWorkUnitFilterId(t.id); setPageTab('workunits') }}>단위업무</Button>
+                      <Button variant="outlined" size="sm" onClick={() => openEdit(t)}>수정</Button>
+                      <Button variant="outlined" size="sm" style={{ color: '#e53e3e', borderColor: '#e53e3e' }}
+                        onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</Button>
                     </div>
                   </td>
                 </tr>

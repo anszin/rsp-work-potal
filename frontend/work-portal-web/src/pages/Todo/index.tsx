@@ -5,6 +5,7 @@ import { useAuth } from '../../context/useAuth'
 import { getUsers, type UserSummary } from '../../api/users'
 import { getKeyTasks } from '../../api/keyTasks'
 import { workUnitApi } from '../../api/workUnits'
+import { Button, IconButton } from '../../components/ui'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
   { status: 'TODO',        label: '대기',   color: '#718096', guide: '아직 시작하지 않은 업무' },
@@ -185,7 +186,7 @@ export default function TodoPage() {
             {grouped.HOLD.length > 0 && <span style={{ color: '#c05621', marginLeft: 8 }}>· 보류 {grouped.HOLD.length}개</span>}
           </div>
         </div>
-        <button onClick={openCreate} style={styles.addBtn}>+ 추가</button>
+        <Button variant="filled" onClick={openCreate}>+ 추가</Button>
       </div>
 
       {/* Kanban Board - 5컬럼 */}
@@ -232,7 +233,7 @@ export default function TodoPage() {
           <div style={styles.modal}>
             <div style={styles.modalHeader}>
               <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? 'To-Do 수정' : 'To-Do 추가'}</span>
-              <button onClick={closeModal} style={styles.closeBtn}>✕</button>
+              <IconButton variant="text" icon="✕" label="닫기" onClick={closeModal} />
             </div>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <label style={styles.label}>
@@ -355,16 +356,17 @@ export default function TodoPage() {
 
               <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 4, alignItems: 'center' }}>
                 {editing && (
-                  <button type="button" style={styles.deleteBtn}
+                  <button type="button" className="ds-btn ds-btn--outlined ds-btn--md"
+                    style={{ borderColor: 'var(--c-tag-err-t)', color: 'var(--c-tag-err-t)' }}
                     onClick={() => { if (confirm(`"${editing.title}" 삭제할까요?`)) { deleteMut.mutate(editing.id); closeModal() } }}>
                     삭제
                   </button>
                 )}
                 <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-                  <button type="button" onClick={closeModal} style={styles.cancelBtn}>취소</button>
-                  <button type="submit" style={styles.submitBtn} disabled={createMut.isPending || updateMut.isPending}>
+                  <Button type="button" variant="outlined" onClick={closeModal}>취소</Button>
+                  <Button type="submit" variant="filled" disabled={createMut.isPending || updateMut.isPending}>
                     {editing ? '저장' : '추가'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </form>
