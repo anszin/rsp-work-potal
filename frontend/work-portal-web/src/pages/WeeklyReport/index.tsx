@@ -477,6 +477,114 @@ function WeekDetailBlock({ week, color, sections, dateRange }: { week: '금주' 
   )
 }
 
+// ── 금주/차주 대칭 조회 뷰 ───────────────────────────────────────────────────
+
+function WeekCompareView({ report }: { report: WeeklyReport }) {
+  const TW = '#1976d2', NW = '#4caf50'
+  const sections = [
+    { label: '수행',     tw: parseItems(report.thisWeekWork),     nw: parseItems(report.nextWeekWork) },
+    { label: '제안',     tw: parseItems(report.thisWeekProposal), nw: parseItems(report.nextWeekProposal) },
+    { label: '기타사항', tw: parseItems(report.thisWeekEtc),      nw: parseItems(report.nextWeekEtc) },
+  ]
+  const hasAny = sections.some(s => s.tw.length || s.nw.length)
+
+  const renderItems = (items: WorkItem[]) => {
+    if (!items.length) return <div style={{ fontSize: 12, color: 'var(--c-text-muted)', opacity: 0.4, padding: '2px 0' }}>—</div>
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {items.map((item, i) => {
+          const { bg, color: bc, label: bl } = itemBadge(item)
+          return (
+            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border)' }}>
+              <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 2, background: bg, color: bc, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bl}</span>
+              {item.author && <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 600, marginTop: 2, background: '#7c3aed15', color: '#7c3aed', whiteSpace: 'nowrap' }}>{item.author}</span>}
+              <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text-sub)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const visible = sections.filter(s => s.tw.length || s.nw.length)
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--c-border)' }}>
+      {/* 헤더 행 */}
+      <div style={{ padding: '8px 14px', background: TW+'14', borderBottom: `1px solid ${TW}22`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontWeight: 700, fontSize: 13, color: TW }}>금주</span>
+        <span style={{ fontSize: 11, color: TW, opacity: 0.65 }}>{fmtShort(report.weekStart, report.weekEnd)}</span>
+      </div>
+      <div style={{ padding: '8px 14px', background: NW+'14', borderBottom: `1px solid ${NW}22`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontWeight: 700, fontSize: 13, color: NW }}>차주</span>
+        <span style={{ fontSize: 11, color: NW, opacity: 0.65 }}>{fmtShort(addDays(report.weekStart, 7), addDays(report.weekEnd, 7))}</span>
+      </div>
+      {/* 섹션 행 — flatMap으로 동일 grid row에 좌우 배치 */}
+      {!hasAny ? [
+        <div key="tw-empty" style={{ padding: 14, color: 'var(--c-text-muted)', fontSize: 13, borderRight: '1px solid var(--c-border)' }}>내용 없음</div>,
+        <div key="nw-empty" style={{ padding: 14, color: 'var(--c-text-muted)', fontSize: 13 }}>내용 없음</div>,
+      ] : visible.flatMap(({ label, tw, nw }, idx, arr) => {
+        const isLast = idx === arr.length - 1
+        return [
+          <div key={`${label}-twl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: TW, background: TW+'08', borderTop: `1px solid ${TW}18`, borderRight: '1px solid var(--c-border)', letterSpacing: '0.04em' }}>{label}</div>,
+          <div key={`${label}-nwl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: NW, background: NW+'08', borderTop: `1px solid ${NW}18`, letterSpacing: '0.04em' }}>{label}</div>,
+          <div key={`${label}-twi`} style={{ padding: '8px 14px', background: TW+'03', borderRight: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 8 }}>{renderItems(tw)}</div>,
+          <div key={`${label}-nwi`} style={{ padding: '8px 14px', background: NW+'03', paddingBottom: isLast ? 14 : 8 }}>{renderItems(nw)}</div>,
+        ]
+      })}
+    </div>
+  )
+}
+
+// ── 금주/차주 대칭 편집 폼 ───────────────────────────────────────────────────
+
+function WeekCompareForm({ form, setForm, keyTasks, workUnits }: {
+  form: WeeklyFormState; setForm: React.Dispatch<React.SetStateAction<WeeklyFormState>>
+  keyTasks: KeyTask[]; workUnits: WorkUnit[]
+}) {
+  const TW = '#1976d2', NW = '#4caf50'
+  const setSection = (key: ContentKey, items: WorkItem[]) => setForm(f => ({ ...f, [key]: items }))
+  const setThisDates = (s: string, e: string) => setForm(f => ({ ...f, weekStart: s, weekEnd: e }))
+  const setNextDates = (s: string, e: string) => setForm(f => ({ ...f, nextWeekStart: s, nextWeekEnd: e }))
+  const dateInput = (color: string): React.CSSProperties => ({
+    padding: '3px 6px', borderRadius: 5, border: `1px solid ${color}55`, background: color + '10', color, fontSize: 12, width: 110,
+  })
+  const pairs: { tw: ContentKey; nw: ContentKey; label: string }[] = [
+    { tw: 'thisWeekWork',     nw: 'nextWeekWork',     label: '수행' },
+    { tw: 'thisWeekProposal', nw: 'nextWeekProposal', label: '제안' },
+    { tw: 'thisWeekEtc',      nw: 'nextWeekEtc',      label: '기타사항' },
+  ]
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--c-border)' }}>
+      {/* 헤더 행 */}
+      <div style={{ padding: '8px 14px', background: TW+'14', borderBottom: `1px solid ${TW}22`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontWeight: 700, fontSize: 13, color: TW, flexShrink: 0 }}>금주</span>
+        <input type="date" value={form.weekStart} onChange={e => setThisDates(e.target.value, form.weekEnd)} style={dateInput(TW)} />
+        <span style={{ fontSize: 12, color: TW, opacity: 0.5 }}>~</span>
+        <input type="date" value={form.weekEnd} onChange={e => setThisDates(form.weekStart, e.target.value)} style={dateInput(TW)} />
+      </div>
+      <div style={{ padding: '8px 14px', background: NW+'14', borderBottom: `1px solid ${NW}22`, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontWeight: 700, fontSize: 13, color: NW, flexShrink: 0 }}>차주</span>
+        <input type="date" value={form.nextWeekStart} onChange={e => setNextDates(e.target.value, form.nextWeekEnd)} style={dateInput(NW)} />
+        <span style={{ fontSize: 12, color: NW, opacity: 0.5 }}>~</span>
+        <input type="date" value={form.nextWeekEnd} onChange={e => setNextDates(form.nextWeekStart, e.target.value)} style={dateInput(NW)} />
+      </div>
+      {/* 섹션 행 — 좌우가 같은 grid row를 공유해 라인 대칭 */}
+      {pairs.flatMap(({ tw, nw, label }, idx) => {
+        const isLast = idx === pairs.length - 1
+        return [
+          <div key={`${tw}-cell`} style={{ padding: '12px 14px', borderRight: '1px solid var(--c-border)', borderTop: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 12 }}>
+            <WorkSectionForm label={label} sectionColor={TW} items={form[tw]} onChange={items => setSection(tw, items)} keyTasks={keyTasks} workUnits={workUnits} />
+          </div>,
+          <div key={`${nw}-cell`} style={{ padding: '12px 14px', borderTop: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 12 }}>
+            <WorkSectionForm label={label} sectionColor={NW} items={form[nw]} onChange={items => setSection(nw, items)} keyTasks={keyTasks} workUnits={workUnits} />
+          </div>,
+        ]
+      })}
+    </div>
+  )
+}
+
 // ── 보고서 상세 뷰 ────────────────────────────────────────────────────────────
 
 function ReportDetail({ report, canEdit, onEdit, onDelete }: {
@@ -504,18 +612,7 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
           </div>
         )}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <WeekDetailBlock week="금주" color="#1976d2" dateRange={fmtShort(report.weekStart, report.weekEnd)} sections={[
-          { label: '수행', items: parseItems(report.thisWeekWork) },
-          { label: '제안', items: parseItems(report.thisWeekProposal) },
-          { label: '기타사항', items: parseItems(report.thisWeekEtc) },
-        ]} />
-        <WeekDetailBlock week="차주" color="#4caf50" dateRange={fmtShort(addDays(report.weekStart, 7), addDays(report.weekEnd, 7))} sections={[
-          { label: '수행', items: parseItems(report.nextWeekWork) },
-          { label: '제안', items: parseItems(report.nextWeekProposal) },
-          { label: '기타사항', items: parseItems(report.nextWeekEtc) },
-        ]} />
-      </div>
+      <WeekCompareView report={report} />
     </>
   )
 }
@@ -533,9 +630,6 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
   form: WeeklyFormState; setForm: React.Dispatch<React.SetStateAction<WeeklyFormState>>
   isConsolidated: boolean; isEditing: boolean; onSubmit: (e: React.FormEvent) => void; onCancel: () => void; saving: boolean; keyTasks: KeyTask[]; workUnits: WorkUnit[]; pastReports?: WeeklyReport[]
 }) {
-  const setSection = (key: ContentKey, items: WorkItem[]) => setForm(f => ({ ...f, [key]: items }))
-  const setThisWeekDates = (start: string, end: string) => setForm(f => ({ ...f, weekStart: start, weekEnd: end }))
-  const setNextWeekDates = (start: string, end: string) => setForm(f => ({ ...f, nextWeekStart: start, nextWeekEnd: end }))
   const [copySourceId, setCopySourceId] = useState('')
 
   const copyFromReport = (reportId: string) => {
@@ -578,10 +672,7 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
           <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required
             style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, background: 'var(--c-bg)', color: 'var(--c-text)' }} />
         </label>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={form} onChange={setSection} onDateChange={setThisWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
-          <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={form} onChange={setSection} onDateChange={setNextWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
-        </div>
+        <WeekCompareForm form={form} setForm={setForm} keyTasks={keyTasks} workUnits={workUnits} />
         <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
           <button type="submit" disabled={saving}
             style={{ padding: '8px 20px', background: isConsolidated ? '#7c3aed' : '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, opacity: saving ? 0.7 : 1 }}>
@@ -643,9 +734,6 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
     setConForm(f => ({ ...f, [sec]: [...f[sec], added] }))
   }
 
-  const setSection = (key: ContentKey, items: WorkItem[]) => setConForm(f => ({ ...f, [key]: items }))
-  const setThisWeekDates = (start: string, end: string) => setConForm(f => ({ ...f, weekStart: start, weekEnd: end }))
-  const setNextWeekDates = (start: string, end: string) => setConForm(f => ({ ...f, nextWeekStart: start, nextWeekEnd: end }))
 
   const totalRight = SECTION_KEYS.reduce((acc, sec) => acc + conForm[sec].length, 0)
 
@@ -756,10 +844,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
           <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', marginBottom: 8, letterSpacing: '0.05em' }}>통합 보고서 (편집 중)</div>
           <input value={conForm.title} onChange={e => setConForm(f => ({ ...f, title: e.target.value }))}
             style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-text)', marginBottom: 12, boxSizing: 'border-box' }} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <WeekFormBlock week="금주" color="#1976d2" sections={WEEK_SECTIONS} form={conForm} onChange={setSection} onDateChange={setThisWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
-            <WeekFormBlock week="차주" color="#4caf50" sections={NEXT_SECTIONS} form={conForm} onChange={setSection} onDateChange={setNextWeekDates} keyTasks={keyTasks} workUnits={workUnits} />
-          </div>
+          <WeekCompareForm form={conForm} setForm={setConForm} keyTasks={keyTasks} workUnits={workUnits} />
         </div>
       </div>
     </div>
