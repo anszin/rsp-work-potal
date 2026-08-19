@@ -401,35 +401,6 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], 
   )
 }
 
-// ── 조회 컴포넌트 ─────────────────────────────────────────────────────────────
-
-function WorkSectionDetail({ label, color, items }: { label: string; color: string; items: WorkItem[] }) {
-  if (!items.length) return null
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color, marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {items.map((item, i) => {
-          const { bg, color: badgeColor, label: badgeLabel } = itemBadge(item)
-          return (
-            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border)' }}>
-              <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {badgeLabel}
-              </span>
-              {item.author && (
-                <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 600, marginTop: 2, background: '#7c3aed15', color: '#7c3aed', whiteSpace: 'nowrap' }}>
-                  {item.author}
-                </span>
-              )}
-              <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text-sub)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 // ── 금주/차주 대칭 조회 뷰 ───────────────────────────────────────────────────
 
 function WeekCompareView({ report }: { report: WeeklyReport }) {
