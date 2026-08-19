@@ -16,11 +16,13 @@ export default function IconButton({
   icon,
   label,
   disabled,
+  type = 'button',
   className = '',
   ...rest
 }: IconButtonProps) {
   return (
     <button
+      type={type}
       aria-label={label}
       disabled={disabled}
       className={`ds-icon-btn ds-icon-btn--${variant} ds-icon-btn--${size} ${className}`}

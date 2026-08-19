@@ -18,12 +18,14 @@ export default function Button({
   trailingIcon,
   children,
   disabled,
+  type = 'button',
   className = '',
   style,
   ...rest
 }: ButtonProps) {
   return (
     <button
+      type={type}
       disabled={disabled}
       className={`ds-btn ds-btn--${variant} ds-btn--${size} ${className}`}
       style={style}
