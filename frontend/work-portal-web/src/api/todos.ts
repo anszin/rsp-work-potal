@@ -4,6 +4,16 @@ export type TodoStatus = 'TODO' | 'IN_PROGRESS' | 'HOLD' | 'REVIEW' | 'DONE'
 export type TodoPriority = 'HIGH' | 'MEDIUM' | 'LOW'
 export type TodoSourceType = 'SELF' | 'CHANGE_REQUEST' | 'DEPLOY' | 'EXTERNAL'
 
+export interface CheckItem {
+  text: string
+  done: boolean
+}
+
+export interface TodoLink {
+  label: string
+  url: string
+}
+
 export interface Todo {
   id: number
   title: string
@@ -19,6 +29,9 @@ export interface Todo {
   assignee: string
   createdAt: string
   updatedAt: string | null
+  checkItems: CheckItem[]
+  links: TodoLink[]
+  imageUrl: string | null
 }
 
 export interface SaveTodoRequest {
@@ -33,6 +46,9 @@ export interface SaveTodoRequest {
   sourceId?: number
   workUnitId?: number
   assignee?: string
+  checkItems?: CheckItem[]
+  links?: TodoLink[]
+  imageUrl?: string
 }
 
 export const todoApi = {

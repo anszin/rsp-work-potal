@@ -34,6 +34,9 @@ const emptyForm = (): SaveTodoRequest => ({
   completedDate: '',
   sourceType: 'SELF',
   workUnitId: undefined,
+  checkItems: [],
+  links: [],
+  imageUrl: '',
 })
 
 function formatDate(d: string | null) {
@@ -59,6 +62,9 @@ function toRequest(todo: Todo): SaveTodoRequest {
     sourceId: todo.sourceId ?? undefined,
     workUnitId: todo.workUnitId ?? undefined,
     assignee: todo.assignee,
+    checkItems: todo.checkItems ?? [],
+    links: todo.links ?? [],
+    imageUrl: todo.imageUrl ?? '',
   }
 }
 
@@ -354,6 +360,104 @@ export default function TodoPage() {
                 </label>
               </div>
 
+              {/* 체크리스트 */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ ...styles.label, flexDirection: 'row', gap: 6 }}>
+                    체크리스트
+                    {(form.checkItems?.length ?? 0) > 0 && (
+                      <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>
+                        {form.checkItems!.filter(c => c.done).length}/{form.checkItems!.length}
+                      </span>
+                    )}
+                  </span>
+                  <Button variant="text" size="sm" type="button"
+                    onClick={() => setForm(f => ({ ...f, checkItems: [...(f.checkItems ?? []), { text: '', done: false }] }))}>
+                    + 항목
+                  </Button>
+                </div>
+                {(form.checkItems ?? []).map((item, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <input type="checkbox" checked={item.done}
+                      onChange={() => setForm(f => {
+                        const items = [...(f.checkItems ?? [])]
+                        items[i] = { ...items[i], done: !items[i].done }
+                        return { ...f, checkItems: items }
+                      })}
+                      style={{ width: 15, height: 15, flexShrink: 0, cursor: 'pointer' }}
+                    />
+                    <input
+                      style={{ ...styles.input, textDecoration: item.done ? 'line-through' : 'none', color: item.done ? 'var(--c-text-muted)' : 'inherit' }}
+                      value={item.text}
+                      onChange={e => setForm(f => {
+                        const items = [...(f.checkItems ?? [])]
+                        items[i] = { ...items[i], text: e.target.value }
+                        return { ...f, checkItems: items }
+                      })}
+                      placeholder="항목 입력"
+                    />
+                    <IconButton variant="text" size="sm" icon="✕" label="제거"
+                      onClick={() => setForm(f => ({ ...f, checkItems: (f.checkItems ?? []).filter((_, idx) => idx !== i) }))} />
+                  </div>
+                ))}
+              </div>
+
+              {/* 외부링크 */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={styles.label}>외부링크</span>
+                  <Button variant="text" size="sm" type="button"
+                    onClick={() => setForm(f => ({ ...f, links: [...(f.links ?? []), { label: '', url: '' }] }))}>
+                    + 링크
+                  </Button>
+                </div>
+                {(form.links ?? []).map((link, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
+                    <input
+                      style={{ ...styles.input, width: 90, flexShrink: 0 }}
+                      value={link.label}
+                      onChange={e => setForm(f => {
+                        const links = [...(f.links ?? [])]
+                        links[i] = { ...links[i], label: e.target.value }
+                        return { ...f, links }
+                      })}
+                      placeholder="이름"
+                    />
+                    <input
+                      style={{ ...styles.input, flex: 1 }}
+                      value={link.url}
+                      onChange={e => setForm(f => {
+                        const links = [...(f.links ?? [])]
+                        links[i] = { ...links[i], url: e.target.value }
+                        return { ...f, links }
+                      })}
+                      placeholder="https://..."
+                    />
+                    <IconButton variant="text" size="sm" icon="✕" label="제거"
+                      onClick={() => setForm(f => ({ ...f, links: (f.links ?? []).filter((_, idx) => idx !== i) }))} />
+                  </div>
+                ))}
+              </div>
+
+              {/* 이미지 URL */}
+              <label style={styles.label}>
+                이미지 URL
+                <input
+                  style={styles.input}
+                  value={form.imageUrl ?? ''}
+                  onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+                  placeholder="https://... (이미지 직접 링크)"
+                />
+                {form.imageUrl && (
+                  <img
+                    src={form.imageUrl}
+                    alt="미리보기"
+                    style={{ maxWidth: '100%', maxHeight: 160, borderRadius: 6, marginTop: 6, objectFit: 'contain', border: '1px solid var(--c-border)' }}
+                    onError={e => (e.currentTarget.style.display = 'none')}
+                  />
+                )}
+              </label>
+
               <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 4, alignItems: 'center' }}>
                 {editing && (
                   <button type="button" className="ds-btn ds-btn--outlined ds-btn--md"
@@ -414,6 +518,24 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
         {todo.title}
       </div>
 
+      {/* 체크리스트 진행 바 */}
+      {(todo.checkItems?.length ?? 0) > 0 && (() => {
+        const total = todo.checkItems!.length
+        const done = todo.checkItems!.filter(c => c.done).length
+        const pct = Math.round((done / total) * 100)
+        return (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--c-text-muted)', marginBottom: 3 }}>
+              <span>체크리스트</span>
+              <span>{done}/{total}</span>
+            </div>
+            <div style={{ height: 4, borderRadius: 2, background: 'var(--c-border)' }}>
+              <div style={{ height: '100%', borderRadius: 2, background: done === total ? '#38a169' : '#3182ce', width: `${pct}%`, transition: 'width 0.2s' }} />
+            </div>
+          </div>
+        )
+      })()}
+
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
         {overdue && (
           <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-err-bg)', color: 'var(--c-tag-err-t)', fontWeight: 700, border: '1px solid var(--c-tag-err-t)' }}>
@@ -439,6 +561,12 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
           <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }}>
             {SOURCE_LABELS[todo.sourceType]}
           </span>
+        )}
+        {(todo.links?.length ?? 0) > 0 && (
+          <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>🔗 {todo.links!.length}</span>
+        )}
+        {todo.imageUrl && (
+          <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>🖼</span>
         )}
         {todo.dueDate && (
           <span style={{ fontSize: 11, color: overdue ? 'var(--c-tag-err-t)' : 'var(--c-text-muted)', marginLeft: 'auto' }}>
@@ -476,7 +604,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modal: {
     background: 'var(--c-card)', borderRadius: 10, padding: 24,
-    width: '100%', maxWidth: 480, boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+    width: '100%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
   },
   modalHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
