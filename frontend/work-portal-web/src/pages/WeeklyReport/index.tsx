@@ -401,35 +401,6 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], 
   )
 }
 
-function WeekFormBlock({ week, color, sections, form, onChange, onDateChange, keyTasks, workUnits }: {
-  week: '금주' | '차주'; color: string; sections: { key: ContentKey; label: string }[]
-  form: WeeklyFormState; onChange: (key: ContentKey, items: WorkItem[]) => void
-  onDateChange: (start: string, end: string) => void; keyTasks: KeyTask[]; workUnits: WorkUnit[]
-}) {
-  const isThis = week === '금주'
-  const startVal = isThis ? form.weekStart : form.nextWeekStart
-  const endVal   = isThis ? form.weekEnd   : form.nextWeekEnd
-  const dateInput: React.CSSProperties = {
-    padding: '3px 6px', borderRadius: 5, border: `1px solid ${color}55`,
-    background: color + '10', color, fontSize: 12, width: 110,
-  }
-  return (
-    <div style={{ border: `1px solid ${color}33`, borderRadius: 10 }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, display: 'flex', alignItems: 'center', gap: 10, borderRadius: '10px 10px 0 0' }}>
-        <span style={{ fontWeight: 700, fontSize: 13, color, flexShrink: 0 }}>{week}</span>
-        <input type="date" value={startVal} onChange={e => onDateChange(e.target.value, endVal)} style={dateInput} />
-        <span style={{ fontSize: 12, color, opacity: 0.5 }}>~</span>
-        <input type="date" value={endVal} onChange={e => onDateChange(startVal, e.target.value)} style={dateInput} />
-      </div>
-      <div style={{ padding: '14px' }}>
-        {sections.map(({ key, label }) => (
-          <WorkSectionForm key={key} label={label} sectionColor={color} items={form[key]} onChange={items => onChange(key, items)} keyTasks={keyTasks} workUnits={workUnits} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 // ── 조회 컴포넌트 ─────────────────────────────────────────────────────────────
 
 function WorkSectionDetail({ label, color, items }: { label: string; color: string; items: WorkItem[] }) {
@@ -454,24 +425,6 @@ function WorkSectionDetail({ label, color, items }: { label: string; color: stri
             </div>
           )
         })}
-      </div>
-    </div>
-  )
-}
-
-function WeekDetailBlock({ week, color, sections, dateRange }: { week: '금주' | '차주'; color: string; sections: { label: string; items: WorkItem[] }[]; dateRange?: string }) {
-  const hasAny = sections.some(s => s.items.length > 0)
-  return (
-    <div style={{ border: `1px solid ${color}33`, borderRadius: 10, overflow: 'hidden' }}>
-      <div style={{ padding: '8px 14px', background: color + '14', borderBottom: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontWeight: 700, fontSize: 13, color }}>{week}</span>
-        {dateRange && <span style={{ fontSize: 11, color, opacity: 0.65 }}>{dateRange}</span>}
-      </div>
-      <div style={{ padding: '14px' }}>
-        {hasAny
-          ? sections.map(({ label, items }) => <WorkSectionDetail key={label} label={label} color={color} items={items} />)
-          : <div style={{ fontSize: 13, color: 'var(--c-text-muted)' }}>내용 없음</div>
-        }
       </div>
     </div>
   )
@@ -618,13 +571,6 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
 }
 
 // ── 보고서 작성/수정 폼 ───────────────────────────────────────────────────────
-
-const WEEK_SECTIONS: { key: ContentKey; label: string }[] = [
-  { key: 'thisWeekWork', label: '수행' }, { key: 'thisWeekProposal', label: '제안' }, { key: 'thisWeekEtc', label: '기타사항' },
-]
-const NEXT_SECTIONS: { key: ContentKey; label: string }[] = [
-  { key: 'nextWeekWork', label: '수행' }, { key: 'nextWeekProposal', label: '제안' }, { key: 'nextWeekEtc', label: '기타사항' },
-]
 
 function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCancel, saving, keyTasks, workUnits, pastReports }: {
   form: WeeklyFormState; setForm: React.Dispatch<React.SetStateAction<WeeklyFormState>>

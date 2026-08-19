@@ -23,6 +23,7 @@ import AiChatPage from './pages/AiChat'
 import AiDocumentsPage from './pages/AiDocuments'
 import AiPromptsPage from './pages/AiPrompts'
 import AiKnowledgePage from './pages/AiKnowledge'
+import UiShowcase from './pages/UiShowcase'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth()
@@ -36,6 +37,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/ui" element={<UiShowcase />} />
           <Route path="/change-password" element={<PrivateRoute><ChangePasswordPage /></PrivateRoute>} />
           <Route
             path="/"
