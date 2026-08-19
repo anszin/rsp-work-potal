@@ -1,12 +1,16 @@
 package com.platform.portal.domain.todo.dto;
 
+import com.platform.portal.domain.todo.entity.CheckItem;
 import com.platform.portal.domain.todo.entity.Todo;
+import com.platform.portal.domain.todo.entity.TodoLink;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 public class TodoDto {
 
@@ -23,7 +27,10 @@ public class TodoDto {
         private Todo.SourceType sourceType;
         private Long sourceId;
         private Long workUnitId;
-        private String assignee; // 매니저가 타인에게 할당할 때 사용
+        private String assignee;
+        private List<CheckItem> checkItems;
+        private List<TodoLink> links;
+        private String imageUrl;
     }
 
     @Getter
@@ -42,6 +49,9 @@ public class TodoDto {
         private final String assignee;
         private final LocalDateTime createdAt;
         private final LocalDateTime updatedAt;
+        private final List<CheckItem> checkItems;
+        private final List<TodoLink> links;
+        private final String imageUrl;
 
         public Response(Todo t) {
             this.id = t.getId();
@@ -58,6 +68,9 @@ public class TodoDto {
             this.assignee = t.getAssignee();
             this.createdAt = t.getCreatedAt();
             this.updatedAt = t.getUpdatedAt();
+            this.checkItems = t.getCheckItems() != null ? t.getCheckItems() : Collections.emptyList();
+            this.links = t.getLinks() != null ? t.getLinks() : Collections.emptyList();
+            this.imageUrl = t.getImageUrl();
         }
     }
 }

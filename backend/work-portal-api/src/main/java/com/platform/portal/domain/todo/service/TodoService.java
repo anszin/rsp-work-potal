@@ -57,5 +57,8 @@ public class TodoService {
         if (req.getSourceType() != null) t.setSourceType(req.getSourceType());
         t.setSourceId(req.getSourceId());
         t.setWorkUnitId(req.getWorkUnitId());
+        if (req.getCheckItems() != null) t.setCheckItems(req.getCheckItems());
+        if (req.getLinks() != null) t.setLinks(req.getLinks());
+        t.setImageUrl(req.getImageUrl());
     }
 }
