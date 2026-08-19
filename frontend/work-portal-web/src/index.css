@@ -1,53 +1,76 @@
+/* ── RSP Design System tokens ───────────────────────────── */
 :root {
-  --c-bg:          #f7f8fa;
-  --c-card:        #ffffff;
-  --c-text:        #1a1a2e;
-  --c-text-sub:    #555555;
-  --c-text-muted:  #aaaaaa;
-  --c-border:      #e2e8f0;
-  --c-border-in:   #dddddd;
-  --c-input-bg:    #ffffff;
-  --c-thead:       #f7f8fa;
-  --c-row-sel:     #f0f4ff;
-  --c-tag-sys:     #EBF8FF;
-  --c-tag-sys-t:   #2B6CB0;
-  --c-tag-sub:     #F0FFF4;
-  --c-tag-sub-t:   #276749;
-  --c-scrollbar:   #e2e8f0;
-  --c-tag-draft-bg: #EDF2F7;
-  --c-tag-draft-t:  #718096;
-  --c-tag-done-bg:  #E6FFFA;
-  --c-tag-done-t:   #285E61;
-  --c-tag-err-bg:   #FFF5F5;
-  --c-tag-err-t:    #9B2C2C;
-  --c-tag-pri-bg:   #F5F0FF;
-  --c-tag-pri-t:    #6b46c1;
+  /* surface */
+  --c-bg:           #fafafa;   /* semanticLightBgPage */
+  --c-card:         #ffffff;   /* semanticLightBgSurface */
+  --c-thead:        #f3f4f4;   /* semanticLightBgSurfaceAlt */
+  --c-input-bg:     #ffffff;   /* semanticLightBgSurface */
+  --c-row-sel:      #d0f1e5;   /* semanticLightBgAccent */
+  /* text */
+  --c-text:         #222524;   /* semanticLightTextPrimary */
+  --c-text-sub:     #66706d;   /* semanticLightTextSecondary */
+  --c-text-muted:   #a9b1ae;   /* semanticLightTextMuted */
+  --c-text-accent:  #17895f;   /* semanticLightTextAccent */
+  /* border */
+  --c-border:       #e4e7e6;   /* semanticLightBorderDefault */
+  --c-border-in:    #d1d6d4;   /* semanticLightBorderStrong */
+  /* scrollbar */
+  --c-scrollbar:    #e4e7e6;
+  /* action */
+  --c-action:       #22ba82;   /* semanticLightActionPrimary */
+  --c-action-hover: #1ca271;   /* semanticLightActionPrimaryHover */
+  /* status tags */
+  --c-tag-done-bg:  #d1ebd5;   /* success50 */
+  --c-tag-done-t:   #236c2c;   /* success700 */
+  --c-tag-sys:      #d7dff1;   /* info50 */
+  --c-tag-sys-t:    #3966d0;   /* info500 */
+  --c-tag-sub:      #d1ebd5;   /* success50 */
+  --c-tag-sub-t:    #236c2c;   /* success700 */
+  --c-tag-draft-bg: #f3f4f4;   /* neutral100 */
+  --c-tag-draft-t:  #66706d;   /* neutral600 */
+  --c-tag-err-bg:   #f3d2d5;   /* error50 */
+  --c-tag-err-t:    #9a1722;   /* error700 */
+  --c-tag-warn-bg:  #f6e9d2;   /* warning50 */
+  --c-tag-warn-t:   #b3750c;   /* warning700 */
+  --c-tag-pri-bg:   #e1d5eb;   /* tertiary50 */
+  --c-tag-pri-t:    #512a73;   /* tertiary700 */
 }
 
 [data-theme="dark"] {
-  --c-bg:          #0f1117;
-  --c-card:        #1e2130;
-  --c-text:        #e2e8f0;
-  --c-text-sub:    #a0aec0;
-  --c-text-muted:  #718096;
-  --c-border:      #2d3748;
-  --c-border-in:   #4a5568;
-  --c-input-bg:    #2d3748;
-  --c-thead:       #161b2e;
-  --c-row-sel:     #1e2a45;
-  --c-tag-sys:     #1e3a5f;
-  --c-tag-sys-t:   #90cdf4;
-  --c-tag-sub:     #1a3a2a;
-  --c-tag-sub-t:   #68d391;
-  --c-scrollbar:   #2d3748;
-  --c-tag-draft-bg: #2d3748;
-  --c-tag-draft-t:  #a0aec0;
-  --c-tag-done-bg:  #1a3a38;
-  --c-tag-done-t:   #81e6d9;
-  --c-tag-err-bg:   #3a1a1a;
-  --c-tag-err-t:    #fc8181;
-  --c-tag-pri-bg:   #2d1f4a;
-  --c-tag-pri-t:    #b794f4;
+  /* surface */
+  --c-bg:           #161817;   /* semanticDarkBgPage */
+  --c-card:         #222524;   /* semanticDarkBgSurface */
+  --c-thead:        #353b39;   /* semanticDarkBgSurfaceAlt */
+  --c-input-bg:     #222524;   /* semanticDarkBgSurface */
+  --c-row-sel:      #0d573c;   /* semanticDarkBgAccent */
+  /* text */
+  --c-text:         #fafafa;   /* semanticDarkTextPrimary */
+  --c-text-sub:     #d1d6d4;   /* semanticDarkTextSecondary */
+  --c-text-muted:   #84908b;   /* semanticDarkTextMuted */
+  --c-text-accent:  #5ddbac;   /* semanticDarkTextAccent */
+  /* border */
+  --c-border:       #353b39;   /* semanticDarkBorderDefault */
+  --c-border-in:    #4e5653;   /* semanticDarkBorderStrong */
+  /* scrollbar */
+  --c-scrollbar:    #4e5653;
+  /* action */
+  --c-action:       #34d69a;   /* semanticDarkActionPrimary */
+  --c-action-hover: #5ddbac;   /* semanticDarkActionPrimaryHover */
+  /* status tags */
+  --c-tag-done-bg:  #236c2c;   /* success700 */
+  --c-tag-done-t:   #adddb4;   /* success100 */
+  --c-tag-sys:      #22479c;   /* info700 */
+  --c-tag-sys-t:    #7b98db;   /* secondary300 */
+  --c-tag-sub:      #236c2c;   /* success700 */
+  --c-tag-sub-t:    #adddb4;   /* success100 */
+  --c-tag-draft-bg: #353b39;   /* neutral800 */
+  --c-tag-draft-t:  #84908b;   /* neutral500 */
+  --c-tag-err-bg:   #9a1722;   /* error700 */
+  --c-tag-err-t:    #ebb0b5;   /* error100 */
+  --c-tag-warn-bg:  #b3750c;   /* warning700 */
+  --c-tag-warn-t:   #f2dab1;   /* warning100 */
+  --c-tag-pri-bg:   #42225e;   /* tertiary800 */
+  --c-tag-pri-t:    #cab4dd;   /* tertiary100 */
 }
 
 * {
@@ -86,7 +109,7 @@ input, textarea, select {
 
 .layout-sidebar {
   width: 220px;
-  background: #1a1a2e;
+  background: #222524;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -111,7 +134,7 @@ input, textarea, select {
   position: fixed;
   top: 12px; left: 12px;
   z-index: 300;
-  background: #1a1a2e;
+  background: #222524;
   border: none;
   border-radius: 6px;
   padding: 8px 11px;

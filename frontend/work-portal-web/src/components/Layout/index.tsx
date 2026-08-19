@@ -77,9 +77,9 @@ export default function Layout() {
           )}
         </nav>
         <div style={styles.userSection}>
-          <div style={{ fontSize: 13, color: '#fff' }}>{user?.name || user?.username}</div>
-          {user?.dept && <div style={{ fontSize: 11, color: '#718096' }}>{user.dept}</div>}
-          <div style={{ fontSize: 11, color: '#4a5568' }}>{user?.role}</div>
+          <div style={{ fontSize: 13, color: '#fafafa' }}>{user?.name || user?.username}</div>
+          {user?.dept && <div style={{ fontSize: 11, color: '#84908b' }}>{user.dept}</div>}
+          <div style={{ fontSize: 11, color: '#4e5653' }}>{user?.role}</div>
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
             <button style={styles.themeBtn} onClick={toggle} title={theme === 'light' ? '다크 모드' : '라이트 모드'}>
               {theme === 'light' ? '🌙' : '☀️'}
@@ -101,8 +101,8 @@ function NavItem({ to, children, indent, onClick }: { to: string; children: Reac
       style={({ isActive }) => ({
         ...navItemStyle,
         paddingLeft: indent ? 32 : 20,
-        background: isActive ? '#2d3748' : 'transparent',
-        color: isActive ? '#fff' : '#a0aec0',
+        background: isActive ? '#353b39' : 'transparent',
+        color: isActive ? '#fafafa' : '#84908b',
       })}>
       {indent && <span style={{ marginRight: 6, opacity: 0.5 }}>└</span>}
       {children}
@@ -116,14 +116,14 @@ const navItemStyle: React.CSSProperties = {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  logo: { padding: '24px 20px', fontSize: 17, fontWeight: 700, color: '#fff', borderBottom: '1px solid #2d3748' },
+  logo: { padding: '24px 20px', fontSize: 17, fontWeight: 700, color: '#fafafa', borderBottom: '1px solid #353b39' },
   nav: { flex: 1, padding: '12px 0', display: 'flex', flexDirection: 'column', overflowY: 'auto' },
   groupHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '10px 20px', margin: '2px 8px', fontSize: 14, fontWeight: 400,
-    color: '#a0aec0', background: 'transparent', border: 'none', borderRadius: 4, cursor: 'pointer',
+    color: '#84908b', background: 'transparent', border: 'none', borderRadius: 4, cursor: 'pointer',
   },
-  userSection: { padding: '16px 20px', borderTop: '1px solid #2d3748', display: 'flex', flexDirection: 'column', gap: 4 },
-  themeBtn: { background: 'transparent', border: '1px solid #4a5568', borderRadius: 4, padding: '5px 8px', cursor: 'pointer', fontSize: 14 },
-  logoutBtn: { flex: 1, background: 'transparent', border: '1px solid #4a5568', color: '#a0aec0', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
+  userSection: { padding: '16px 20px', borderTop: '1px solid #353b39', display: 'flex', flexDirection: 'column', gap: 4 },
+  themeBtn: { background: 'transparent', border: '1px solid #4e5653', borderRadius: 4, padding: '5px 8px', cursor: 'pointer', fontSize: 14 },
+  logoutBtn: { flex: 1, background: 'transparent', border: '1px solid #4e5653', color: '#84908b', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
 }
