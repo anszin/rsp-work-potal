@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { changePassword } from '../../api/auth'
 import { useAuth } from '../../context/useAuth'
+import { Button } from '../../components/ui'
 
 export default function ChangePasswordPage() {
   const { refreshMe } = useAuth()
@@ -51,9 +52,9 @@ export default function ChangePasswordPage() {
               onChange={e => setConfirm(e.target.value)} required />
           </div>
           {error && <p style={s.error}>{error}</p>}
-          <button style={s.button} type="submit" disabled={loading}>
+          <Button variant="filled" type="submit" disabled={loading} style={{ width: '100%', marginTop: 8 }}>
             {loading ? '변경 중...' : '비밀번호 변경'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>
@@ -70,5 +71,4 @@ const s: Record<string, React.CSSProperties> = {
   label: { fontSize: 14, fontWeight: 500, color: 'var(--c-text-sub)' },
   input: { padding: '10px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 14 },
   error: { color: '#e53e3e', fontSize: 13, margin: 0 },
-  button: { padding: '12px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, fontSize: 15, fontWeight: 500, cursor: 'pointer', marginTop: 8 },
 }

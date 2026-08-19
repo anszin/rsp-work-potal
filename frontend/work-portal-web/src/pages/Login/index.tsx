@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
+import { Button } from '../../components/ui'
 
 export default function LoginPage() {
   const { login, token } = useAuth()
@@ -42,9 +43,9 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호 입력" required />
           </div>
           {error && <p style={styles.error}>{error}</p>}
-          <button style={styles.button} type="submit" disabled={loading}>
+          <Button variant="filled" type="submit" disabled={loading} style={{ width: '100%', marginTop: 8 }}>
             {loading ? '로그인 중...' : '로그인'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>
@@ -60,5 +61,4 @@ const styles: Record<string, React.CSSProperties> = {
   label: { fontSize: 14, fontWeight: 500, color: 'var(--c-text-sub)' },
   input: { padding: '10px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 14, outline: 'none' },
   error: { color: '#e53e3e', fontSize: 13, margin: 0 },
-  button: { padding: '12px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, fontSize: 15, fontWeight: 500, cursor: 'pointer', marginTop: 8 },
 }

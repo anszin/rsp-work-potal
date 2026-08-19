@@ -7,6 +7,7 @@ import {
   getSystemServers, addSystemServer, deleteSystemServer,
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
+import { Button } from '../../components/ui'
 
 const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '', sortOrder: '' })
 const emptySubForm = () => ({ code: '', name: '', description: '' })
@@ -147,7 +148,7 @@ export default function SystemManagementPage() {
     <div className="page-wrap">
       <PageHeader
         title="시스템 관리"
-        action={<button onClick={() => { reset(); setShowForm(true) }} style={s.btn}>+ 시스템 등록</button>}
+        action={<Button onClick={() => { reset(); setShowForm(true) }} variant="filled">+ 시스템 등록</Button>}
       />
 
       {showForm && (
@@ -179,8 +180,8 @@ export default function SystemManagementPage() {
                 placeholder="숫자가 낮을수록 먼저 표시 (기본 0)" style={{ ...s.input, width: 160 }} />
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
-              <button type="button" onClick={reset} style={s.btnSecondary}>취소</button>
-              <button type="submit" style={s.btn}>{editing ? '수정' : '등록'}</button>
+              <Button type="button" onClick={reset} variant="outlined">취소</Button>
+              <Button type="submit" variant="filled">{editing ? '수정' : '등록'}</Button>
             </div>
           </form>
         </div>
@@ -220,11 +221,10 @@ export default function SystemManagementPage() {
                     {new Date(sys.createdAt).toLocaleDateString('ko-KR')}
                   </td>
                   <td style={s.td}>
-                    <button onClick={() => { setSubPanel(sys); resetSubForm() }} style={{ ...s.btnSm, color: '#00695c', borderColor: '#80cbc4' }}>하위시스템</button>
-                    <button onClick={() => setManagerPanel(sys)} style={{ ...s.btnSm, color: '#4527a0', borderColor: '#b39ddb' }}>담당자</button>
-                    <button onClick={() => openEdit(sys)} style={s.btnSm}>수정</button>
-                    <button onClick={() => { if (confirm(`[${sys.code}] ${sys.name}을 삭제하시겠습니까?`)) deleteMut.mutate(sys.id) }}
-                      style={{ ...s.btnSm, color: '#e53e3e' }}>삭제</button>
+                    <Button variant="outlined" size="sm" onClick={() => { setSubPanel(sys); resetSubForm() }} style={{ color: '#00695c', borderColor: '#80cbc4' }}>하위시스템</Button>
+                    <Button variant="outlined" size="sm" onClick={() => setManagerPanel(sys)} style={{ color: '#4527a0', borderColor: '#b39ddb' }}>담당자</Button>
+                    <Button variant="outlined" size="sm" onClick={() => openEdit(sys)}>수정</Button>
+                    <Button variant="outlined" size="sm" onClick={() => { if (confirm(`[${sys.code}] ${sys.name}을 삭제하시겠습니까?`)) deleteMut.mutate(sys.id) }} style={{ color: '#e53e3e' }}>삭제</Button>
                   </td>
                 </tr>
               ))}
@@ -240,8 +240,7 @@ export default function SystemManagementPage() {
           <div style={s.modal}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
               <h3 style={{ margin: 0, fontSize: 15 }}>{subPanel.name} 하위시스템 관리</h3>
-              <button onClick={() => { setShowSubForm(true); setEditingSub(null); setSubForm(emptySubForm()) }}
-                style={{ ...s.btn, padding: '6px 14px', fontSize: 12 }}>+ 추가</button>
+              <Button variant="filled" size="sm" onClick={() => { setShowSubForm(true); setEditingSub(null); setSubForm(emptySubForm()) }}>+ 추가</Button>
             </div>
             <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--c-text-muted)' }}>프론트엔드, 백엔드, API 등 구성 컴포넌트를 관리합니다.</p>
 
@@ -263,8 +262,8 @@ export default function SystemManagementPage() {
                     placeholder="설명" style={{ ...s.input, fontSize: 12 }} />
                 </div>
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                  <button type="button" onClick={resetSubForm} style={{ ...s.btnSecondary, padding: '6px 12px', fontSize: 12 }}>취소</button>
-                  <button type="submit" style={{ ...s.btn, padding: '6px 14px', fontSize: 12 }}>{editingSub ? '수정' : '등록'}</button>
+                  <Button type="button" onClick={resetSubForm} variant="outlined" size="sm">취소</Button>
+                  <Button type="submit" variant="filled" size="sm">{editingSub ? '수정' : '등록'}</Button>
                 </div>
               </form>
             )}
@@ -297,10 +296,9 @@ export default function SystemManagementPage() {
                         </span>
                       </td>
                       <td style={s.td}>
-                        <button onClick={() => { setServerSubPanel(sub); setNewServerName('') }} style={{ ...s.btnSm, color: '#e65100', borderColor: '#ffb74d' }}>서버</button>
-                        <button onClick={() => openSubEdit(sub)} style={s.btnSm}>수정</button>
-                        <button onClick={() => { if (confirm(`[${sub.code}] ${sub.name}을 삭제하시겠습니까?`)) deleteSubMut.mutate({ systemId: subPanel.id, subId: sub.id }) }}
-                          style={{ ...s.btnSm, color: '#e53e3e' }}>삭제</button>
+                        <Button variant="outlined" size="sm" onClick={() => { setServerSubPanel(sub); setNewServerName('') }} style={{ color: '#e65100', borderColor: '#ffb74d' }}>서버</Button>
+                        <Button variant="outlined" size="sm" onClick={() => openSubEdit(sub)}>수정</Button>
+                        <Button variant="outlined" size="sm" onClick={() => { if (confirm(`[${sub.code}] ${sub.name}을 삭제하시겠습니까?`)) deleteSubMut.mutate({ systemId: subPanel.id, subId: sub.id }) }} style={{ color: '#e53e3e' }}>삭제</Button>
                       </td>
                     </tr>
                   ))}
@@ -309,7 +307,7 @@ export default function SystemManagementPage() {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-              <button onClick={() => { setSubPanel(null); resetSubForm() }} style={s.btnSecondary}>닫기</button>
+              <Button variant="outlined" onClick={() => { setSubPanel(null); resetSubForm() }}>닫기</Button>
             </div>
           </div>
         </div>
@@ -330,10 +328,10 @@ export default function SystemManagementPage() {
                 placeholder="서버명 입력 (예: 1번서버)"
                 style={{ ...s.input, flex: 1, fontSize: 13 }}
               />
-              <button
+              <Button variant="filled"
                 onClick={() => { if (newServerName.trim()) addServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverName: newServerName.trim() }) }}
                 disabled={!newServerName.trim()}
-                style={{ ...s.btn, opacity: newServerName.trim() ? 1 : 0.5 }}>추가</button>
+                style={{ opacity: newServerName.trim() ? 1 : 0.5 }}>추가</Button>
             </div>
 
             {servers.length === 0 ? (
@@ -344,15 +342,14 @@ export default function SystemManagementPage() {
                   <div key={sv.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>
                     <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#1a1a2e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{idx + 1}</span>
                     <span style={{ flex: 1, fontSize: 13 }}>{sv.serverName}</span>
-                    <button onClick={() => deleteServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverId: sv.id })}
-                      style={{ ...s.btnSm, color: '#e53e3e', marginRight: 0 }}>삭제</button>
+                    <Button variant="outlined" size="sm" onClick={() => deleteServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverId: sv.id })} style={{ color: '#e53e3e' }}>삭제</Button>
                   </div>
                 ))}
               </div>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
-              <button onClick={() => setServerSubPanel(null)} style={s.btnSecondary}>닫기</button>
+              <Button variant="outlined" onClick={() => setServerSubPanel(null)}>닫기</Button>
             </div>
           </div>
         </div>
@@ -374,8 +371,7 @@ export default function SystemManagementPage() {
                   {managers.map(m => (
                     <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, fontSize: 13 }}>
                       <span>{m.username}</span>
-                      <button onClick={() => removeManagerMut.mutate({ systemId: managerPanel.id, userId: m.userId })}
-                        style={{ ...s.btnSm, color: '#e53e3e' }}>제거</button>
+                      <Button variant="outlined" size="sm" onClick={() => removeManagerMut.mutate({ systemId: managerPanel.id, userId: m.userId })} style={{ color: '#e53e3e' }}>제거</Button>
                     </div>
                   ))}
                 </div>
@@ -389,13 +385,15 @@ export default function SystemManagementPage() {
                   <option value={0}>담당자 선택</option>
                   {availableUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
                 </select>
-                <button onClick={() => { if (selectedUserId) addManagerMut.mutate({ systemId: managerPanel.id, userId: selectedUserId }) }}
-                  disabled={!selectedUserId} style={{ ...s.btn, opacity: selectedUserId ? 1 : 0.5 }}>추가</button>
+                <Button variant="filled"
+                  onClick={() => { if (selectedUserId) addManagerMut.mutate({ systemId: managerPanel.id, userId: selectedUserId }) }}
+                  disabled={!selectedUserId}
+                  style={{ opacity: selectedUserId ? 1 : 0.5 }}>추가</Button>
               </div>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setManagerPanel(null); setSelectedUserId(0) }} style={s.btnSecondary}>닫기</button>
+              <Button variant="outlined" onClick={() => { setManagerPanel(null); setSelectedUserId(0) }}>닫기</Button>
             </div>
           </div>
         </div>

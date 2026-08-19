@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
 import client from '../../api/client'
+import { Button } from '../../components/ui'
 
 interface SystemOption { id: number; name: string }
 
@@ -75,10 +76,7 @@ export default function DailyCheckPage() {
             style={{ padding: '6px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, background: dateFilter ? 'var(--c-card)' : '#1976d2', color: dateFilter ? 'var(--c-text)' : '#fff', cursor: 'pointer', fontSize: 13 }}>
             전체
           </button>
-          <button onClick={() => { resetForm(); setShowForm(true) }}
-            style={{ padding: '6px 16px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
-            + 점검 등록
-          </button>
+          <Button variant="filled" onClick={() => { resetForm(); setShowForm(true) }}>+ 점검 등록</Button>
         </div>
       </div>
 
@@ -130,14 +128,8 @@ export default function DailyCheckPage() {
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-              <button type="submit"
-                style={{ padding: '8px 20px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
-                {editing ? '수정' : '저장'}
-              </button>
-              <button type="button" onClick={resetForm}
-                style={{ padding: '8px 20px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer' }}>
-                취소
-              </button>
+              <Button variant="filled" type="submit">{editing ? '수정' : '저장'}</Button>
+              <Button variant="outlined" type="button" onClick={resetForm}>취소</Button>
             </div>
           </form>
         </div>
@@ -176,14 +168,8 @@ export default function DailyCheckPage() {
                   {new Date(r.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                 </td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
-                  <button onClick={() => openEdit(r)}
-                    style={{ marginRight: 6, padding: '4px 10px', fontSize: 12, border: '1px solid #90caf9', borderRadius: 4, background: '#e3f2fd', color: '#1565c0', cursor: 'pointer' }}>
-                    수정
-                  </button>
-                  <button onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}
-                    style={{ padding: '4px 10px', fontSize: 12, border: '1px solid #ef9a9a', borderRadius: 4, background: '#ffebee', color: '#c62828', cursor: 'pointer' }}>
-                    삭제
-                  </button>
+                  <Button variant="outlined" size="sm" onClick={() => openEdit(r)}>수정</Button>
+                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }} style={{ color: '#c62828', borderColor: '#ef9a9a' }}>삭제</Button>
                 </td>
               </tr>
             ))}

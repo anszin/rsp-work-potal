@@ -8,6 +8,7 @@ import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
+import { Button } from '../../components/ui'
 
 // ── 업무 아이템 ───────────────────────────────────────────────────────────────
 
@@ -531,8 +532,8 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
         </div>
         {canEdit && (
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={onEdit} style={{ padding: '6px 14px', border: '1px solid #90caf9', borderRadius: 6, background: '#e3f2fd', color: '#1565c0', cursor: 'pointer', fontSize: 13 }}>수정</button>
-            <button onClick={onDelete} style={{ padding: '6px 14px', border: '1px solid #ef9a9a', borderRadius: 6, background: '#ffebee', color: '#c62828', cursor: 'pointer', fontSize: 13 }}>삭제</button>
+            <Button variant="outlined" onClick={onEdit}>수정</Button>
+            <Button variant="outlined" onClick={onDelete} style={{ color: '#c62828', borderColor: '#ef9a9a' }}>삭제</Button>
           </div>
         )}
       </div>
@@ -595,10 +596,7 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
             style={{ padding: '8px 20px', background: isConsolidated ? '#7c3aed' : '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, opacity: saving ? 0.7 : 1 }}>
             {saving ? '저장 중...' : (isEditing ? '수정' : '저장')}
           </button>
-          <button type="button" onClick={onCancel}
-            style={{ padding: '8px 20px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', color: 'var(--c-text)' }}>
-            취소
-          </button>
+          <Button variant="outlined" type="button" onClick={onCancel}>취소</Button>
         </div>
       </form>
     </>
@@ -688,7 +686,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
           )}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={onCancel} style={{ padding: '7px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>취소</button>
+          <Button variant="outlined" onClick={onCancel}>취소</Button>
           <button onClick={() => onSave(conForm)} disabled={totalRight === 0}
             style={{ padding: '7px 20px', background: totalRight > 0 ? '#7c3aed' : '#ccc', color: '#fff', border: 'none', borderRadius: 6, cursor: totalRight > 0 ? 'pointer' : 'not-allowed', fontWeight: 600, fontSize: 13 }}>
             저장 ({totalRight}개)
@@ -928,8 +926,8 @@ export default function WeeklyReportPage() {
                 <div style={{ fontSize: 13, color: '#555', marginTop: 3 }}>{fmtWeek(thisWeekStart, printItems[0]?.weekEnd ?? thisWeekStart)} · {printItems.length}명 제출</div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => window.print()} style={{ padding: '7px 18px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>🖨 인쇄 / PDF</button>
-                <button onClick={() => setPrintOpen(false)} style={{ padding: '7px 14px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>닫기</button>
+                <Button variant="filled" onClick={() => window.print()}>🖨 인쇄 / PDF</Button>
+                <Button variant="outlined" onClick={() => setPrintOpen(false)}>닫기</Button>
               </div>
             </div>
             {printItems.length === 0 ? (

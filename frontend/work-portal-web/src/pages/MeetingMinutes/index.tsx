@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { meetingApi, MeetingMinute, SaveMeetingRequest } from '../../api/reports'
+import { Button } from '../../components/ui'
 
 const emptyForm = (): SaveMeetingRequest => ({
   title: '', meetingDate: new Date().toISOString().slice(0, 10),
@@ -66,10 +67,7 @@ export default function MeetingMinutesPage() {
       <div className="master-panel" style={{ width: 320 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h2 style={{ margin: 0, fontSize: 18 }}>회의록</h2>
-          <button onClick={() => { resetForm(); setShowForm(true); setSelected(null) }}
-            style={{ padding: '6px 14px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
-            + 작성
-          </button>
+          <Button variant="filled" onClick={() => { resetForm(); setShowForm(true); setSelected(null) }}>+ 작성</Button>
         </div>
         {isLoading ? <p>로딩 중...</p> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -133,14 +131,8 @@ export default function MeetingMinutesPage() {
                 </label>
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button type="submit"
-                  style={{ padding: '8px 20px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
-                  {editing ? '수정' : '저장'}
-                </button>
-                <button type="button" onClick={resetForm}
-                  style={{ padding: '8px 20px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer' }}>
-                  취소
-                </button>
+                <Button variant="filled" type="submit">{editing ? '수정' : '저장'}</Button>
+                <Button variant="outlined" type="button" onClick={resetForm}>취소</Button>
               </div>
             </form>
           </>
@@ -156,14 +148,8 @@ export default function MeetingMinutesPage() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => openEdit(selected)}
-                  style={{ padding: '6px 14px', border: '1px solid #90caf9', borderRadius: 6, background: '#e3f2fd', color: '#1565c0', cursor: 'pointer', fontSize: 13 }}>
-                  수정
-                </button>
-                <button onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(selected.id) }}
-                  style={{ padding: '6px 14px', border: '1px solid #ef9a9a', borderRadius: 6, background: '#ffebee', color: '#c62828', cursor: 'pointer', fontSize: 13 }}>
-                  삭제
-                </button>
+                <Button variant="outlined" onClick={() => openEdit(selected)}>수정</Button>
+                <Button variant="outlined" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(selected.id) }} style={{ color: '#c62828', borderColor: '#ef9a9a' }}>삭제</Button>
               </div>
             </div>
             {selected.attendees && (

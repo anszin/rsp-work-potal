@@ -10,6 +10,7 @@ import { getActiveSystems, getManagedSystemIds, getActiveSubSystems, getSystemMa
 import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
+import { Button } from '../../components/ui'
 
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
@@ -222,8 +223,8 @@ export default function ChangeRequestPage() {
                 autoFocus
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
-                <button style={s.btnSecondary} onClick={() => setActionModal(null)}>취소</button>
-                <button style={{ ...s.btn, background: cfg.btnColor }} onClick={submitActionModal}>{cfg.btnLabel}</button>
+                <Button variant="outlined" onClick={() => setActionModal(null)}>취소</Button>
+                <Button variant="filled" onClick={submitActionModal} style={{ background: cfg.btnColor }}>{cfg.btnLabel}</Button>
               </div>
             </div>
           </div>
@@ -242,7 +243,7 @@ export default function ChangeRequestPage() {
             ))}
           </div>
         </div>
-        {tab === 'list' && <button style={s.btn} onClick={openCreate}>+ 새 요청</button>}
+        {tab === 'list' && <Button variant="filled" onClick={openCreate}>+ 새 요청</Button>}
       </div>
 
       {tab === 'dashboard' && <ChangeRequestDashboard requests={requests} />}
@@ -342,10 +343,10 @@ export default function ChangeRequestPage() {
               onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="변경 내용을 입력하세요" />
           </div>
           <div style={s.formActions}>
-            <button style={s.btnSecondary} onClick={closeForm} disabled={isPending}>취소</button>
-            <button style={{ ...s.btn, opacity: isPending ? 0.6 : 1 }} onClick={submit} disabled={isPending}>
+            <Button variant="outlined" onClick={closeForm} disabled={isPending}>취소</Button>
+            <Button variant="filled" onClick={submit} disabled={isPending} style={{ opacity: isPending ? 0.6 : 1 }}>
               {isPending ? '저장 중...' : '저장'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -426,24 +427,24 @@ export default function ChangeRequestPage() {
                   <td style={s.td} onClick={e => e.stopPropagation()}>
                     <div style={s.actions}>
                       {r.status === 'DRAFT' && (
-                        <button style={s.btnSm} onClick={() => openEdit(r)}>수정</button>
+                        <Button variant="outlined" size="sm" onClick={() => openEdit(r)}>수정</Button>
                       )}
                       {NEXT_STATUS[r.status]?.map(({ label, next }) => {
                         if (next === 'REQUESTED') return (
-                          <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
-                            onClick={() => handleStatus(r, next)}>{label}</button>
+                          <Button key={next} variant="outlined" size="sm" style={actionStyle(next)}
+                            onClick={() => handleStatus(r, next)}>{label}</Button>
                         )
                         if (canManage(r.systemId)) return (
-                          <button key={next} style={{ ...s.btnSm, ...actionStyle(next) }}
-                            onClick={() => handleStatus(r, next)}>{label}</button>
+                          <Button key={next} variant="outlined" size="sm" style={actionStyle(next)}
+                            onClick={() => handleStatus(r, next)}>{label}</Button>
                         )
                         return null
                       })}
                       {(r.status === 'DRAFT' || isAdminOrManager) && (
-                        <button style={{ ...s.btnSm, color: '#e53e3e' }}
+                        <Button variant="outlined" size="sm" style={{ color: '#e53e3e' }}
                           onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
                           삭제
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </td>
@@ -465,7 +466,7 @@ export default function ChangeRequestPage() {
               <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
               {detail.requestNo && <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--c-text-muted)' }}>{detail.requestNo}</span>}
             </div>
-            <button style={{ ...s.btnSecondary, fontSize: 12, padding: '4px 10px' }} onClick={() => setDetail(null)}>닫기</button>
+            <Button variant="outlined" size="sm" onClick={() => setDetail(null)}>닫기</Button>
           </div>
           <div className="cr-detail-grid">
             <span style={s.detailLabel}>상태</span><span>{STATUS_LABELS[detail.status]}</span>
@@ -526,10 +527,10 @@ export default function ChangeRequestPage() {
                   {detail.redmineSyncStatus === 'FAILED' && (
                     <>
                       <span style={{ fontSize: 12, color: '#9B2C2C', background: '#FFF5F5', border: '1px solid #FED7D7', padding: '2px 8px', borderRadius: 4 }}>일감 등록 실패</span>
-                      <button style={{ ...s.btnSm, color: '#C05621', borderColor: '#C05621' }}
+                      <Button variant="outlined" size="sm" style={{ color: '#C05621', borderColor: '#C05621' }}
                         onClick={() => syncCRMut.mutate(detail.id)} disabled={syncCRMut.isPending}>
                         {syncCRMut.isPending ? '재시도 중...' : '재시도'}
-                      </button>
+                      </Button>
                     </>
                   )}
                   {detail.redmineSyncStatus === 'SKIPPED' && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>미설정 (레드마인 프로젝트 없음)</span>}

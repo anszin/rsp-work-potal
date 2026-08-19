@@ -4,6 +4,7 @@ import axios from 'axios'
 import { getUsers, createUser, updateUser, deleteUser, resetPassword, getMenuPermissions, updateMenuPermissions, type UserSummary, type UserRole, type MenuPermission } from '../../api/users'
 import { useAuth } from '../../context/useAuth'
 import PageHeader from '../../components/PageHeader'
+import { Button } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -131,7 +132,7 @@ export default function UserManagementPage() {
               <div>아이디: <strong>{createdInfo.username}</strong></div>
               <div>임시 비밀번호: <strong>{createdInfo.tempPassword}</strong></div>
             </div>
-            <button style={{ ...s.btn, marginTop: 16, width: '100%' }} onClick={() => setCreatedInfo(null)}>확인</button>
+            <Button variant="filled" style={{ marginTop: 16, width: '100%' }} onClick={() => setCreatedInfo(null)}>확인</Button>
           </div>
         </div>
       )}
@@ -146,7 +147,7 @@ export default function UserManagementPage() {
                 {tab === 'menus' ? '사용자 목록' : '메뉴 권한 설정'}
               </button>
             )}
-            <button style={s.btn} onClick={openCreate}>+ 사용자 추가</button>
+            <Button variant="filled" onClick={openCreate}>+ 사용자 추가</Button>
           </div>
         }
       />
@@ -157,10 +158,10 @@ export default function UserManagementPage() {
             <h3 style={{ margin: 0, fontSize: 15 }}>역할별 메뉴 접근 권한</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {menuSaved && <span style={{ fontSize: 13, color: '#276749' }}>저장되었습니다 ✓</span>}
-              <button style={{ ...s.btn, opacity: (!menuDirty || menuMut.isPending) ? 0.6 : 1 }}
+              <Button variant="filled" style={{ opacity: (!menuDirty || menuMut.isPending) ? 0.6 : 1 }}
                 onClick={saveMenuPerms} disabled={!menuDirty || menuMut.isPending}>
                 {menuMut.isPending ? '저장 중...' : '저장'}
-              </button>
+              </Button>
             </div>
           </div>
           <div className="table-scroll">
@@ -221,12 +222,12 @@ export default function UserManagementPage() {
                 <div style={s.progressBar}><div style={s.progressFill} /></div>
               )}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
-                <button style={s.btnSecondary} onClick={() => { setShowForm(false); setEditing(null) }}
-                  disabled={createMut.isPending || updateMut.isPending}>취소</button>
-                <button style={{ ...s.btn, opacity: (createMut.isPending || updateMut.isPending) ? 0.6 : 1 }}
+                <Button variant="outlined" onClick={() => { setShowForm(false); setEditing(null) }}
+                  disabled={createMut.isPending || updateMut.isPending}>취소</Button>
+                <Button variant="filled" style={{ opacity: (createMut.isPending || updateMut.isPending) ? 0.6 : 1 }}
                   onClick={submit} disabled={createMut.isPending || updateMut.isPending}>
                   {createMut.isPending || updateMut.isPending ? '처리 중...' : '저장'}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -266,15 +267,15 @@ export default function UserManagementPage() {
                     <td style={s.td}>{u.createdAt?.slice(0, 10)}</td>
                     {isAdminOrManager && (
                       <td style={s.td}>
-                        <button style={s.btnSm} onClick={() => openEdit(u)}>수정</button>
-                        <button style={{ ...s.btnSm, color: '#d97706' }}
+                        <Button variant="outlined" size="sm" onClick={() => openEdit(u)}>수정</Button>
+                        <Button variant="outlined" size="sm" style={{ color: '#d97706' }}
                           onClick={() => { if (confirm(`${u.username} 비밀번호를 초기화하시겠습니까?`)) resetMut.mutate(u.id) }}>
                           비번초기화
-                        </button>
-                        <button style={{ ...s.btnSm, color: '#e53e3e' }}
+                        </Button>
+                        <Button variant="outlined" size="sm" style={{ color: '#e53e3e' }}
                           onClick={() => { if (confirm(`${u.username} 계정을 삭제하시겠습니까?`)) deleteMut.mutate(u.id) }}>
                           삭제
-                        </button>
+                        </Button>
                       </td>
                     )}
                   </tr>

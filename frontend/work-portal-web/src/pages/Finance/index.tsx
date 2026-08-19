@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { financeApi, FinanceCategory, SaveFinanceRequest, FinanceRecord } from '../../api/finance'
+import { Button } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -163,10 +164,7 @@ export default function FinancePage() {
               }}>{m}</button>
           ))}
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }}
-          style={{ padding: '6px 16px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
-          + 추가
-        </button>
+        <Button variant="filled" onClick={() => { resetForm(); setShowForm(true) }}>+ 추가</Button>
       </div>
 
       {showForm && (
@@ -199,14 +197,8 @@ export default function FinancePage() {
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-              <button type="submit"
-                style={{ padding: '8px 20px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
-                {editing ? '수정' : '저장'}
-              </button>
-              <button type="button" onClick={resetForm}
-                style={{ padding: '8px 20px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer' }}>
-                취소
-              </button>
+              <Button variant="filled" type="submit">{editing ? '수정' : '저장'}</Button>
+              <Button variant="outlined" type="button" onClick={resetForm}>취소</Button>
             </div>
           </form>
         </div>
@@ -244,14 +236,8 @@ export default function FinancePage() {
                   {new Date(rec.createdAt).toLocaleDateString('ko-KR')}
                 </td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
-                  <button onClick={() => openEdit(rec)}
-                    style={{ marginRight: 6, padding: '4px 10px', fontSize: 12, border: '1px solid #90caf9', borderRadius: 4, background: '#e3f2fd', color: '#1565c0', cursor: 'pointer' }}>
-                    수정
-                  </button>
-                  <button onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(rec.id) }}
-                    style={{ padding: '4px 10px', fontSize: 12, border: '1px solid #ef9a9a', borderRadius: 4, background: '#ffebee', color: '#c62828', cursor: 'pointer' }}>
-                    삭제
-                  </button>
+                  <Button variant="outlined" size="sm" onClick={() => openEdit(rec)}>수정</Button>
+                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(rec.id) }} style={{ color: '#c62828', borderColor: '#ef9a9a' }}>삭제</Button>
                 </td>
               </tr>
             ))}
