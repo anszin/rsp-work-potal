@@ -78,6 +78,7 @@ export default function TodoPage() {
   const nameOf = (username: string) => users.find(u => u.username === username)?.name ?? username
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Todo | null>(null)
+  const [readOnly, setReadOnly] = useState(false)
   const [form, setForm] = useState<SaveTodoRequest>(emptyForm())
   const [filterKeyTaskId, setFilterKeyTaskId] = useState<number | undefined>(undefined)
   const [dragging, setDragging] = useState<number | null>(null)
@@ -149,12 +150,14 @@ export default function TodoPage() {
     setForm(toRequest(todo))
     const wu = allWorkUnits.find(w => w.id === todo.workUnitId)
     setFilterKeyTaskId(wu?.keyTaskId ?? undefined)
+    setReadOnly(!isManager && todo.assignee !== user?.username)
     setModalOpen(true)
   }
 
   function closeModal() {
     setModalOpen(false)
     setEditing(null)
+    setReadOnly(false)
     setForm(emptyForm())
     setFilterKeyTaskId(undefined)
   }
@@ -242,7 +245,14 @@ export default function TodoPage() {
         <div style={styles.overlay} onClick={e => e.target === e.currentTarget && closeModal()}>
           <div style={styles.modal}>
             <div style={styles.modalHeader}>
-              <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? 'To-Do 수정' : 'To-Do 추가'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? 'To-Do 수정' : 'To-Do 추가'}</span>
+                {readOnly && (
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'var(--c-tag-draft-bg)', color: 'var(--c-tag-draft-t)', fontWeight: 500 }}>
+                    관련자 (읽기 전용)
+                  </span>
+                )}
+              </div>
               <IconButton variant="text" icon="✕" label="닫기" onClick={closeModal} />
             </div>
             <form onSubmit={handleSubmit}>
@@ -258,6 +268,7 @@ export default function TodoPage() {
                       onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                       placeholder="Todo 제목"
                       autoFocus
+                      disabled={readOnly}
                     />
                   </label>
 
@@ -268,6 +279,7 @@ export default function TodoPage() {
                       value={form.description}
                       onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                       placeholder="상세 내용"
+                      disabled={readOnly}
                     />
                   </label>
 
@@ -282,6 +294,7 @@ export default function TodoPage() {
                           setFilterKeyTaskId(e.target.value ? Number(e.target.value) : undefined)
                           setForm(f => ({ ...f, workUnitId: undefined }))
                         }}
+                        disabled={readOnly}
                       >
                         <option value="">전체</option>
                         {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
@@ -298,6 +311,7 @@ export default function TodoPage() {
                           if (wu && !filterKeyTaskId) setFilterKeyTaskId(wu.keyTaskId)
                           setForm(f => ({ ...f, workUnitId: wuId }))
                         }}
+                        disabled={readOnly}
                       >
                         <option value="">선택 안 함</option>
                         {filteredWorkUnits.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
@@ -309,13 +323,13 @@ export default function TodoPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     <label style={styles.label}>
                       상태
-                      <select style={styles.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as TodoStatus }))}>
+                      <select style={styles.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as TodoStatus }))} disabled={readOnly}>
                         {COLUMNS.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
                       </select>
                     </label>
                     <label style={styles.label}>
                       우선순위
-                      <select style={styles.input} value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TodoPriority }))}>
+                      <select style={styles.input} value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TodoPriority }))} disabled={readOnly}>
                         <option value="HIGH">상</option>
                         <option value="MEDIUM">중</option>
                         <option value="LOW">하</option>
@@ -344,7 +358,7 @@ export default function TodoPage() {
                     )}
                     <label style={styles.label}>
                       요청유형
-                      <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))}>
+                      <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))} disabled={readOnly}>
                         {(Object.entries(SOURCE_LABELS) as [TodoSourceType, string][]).map(([k, v]) => (
                           <option key={k} value={k}>{v}</option>
                         ))}
@@ -356,15 +370,15 @@ export default function TodoPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                     <label style={styles.label}>
                       <span>시작일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
-                      <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
+                      <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} disabled={readOnly} />
                     </label>
                     <label style={styles.label}>
                       목표일
-                      <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+                      <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} disabled={readOnly} />
                     </label>
                     <label style={styles.label}>
                       <span>완료일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
-                      <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} />
+                      <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} disabled={readOnly} />
                     </label>
                   </div>
                 </div>
@@ -383,10 +397,12 @@ export default function TodoPage() {
                           </span>
                         )}
                       </span>
-                      <Button variant="text" size="sm" type="button"
-                        onClick={() => setForm(f => ({ ...f, checkItems: [...(f.checkItems ?? []), { text: '', done: false }] }))}>
-                        + 항목
-                      </Button>
+                      {!readOnly && (
+                        <Button variant="text" size="sm" type="button"
+                          onClick={() => setForm(f => ({ ...f, checkItems: [...(f.checkItems ?? []), { text: '', done: false }] }))}>
+                          + 항목
+                        </Button>
+                      )}
                     </div>
                     {(form.checkItems ?? []).length === 0 && (
                       <div style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '6px 0' }}>항목을 추가하세요</div>
@@ -399,7 +415,8 @@ export default function TodoPage() {
                             items[i] = { ...items[i], done: !items[i].done }
                             return { ...f, checkItems: items }
                           })}
-                          style={{ width: 15, height: 15, flexShrink: 0, cursor: 'pointer' }}
+                          disabled={readOnly}
+                          style={{ width: 15, height: 15, flexShrink: 0, cursor: readOnly ? 'default' : 'pointer' }}
                         />
                         <input
                           style={{ ...styles.input, textDecoration: item.done ? 'line-through' : 'none', color: item.done ? 'var(--c-text-muted)' : 'inherit' }}
@@ -410,9 +427,12 @@ export default function TodoPage() {
                             return { ...f, checkItems: items }
                           })}
                           placeholder="항목 입력"
+                          disabled={readOnly}
                         />
-                        <IconButton variant="text" size="sm" icon="✕" label="제거"
-                          onClick={() => setForm(f => ({ ...f, checkItems: (f.checkItems ?? []).filter((_, idx) => idx !== i) }))} />
+                        {!readOnly && (
+                          <IconButton variant="text" size="sm" icon="✕" label="제거"
+                            onClick={() => setForm(f => ({ ...f, checkItems: (f.checkItems ?? []).filter((_, idx) => idx !== i) }))} />
+                        )}
                       </div>
                     ))}
                   </div>
@@ -421,10 +441,12 @@ export default function TodoPage() {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                       <span style={styles.label}>외부링크</span>
-                      <Button variant="text" size="sm" type="button"
-                        onClick={() => setForm(f => ({ ...f, links: [...(f.links ?? []), { label: '', url: '' }] }))}>
-                        + 링크
-                      </Button>
+                      {!readOnly && (
+                        <Button variant="text" size="sm" type="button"
+                          onClick={() => setForm(f => ({ ...f, links: [...(f.links ?? []), { label: '', url: '' }] }))}>
+                          + 링크
+                        </Button>
+                      )}
                     </div>
                     {(form.links ?? []).length === 0 && (
                       <div style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '6px 0' }}>링크를 추가하세요</div>
@@ -440,6 +462,7 @@ export default function TodoPage() {
                             return { ...f, links }
                           })}
                           placeholder="이름"
+                          disabled={readOnly}
                         />
                         <input
                           style={{ ...styles.input, flex: 1 }}
@@ -450,9 +473,12 @@ export default function TodoPage() {
                             return { ...f, links }
                           })}
                           placeholder="https://..."
+                          disabled={readOnly}
                         />
-                        <IconButton variant="text" size="sm" icon="✕" label="제거"
-                          onClick={() => setForm(f => ({ ...f, links: (f.links ?? []).filter((_, idx) => idx !== i) }))} />
+                        {!readOnly && (
+                          <IconButton variant="text" size="sm" icon="✕" label="제거"
+                            onClick={() => setForm(f => ({ ...f, links: (f.links ?? []).filter((_, idx) => idx !== i) }))} />
+                        )}
                       </div>
                     ))}
                   </div>
@@ -501,6 +527,7 @@ export default function TodoPage() {
                       value={form.imageUrl ?? ''}
                       onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
                       placeholder="https://... (이미지 직접 링크)"
+                      disabled={readOnly}
                     />
                     {form.imageUrl && (
                       <img
@@ -516,7 +543,7 @@ export default function TodoPage() {
 
               {/* ── 버튼 ── */}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--c-border)', alignItems: 'center' }}>
-                {editing && (
+                {!readOnly && editing && (
                   <button type="button" className="ds-btn ds-btn--outlined ds-btn--md"
                     style={{ borderColor: 'var(--c-tag-err-t)', color: 'var(--c-tag-err-t)' }}
                     onClick={() => { if (confirm(`"${editing.title}" 삭제할까요?`)) { deleteMut.mutate(editing.id); closeModal() } }}>
@@ -524,10 +551,12 @@ export default function TodoPage() {
                   </button>
                 )}
                 <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-                  <Button type="button" variant="outlined" onClick={closeModal}>취소</Button>
-                  <Button type="submit" variant="filled" disabled={createMut.isPending || updateMut.isPending}>
-                    {editing ? '저장' : '추가'}
-                  </Button>
+                  <Button type="button" variant="outlined" onClick={closeModal}>{readOnly ? '닫기' : '취소'}</Button>
+                  {!readOnly && (
+                    <Button type="submit" variant="filled" disabled={createMut.isPending || updateMut.isPending}>
+                      {editing ? '저장' : '추가'}
+                    </Button>
+                  )}
                 </div>
               </div>
             </form>
