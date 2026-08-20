@@ -32,6 +32,7 @@ export interface Todo {
   checkItems: CheckItem[]
   links: TodoLink[]
   imageUrl: string | null
+  collaborators: string[]
 }
 
 export interface SaveTodoRequest {
@@ -49,6 +50,7 @@ export interface SaveTodoRequest {
   checkItems?: CheckItem[]
   links?: TodoLink[]
   imageUrl?: string
+  collaborators?: string[]
 }
 
 export const todoApi = {

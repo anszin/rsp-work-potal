@@ -37,6 +37,7 @@ const emptyForm = (): SaveTodoRequest => ({
   checkItems: [],
   links: [],
   imageUrl: '',
+  collaborators: [],
 })
 
 function formatDate(d: string | null) {
@@ -65,6 +66,7 @@ function toRequest(todo: Todo): SaveTodoRequest {
     checkItems: todo.checkItems ?? [],
     links: todo.links ?? [],
     imageUrl: todo.imageUrl ?? '',
+    collaborators: todo.collaborators ?? [],
   }
 }
 
@@ -455,6 +457,42 @@ export default function TodoPage() {
                     ))}
                   </div>
 
+                  {/* 관련자 */}
+                  {isManager && users.length > 0 && (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <span style={styles.label}>관련자</span>
+                        {(form.collaborators ?? []).length > 0 && (
+                          <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{form.collaborators!.length}명</span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {users.filter(u => u.active && u.username !== form.assignee).map(u => {
+                          const selected = (form.collaborators ?? []).includes(u.username)
+                          return (
+                            <button
+                              key={u.username}
+                              type="button"
+                              onClick={() => setForm(f => {
+                                const cols = f.collaborators ?? []
+                                return { ...f, collaborators: selected ? cols.filter(c => c !== u.username) : [...cols, u.username] }
+                              })}
+                              style={{
+                                padding: '4px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer', border: '1px solid',
+                                borderColor: selected ? 'var(--c-action)' : 'var(--c-border)',
+                                background: selected ? 'color-mix(in srgb, var(--c-action) 12%, transparent)' : 'transparent',
+                                color: selected ? 'var(--c-action)' : 'var(--c-text-muted)',
+                                fontWeight: selected ? 600 : 400,
+                              }}
+                            >
+                              {u.name ?? u.username}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* 이미지 URL */}
                   <label style={styles.label}>
                     이미지 URL
@@ -580,6 +618,9 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
           <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }}>
             {SOURCE_LABELS[todo.sourceType]}
           </span>
+        )}
+        {(todo.collaborators?.length ?? 0) > 0 && (
+          <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>👥 {todo.collaborators!.length}</span>
         )}
         {(todo.links?.length ?? 0) > 0 && (
           <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>🔗 {todo.links!.length}</span>
