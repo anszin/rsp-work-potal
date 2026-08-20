@@ -5,20 +5,20 @@
   --c-card:         #ffffff;   /* semanticLightBgSurface */
   --c-thead:        #f3f4f4;   /* semanticLightBgSurfaceAlt */
   --c-input-bg:     #ffffff;   /* semanticLightBgSurface */
-  --c-row-sel:      #d0f1e5;   /* semanticLightBgAccent */
+  --c-row-sel:      #ccfbf1;
   /* text */
   --c-text:         #222524;   /* semanticLightTextPrimary */
   --c-text-sub:     #66706d;   /* semanticLightTextSecondary */
   --c-text-muted:   #a9b1ae;   /* semanticLightTextMuted */
-  --c-text-accent:  #17895f;   /* semanticLightTextAccent */
+  --c-text-accent:  #14b8a6;
   /* border */
   --c-border:       #e4e7e6;   /* semanticLightBorderDefault */
   --c-border-in:    #d1d6d4;   /* semanticLightBorderStrong */
   /* scrollbar */
   --c-scrollbar:    #e4e7e6;
   /* action */
-  --c-action:       #22ba82;   /* semanticLightActionPrimary */
-  --c-action-hover: #1ca271;   /* semanticLightActionPrimaryHover */
+  --c-action:       #0d9488;
+  --c-action-hover: #0f766e;
   /* status tags */
   --c-tag-done-bg:  #d1ebd5;   /* success50 */
   --c-tag-done-t:   #236c2c;   /* success700 */
@@ -48,20 +48,20 @@
   --c-card:         #222524;   /* semanticDarkBgSurface */
   --c-thead:        #353b39;   /* semanticDarkBgSurfaceAlt */
   --c-input-bg:     #222524;   /* semanticDarkBgSurface */
-  --c-row-sel:      #0d573c;   /* semanticDarkBgAccent */
+  --c-row-sel:      #134e4a;
   /* text */
   --c-text:         #fafafa;   /* semanticDarkTextPrimary */
   --c-text-sub:     #d1d6d4;   /* semanticDarkTextSecondary */
   --c-text-muted:   #84908b;   /* semanticDarkTextMuted */
-  --c-text-accent:  #5ddbac;   /* semanticDarkTextAccent */
+  --c-text-accent:  #2dd4bf;
   /* border */
   --c-border:       #353b39;   /* semanticDarkBorderDefault */
   --c-border-in:    #4e5653;   /* semanticDarkBorderStrong */
   /* scrollbar */
   --c-scrollbar:    #4e5653;
   /* action */
-  --c-action:       #34d69a;   /* semanticDarkActionPrimary */
-  --c-action-hover: #5ddbac;   /* semanticDarkActionPrimaryHover */
+  --c-action:       #14b8a6;
+  --c-action-hover: #2dd4bf;
   /* status tags */
   --c-tag-done-bg:  #236c2c;   /* success700 */
   --c-tag-done-t:   #adddb4;   /* success100 */
