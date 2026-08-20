@@ -104,8 +104,10 @@ export default function TodoPage() {
   function getTypeBadge(todo: Todo): { label: string; color: string; bg: string } | null {
     if (!todo.workUnitId) return null
     const wu = allWorkUnits.find(w => w.id === todo.workUnitId)
-    if (wu?.type === 'PROJECT')   return { label: '중점', color: 'var(--c-tag-pri-t)', bg: 'var(--c-tag-pri-bg)' }
-    if (wu?.type === 'OPERATION') return { label: 'KPI',  color: 'var(--c-tag-sys-t)', bg: 'var(--c-tag-sys)' }
+    if (wu?.type === 'PROJECT')   return { label: '중점', color: 'var(--c-tag-pri-t)',   bg: 'var(--c-tag-pri-bg)' }
+    if (wu?.type === 'OPERATION') return { label: 'KPI',  color: 'var(--c-tag-sys-t)',   bg: 'var(--c-tag-sys)' }
+    if (wu?.type === 'PROPOSAL')  return { label: '제안', color: 'var(--c-tag-warn-t)',  bg: 'var(--c-tag-warn-bg)' }
+    if (wu?.type === 'PLANNING')  return { label: '기획', color: 'var(--c-tag-done-t)',  bg: 'var(--c-tag-done-bg)' }
     return { label: '기타', color: 'var(--c-tag-draft-t)', bg: 'var(--c-tag-draft-bg)' }
   }
 

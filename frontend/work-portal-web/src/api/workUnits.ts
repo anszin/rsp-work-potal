@@ -1,11 +1,13 @@
 import client from './client'
 
-export type WorkUnitType = 'PROJECT' | 'OPERATION' | 'OTHER'
+export type WorkUnitType = 'PROJECT' | 'OPERATION' | 'PROPOSAL' | 'PLANNING' | 'OTHER'
 export type WorkUnitStatus = 'IN_PROGRESS' | 'ON_HOLD' | 'DONE'
 
 export const WORK_UNIT_TYPE_LABELS: Record<WorkUnitType, string> = {
   PROJECT:   '프로젝트',
   OPERATION: '운영/유지보수',
+  PROPOSAL:  '제안',
+  PLANNING:  '기획',
   OTHER:     '기타',
 }
 
