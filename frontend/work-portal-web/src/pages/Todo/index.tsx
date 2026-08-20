@@ -8,11 +8,11 @@ import { workUnitApi } from '../../api/workUnits'
 import { Button, IconButton } from '../../components/ui'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
-  { status: 'TODO',        label: '대기',   color: '#718096', guide: '아직 시작하지 않은 업무' },
-  { status: 'IN_PROGRESS', label: '진행중', color: '#3182ce', guide: '현재 작업 중인 업무' },
-  { status: 'REVIEW',      label: '검토',   color: '#d69e2e', guide: '완료 후 확인·승인 대기' },
-  { status: 'DONE',        label: '완료',   color: '#38a169', guide: '모든 처리가 끝난 업무' },
-  { status: 'HOLD',        label: '보류',   color: '#c05621', guide: '이슈·사정으로 잠시 보류된 업무' },
+  { status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },
+  { status: 'IN_PROGRESS', label: '진행중', color: 'var(--c-status-prog)',   guide: '현재 작업 중인 업무' },
+  { status: 'REVIEW',      label: '검토',   color: 'var(--c-status-review)', guide: '완료 후 확인·승인 대기' },
+  { status: 'DONE',        label: '완료',   color: 'var(--c-status-done)',   guide: '모든 처리가 끝난 업무' },
+  { status: 'HOLD',        label: '보류',   color: 'var(--c-status-hold)',   guide: '이슈·사정으로 잠시 보류된 업무' },
 ]
 
 const PRIORITY_LABEL: Record<TodoPriority, string> = { HIGH: '상', MEDIUM: '중', LOW: '하' }
@@ -247,7 +247,7 @@ export default function TodoPage() {
                 {/* ── 왼쪽: 기본 정보 ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <label style={styles.label}>
-                    제목 <span style={{ color: '#e53e3e' }}>*</span>
+                    제목 <span style={{ color: 'var(--c-tag-err-t)' }}>*</span>
                     <input
                       style={styles.input}
                       value={form.title}
@@ -530,7 +530,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
     >
       <div style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word' }}>
         {showAssignee && (
-          <div style={{ fontSize: 11, color: '#3182ce', fontWeight: 600, marginBottom: 3 }}>{nameOf(todo.assignee)}</div>
+          <div style={{ fontSize: 11, color: 'var(--c-status-prog)', fontWeight: 600, marginBottom: 3 }}>{nameOf(todo.assignee)}</div>
         )}
         {todo.title}
       </div>
@@ -547,7 +547,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
               <span>{done}/{total}</span>
             </div>
             <div style={{ height: 4, borderRadius: 2, background: 'var(--c-border)' }}>
-              <div style={{ height: '100%', borderRadius: 2, background: done === total ? '#38a169' : '#3182ce', width: `${pct}%`, transition: 'width 0.2s' }} />
+              <div style={{ height: '100%', borderRadius: 2, background: done === total ? 'var(--c-status-done)' : 'var(--c-status-prog)', width: `${pct}%`, transition: 'width 0.2s' }} />
             </div>
           </div>
         )

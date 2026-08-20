@@ -34,6 +34,12 @@
   --c-tag-warn-t:   #b3750c;   /* warning700 */
   --c-tag-pri-bg:   #e1d5eb;   /* tertiary50 */
   --c-tag-pri-t:    #512a73;   /* tertiary700 */
+  /* kanban status */
+  --c-status-todo:   #718096;
+  --c-status-prog:   #3182ce;
+  --c-status-review: #d69e2e;
+  --c-status-done:   #38a169;
+  --c-status-hold:   #c05621;
 }
 
 [data-theme="dark"] {
@@ -71,6 +77,12 @@
   --c-tag-warn-t:   #f2dab1;   /* warning100 */
   --c-tag-pri-bg:   #42225e;   /* tertiary800 */
   --c-tag-pri-t:    #cab4dd;   /* tertiary100 */
+  /* kanban status */
+  --c-status-todo:   #a0aec0;
+  --c-status-prog:   #63b3ed;
+  --c-status-review: #f6ad55;
+  --c-status-done:   #68d391;
+  --c-status-hold:   #ed8936;
 }
 
 * {
