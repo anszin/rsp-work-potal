@@ -38,6 +38,7 @@ const emptyForm = (): SaveTodoRequest => ({
   links: [],
   imageUrl: '',
   collaborators: [],
+  workLogs: [],
 })
 
 function formatDate(d: string | null) {
@@ -67,6 +68,7 @@ function toRequest(todo: Todo): SaveTodoRequest {
     links: todo.links ?? [],
     imageUrl: todo.imageUrl ?? '',
     collaborators: todo.collaborators ?? [],
+    workLogs: todo.workLogs ?? [],
   }
 }
 
@@ -483,6 +485,52 @@ export default function TodoPage() {
                     ))}
                   </div>
 
+                  {/* 업무 로그 */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <span style={{ ...styles.label, flexDirection: 'row', gap: 6 }}>
+                        업무 로그
+                        {(form.workLogs?.length ?? 0) > 0 && (
+                          <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{form.workLogs!.length}건</span>
+                        )}
+                      </span>
+                      {!readOnly && (
+                        <Button variant="text" size="sm" type="button"
+                          onClick={() => {
+                            const today = new Date().toISOString().slice(0, 10)
+                            setForm(f => ({ ...f, workLogs: [{ date: today, content: '' }, ...(f.workLogs ?? [])] }))
+                          }}>
+                          + 오늘 기록
+                        </Button>
+                      )}
+                    </div>
+                    {(form.workLogs ?? []).length === 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '6px 0' }}>진행 내용을 기록하세요</div>
+                    )}
+                    {(form.workLogs ?? []).map((log, i) => (
+                      <div key={i} style={{ marginBottom: 8, background: 'var(--c-thead)', borderRadius: 6, padding: '8px 10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-sub)' }}>{log.date}</span>
+                          {!readOnly && (
+                            <IconButton variant="text" size="sm" icon="✕" label="제거"
+                              onClick={() => setForm(f => ({ ...f, workLogs: (f.workLogs ?? []).filter((_, idx) => idx !== i) }))} />
+                          )}
+                        </div>
+                        <textarea
+                          style={{ ...styles.input, height: 60, resize: 'vertical', background: 'var(--c-card)' }}
+                          value={log.content}
+                          onChange={e => setForm(f => {
+                            const logs = [...(f.workLogs ?? [])]
+                            logs[i] = { ...logs[i], content: e.target.value }
+                            return { ...f, workLogs: logs }
+                          })}
+                          placeholder="오늘 진행한 내용"
+                          disabled={readOnly}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
                   {/* 관련자 */}
                   {isManager && users.length > 0 && (
                     <div>
@@ -647,6 +695,9 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
           <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }}>
             {SOURCE_LABELS[todo.sourceType]}
           </span>
+        )}
+        {(todo.workLogs?.length ?? 0) > 0 && (
+          <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>📝 {todo.workLogs!.length}</span>
         )}
         {(todo.collaborators?.length ?? 0) > 0 && (
           <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>👥 {todo.collaborators!.length}</span>

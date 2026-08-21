@@ -14,6 +14,11 @@ export interface TodoLink {
   url: string
 }
 
+export interface WorkLog {
+  date: string   // YYYY-MM-DD
+  content: string
+}
+
 export interface Todo {
   id: number
   title: string
@@ -33,6 +38,7 @@ export interface Todo {
   links: TodoLink[]
   imageUrl: string | null
   collaborators: string[]
+  workLogs: WorkLog[]
 }
 
 export interface SaveTodoRequest {
@@ -51,6 +57,7 @@ export interface SaveTodoRequest {
   links?: TodoLink[]
   imageUrl?: string
   collaborators?: string[]
+  workLogs?: WorkLog[]
 }
 
 export const todoApi = {
