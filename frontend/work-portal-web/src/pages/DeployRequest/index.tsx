@@ -432,7 +432,7 @@ export default function DeployRequestPage() {
             <thead>
               <tr style={s.thead}>
                 <th style={{ ...s.th, paddingLeft: 20 }}>번호</th>
-                <th style={s.th}>시스템</th>
+                <th style={{ ...s.th, minWidth: 80, whiteSpace: 'nowrap' }}>시스템</th>
                 <th style={{ ...s.th, width: '20%' }}>제목</th>
                 <th style={s.th}>버전</th>
                 <th style={{ ...s.th, minWidth: 56, whiteSpace: 'nowrap' }}>유형</th>
@@ -459,8 +459,10 @@ export default function DeployRequestPage() {
                       {row.deployNo ?? '-'}
                     </td>
                     <td style={s.td}>
-                      <span style={s.sysTag}>{row.systemName}</span>
-                      {row.subSystemName && <span style={subTagStyle(row.subSystemName)}>{row.subSystemName}</span>}
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ ...s.sysTag, whiteSpace: 'nowrap' }}>{row.systemName}</span>
+                        {row.subSystemName && <span style={{ ...subTagStyle(row.subSystemName), whiteSpace: 'nowrap' }}>{row.subSystemName}</span>}
+                      </div>
                     </td>
                     <td style={s.td}>{row.title}</td>
                     <td style={s.td}>{row.version ?? '-'}</td>
