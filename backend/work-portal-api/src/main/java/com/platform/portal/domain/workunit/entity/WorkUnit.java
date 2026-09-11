@@ -42,6 +42,6 @@ public class WorkUnit {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public enum Type { PROJECT, OPERATION, OTHER }
+    public enum Type { PROJECT, OPERATION, PROPOSAL, PLANNING, OTHER }
     public enum Status { IN_PROGRESS, ON_HOLD, DONE }
 }

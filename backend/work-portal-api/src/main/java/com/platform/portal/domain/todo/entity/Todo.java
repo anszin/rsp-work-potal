@@ -1,7 +1,9 @@
 package com.platform.portal.domain.todo.entity;
 
 import com.platform.portal.domain.todo.converter.CheckItemListConverter;
+import com.platform.portal.domain.todo.converter.StringListConverter;
 import com.platform.portal.domain.todo.converter.TodoLinkListConverter;
+import com.platform.portal.domain.todo.converter.WorkLogListConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -61,6 +63,14 @@ public class Todo {
 
     @Column(length = 500)
     private String imageUrl;
+
+    @Convert(converter = StringListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<String> collaborators = new ArrayList<>();
+
+    @Convert(converter = WorkLogListConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<WorkLog> workLogs = new ArrayList<>();
 
     @CreatedDate @Column(updatable = false)
     private LocalDateTime createdAt;

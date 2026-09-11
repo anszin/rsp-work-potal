@@ -3,6 +3,7 @@ package com.platform.portal.domain.todo.dto;
 import com.platform.portal.domain.todo.entity.CheckItem;
 import com.platform.portal.domain.todo.entity.Todo;
 import com.platform.portal.domain.todo.entity.TodoLink;
+import com.platform.portal.domain.todo.entity.WorkLog;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +32,8 @@ public class TodoDto {
         private List<CheckItem> checkItems;
         private List<TodoLink> links;
         private String imageUrl;
+        private List<String> collaborators;
+        private List<WorkLog> workLogs;
     }
 
     @Getter
@@ -52,6 +55,8 @@ public class TodoDto {
         private final List<CheckItem> checkItems;
         private final List<TodoLink> links;
         private final String imageUrl;
+        private final List<String> collaborators;
+        private final List<WorkLog> workLogs;
 
         public Response(Todo t) {
             this.id = t.getId();
@@ -71,6 +76,8 @@ public class TodoDto {
             this.checkItems = t.getCheckItems() != null ? t.getCheckItems() : Collections.emptyList();
             this.links = t.getLinks() != null ? t.getLinks() : Collections.emptyList();
             this.imageUrl = t.getImageUrl();
+            this.collaborators = t.getCollaborators() != null ? t.getCollaborators() : Collections.emptyList();
+            this.workLogs = t.getWorkLogs() != null ? t.getWorkLogs() : Collections.emptyList();
         }
     }
 }

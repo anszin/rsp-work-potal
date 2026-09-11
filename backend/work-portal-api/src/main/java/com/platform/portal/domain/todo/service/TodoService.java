@@ -16,8 +16,12 @@ public class TodoService {
     private final TodoRepository repository;
 
     public List<TodoDto.Response> findMine(String username) {
-        return repository.findByAssigneeOrderByCreatedAtDesc(username)
-                .stream().map(TodoDto.Response::new).toList();
+        return repository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .filter(t -> username.equals(t.getAssignee()) ||
+                        (t.getCollaborators() != null && t.getCollaborators().contains(username)))
+                .map(TodoDto.Response::new)
+                .toList();
     }
 
     public List<TodoDto.Response> findAll() {
@@ -60,5 +64,7 @@ public class TodoService {
         if (req.getCheckItems() != null) t.setCheckItems(req.getCheckItems());
         if (req.getLinks() != null) t.setLinks(req.getLinks());
         t.setImageUrl(req.getImageUrl());
+        if (req.getCollaborators() != null) t.setCollaborators(req.getCollaborators());
+        if (req.getWorkLogs() != null) t.setWorkLogs(req.getWorkLogs());
     }
 }
