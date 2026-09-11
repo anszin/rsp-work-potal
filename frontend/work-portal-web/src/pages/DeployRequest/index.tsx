@@ -453,7 +453,7 @@ export default function DeployRequestPage() {
                 <th style={{ ...s.th, minWidth: 56, whiteSpace: 'nowrap' }}>범위</th>
                 <th style={s.th}>요청자</th>
                 <th style={s.th}>승인자</th>
-                <th style={s.th}>상태</th>
+                <th style={{ ...s.th, whiteSpace: 'nowrap' }}>상태</th>
                 <th style={s.th}>예정일</th>
                 <th style={s.th}>액션</th>
               </tr>
@@ -492,7 +492,7 @@ export default function DeployRequestPage() {
                     </td>
                     <td style={s.td}>{row.requesterUsername}</td>
                     <td style={s.td}>{row.approverUsername ?? '-'}</td>
-                    <td style={s.td}><StatusBadge status={row.status} /></td>
+                    <td style={{ ...s.td, whiteSpace: 'nowrap' }}><StatusBadge status={row.status} /></td>
                     <td style={s.td}>{row.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'}</td>
                     <td style={s.td} onClick={e => e.stopPropagation()}>
                       <div style={s.actions}>
