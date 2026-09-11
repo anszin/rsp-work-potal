@@ -435,8 +435,8 @@ export default function DeployRequestPage() {
                 <th style={s.th}>시스템</th>
                 <th style={{ ...s.th, width: '20%' }}>제목</th>
                 <th style={s.th}>버전</th>
-                <th style={s.th}>유형</th>
-                <th style={s.th}>범위</th>
+                <th style={{ ...s.th, minWidth: 56, whiteSpace: 'nowrap' }}>유형</th>
+                <th style={{ ...s.th, minWidth: 56, whiteSpace: 'nowrap' }}>범위</th>
                 <th style={s.th}>요청자</th>
                 <th style={s.th}>승인자</th>
                 <th style={s.th}>상태</th>
@@ -464,11 +464,12 @@ export default function DeployRequestPage() {
                     </td>
                     <td style={s.td}>{row.title}</td>
                     <td style={s.td}>{row.version ?? '-'}</td>
-                    <td style={s.td}>{row.deployType ? DEPLOY_TYPE_LABELS[row.deployType] : '-'}</td>
-                    <td style={s.td}>
+                    <td style={{ ...s.td, whiteSpace: 'nowrap' }}>{row.deployType ? DEPLOY_TYPE_LABELS[row.deployType] : '-'}</td>
+                    <td style={{ ...s.td, whiteSpace: 'nowrap' }}>
                       {row.deployScope ? (
                         <span style={{
                           fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 10,
+                          whiteSpace: 'nowrap',
                           background: row.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
                           color: row.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)',
                         }}>{DEPLOY_SCOPE_LABELS[row.deployScope]}</span>
