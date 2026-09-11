@@ -19,6 +19,20 @@ const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
 const DEPLOY_SCOPE_LABELS: Record<DeployScope, string> = {
   FULL: '전점', PARTIAL: '일부점',
 }
+const DEPLOY_TYPE_BADGE: Record<DeployType, { bg: string; color: string }> = {
+  RELEASE:  { bg: 'var(--c-tag-sys)',      color: 'var(--c-tag-sys-t)' },
+  HOTFIX:   { bg: 'var(--c-tag-err-bg)',   color: 'var(--c-tag-err-t)' },
+  ROLLBACK: { bg: 'var(--c-tag-warn-bg)',  color: 'var(--c-tag-warn-t)' },
+  PATCH:    { bg: 'var(--c-tag-draft-bg)', color: 'var(--c-tag-draft-t)' },
+}
+const DEPLOY_SCOPE_BADGE: Record<DeployScope, { bg: string; color: string }> = {
+  FULL:    { bg: 'var(--c-tag-done-bg)', color: 'var(--c-tag-done-t)' },
+  PARTIAL: { bg: 'var(--c-tag-pri-bg)',  color: 'var(--c-tag-pri-t)' },
+}
+const pillStyle: React.CSSProperties = {
+  display: 'inline-block', padding: '2px 10px', borderRadius: 12,
+  fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+}
 const DEPLOY_TYPE_GUIDE: Record<DeployType, string> = {
   RELEASE: '정기 계획 배포. 신규 기능·개선사항이 포함된 버전을 배포할 때 사용합니다.',
   HOTFIX:  '장애·긴급 버그 수정 배포. 운영 중 발생한 문제를 즉시 수정할 때 사용합니다.',
@@ -466,15 +480,14 @@ export default function DeployRequestPage() {
                     </td>
                     <td style={s.td}>{row.title}</td>
                     <td style={s.td}>{row.version ?? '-'}</td>
-                    <td style={{ ...s.td, whiteSpace: 'nowrap' }}>{row.deployType ? DEPLOY_TYPE_LABELS[row.deployType] : '-'}</td>
-                    <td style={{ ...s.td, whiteSpace: 'nowrap' }}>
+                    <td style={s.td}>
+                      {row.deployType ? (
+                        <span style={{ ...pillStyle, ...DEPLOY_TYPE_BADGE[row.deployType] }}>{DEPLOY_TYPE_LABELS[row.deployType]}</span>
+                      ) : '-'}
+                    </td>
+                    <td style={s.td}>
                       {row.deployScope ? (
-                        <span style={{
-                          fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 10,
-                          whiteSpace: 'nowrap',
-                          background: row.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
-                          color: row.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)',
-                        }}>{DEPLOY_SCOPE_LABELS[row.deployScope]}</span>
+                        <span style={{ ...pillStyle, ...DEPLOY_SCOPE_BADGE[row.deployScope] }}>{DEPLOY_SCOPE_LABELS[row.deployScope]}</span>
                       ) : '-'}
                     </td>
                     <td style={s.td}>{row.requesterUsername}</td>
