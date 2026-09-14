@@ -493,7 +493,7 @@ export default function DeployRequestPage() {
                     <td style={s.td}>{row.requesterUsername}</td>
                     <td style={s.td}>{row.approverUsername ?? '-'}</td>
                     <td style={{ ...s.td, whiteSpace: 'nowrap' }}><StatusBadge status={row.status} /></td>
-                    <td style={s.td}>{row.scheduledAt?.slice(0, 16).replace('T', ' ') ?? '-'}</td>
+                    <td style={s.td}><ScheduledCell scheduledAt={row.scheduledAt} rowStatus={row.status} /></td>
                     <td style={s.td} onClick={e => e.stopPropagation()}>
                       <div style={s.actions}>
                         {(row.status === 'DRAFT' || (row.status === 'COMPLETED' && isAdmin)) && (
@@ -944,6 +944,37 @@ function actionStyle(status: RequestStatus): React.CSSProperties {
   if (status === 'REJECTED') return { color: '#9B2C2C', borderColor: '#9B2C2C' }
   if (status === 'COMPLETED') return { color: '#285E61', borderColor: '#285E61' }
   return {}
+}
+
+function ScheduledCell({ scheduledAt, rowStatus }: { scheduledAt: string | null | undefined; rowStatus: RequestStatus }) {
+  if (!scheduledAt) return <span style={{ color: 'var(--c-text-muted)' }}>-</span>
+  const date = new Date(scheduledAt)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const target = new Date(date); target.setHours(0, 0, 0, 0)
+  const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  const isDone = rowStatus === 'COMPLETED' || rowStatus === 'REJECTED'
+  let label: string, bg: string, color: string
+  if (isDone || diff < 0) {
+    label = diff < 0 ? `D+${Math.abs(diff)}` : '완료'
+    bg = 'var(--c-tag-draft-bg)'; color = 'var(--c-tag-draft-t)'
+  } else if (diff === 0) {
+    label = 'D-day'
+    bg = 'var(--c-tag-err-bg)'; color = 'var(--c-tag-err-t)'
+  } else if (diff <= 3) {
+    label = `D-${diff}`
+    bg = 'var(--c-tag-warn-bg)'; color = 'var(--c-tag-warn-t)'
+  } else {
+    label = `D-${diff}`
+    bg = 'var(--c-tag-sys)'; color = 'var(--c-tag-sys-t)'
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 3 }}>
+      <span style={{ fontSize: 13, whiteSpace: 'nowrap' }}>{mm}/{dd}</span>
+      <span style={{ ...pillStyle, padding: '1px 7px', background: bg, color }}>{label}</span>
+    </div>
+  )
 }
 
 const s: Record<string, React.CSSProperties> = {
