@@ -5,7 +5,7 @@ import { useAuth } from '../../context/useAuth'
 import { getUsers, type UserSummary } from '../../api/users'
 import { getKeyTasks } from '../../api/keyTasks'
 import { workUnitApi } from '../../api/workUnits'
-import { Button, IconButton, Input, Textarea } from '../../components/ui'
+import { Button, IconButton, Input, Select, Textarea } from '../../components/ui'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
   { status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },
@@ -288,26 +288,26 @@ export default function TodoPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     <label style={styles.label}>
                       <span>중점과제 <span style={{ fontWeight: 400, color: 'var(--c-text-muted)' }}>(필터)</span></span>
-                      <select
-                        style={styles.input}
+                      <Select
+                        style={{ width: '100%' }}
                         value={filterKeyTaskId ?? ''}
-                        onChange={e => {
-                          setFilterKeyTaskId(e.target.value ? Number(e.target.value) : undefined)
+                        onValueChange={v => {
+                          setFilterKeyTaskId(v ? Number(v) : undefined)
                           setForm(f => ({ ...f, workUnitId: undefined }))
                         }}
                         disabled={readOnly}
                       >
                         <option value="">전체</option>
                         {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
-                      </select>
+                      </Select>
                     </label>
                     <label style={styles.label}>
                       단위업무
-                      <select
-                        style={styles.input}
+                      <Select
+                        style={{ width: '100%' }}
                         value={form.workUnitId ?? ''}
-                        onChange={e => {
-                          const wuId = e.target.value ? Number(e.target.value) : undefined
+                        onValueChange={v => {
+                          const wuId = v ? Number(v) : undefined
                           const wu = allWorkUnits.find(w => w.id === wuId)
                           if (wu && !filterKeyTaskId) setFilterKeyTaskId(wu.keyTaskId)
                           setForm(f => ({ ...f, workUnitId: wuId }))
@@ -316,7 +316,7 @@ export default function TodoPage() {
                       >
                         <option value="">선택 안 함</option>
                         {filteredWorkUnits.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
-                      </select>
+                      </Select>
                     </label>
                   </div>
 
@@ -324,17 +324,17 @@ export default function TodoPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     <label style={styles.label}>
                       상태
-                      <select style={styles.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as TodoStatus }))} disabled={readOnly}>
+                      <Select style={{ width: '100%' }} value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as TodoStatus }))} disabled={readOnly}>
                         {COLUMNS.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
-                      </select>
+                      </Select>
                     </label>
                     <label style={styles.label}>
                       우선순위
-                      <select style={styles.input} value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value as TodoPriority }))} disabled={readOnly}>
+                      <Select style={{ width: '100%' }} value={form.priority} onValueChange={v => setForm(f => ({ ...f, priority: v as TodoPriority }))} disabled={readOnly}>
                         <option value="HIGH">상</option>
                         <option value="MEDIUM">중</option>
                         <option value="LOW">하</option>
-                      </select>
+                      </Select>
                     </label>
                   </div>
 
@@ -343,10 +343,10 @@ export default function TodoPage() {
                     {isManager && (
                       <label style={styles.label}>
                         담당자
-                        <select
-                          style={styles.input}
+                        <Select
+                          style={{ width: '100%' }}
                           value={form.assignee ?? ''}
-                          onChange={e => setForm(f => ({ ...f, assignee: e.target.value || undefined }))}
+                          onValueChange={v => setForm(f => ({ ...f, assignee: v || undefined }))}
                         >
                           <option value="">본인</option>
                           {users.filter(u => u.active).map(u => (
@@ -354,16 +354,16 @@ export default function TodoPage() {
                               {u.name ?? u.username}{u.dept ? ` (${u.dept})` : ''}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       </label>
                     )}
                     <label style={styles.label}>
                       요청유형
-                      <select style={styles.input} value={form.sourceType} onChange={e => setForm(f => ({ ...f, sourceType: e.target.value as TodoSourceType }))} disabled={readOnly}>
+                      <Select style={{ width: '100%' }} value={form.sourceType} onValueChange={v => setForm(f => ({ ...f, sourceType: v as TodoSourceType }))} disabled={readOnly}>
                         {(Object.entries(SOURCE_LABELS) as [TodoSourceType, string][]).map(([k, v]) => (
                           <option key={k} value={k}>{v}</option>
                         ))}
-                      </select>
+                      </Select>
                     </label>
                   </div>
 
@@ -748,11 +748,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   label: {
     display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--c-text-sub)', fontWeight: 500,
-  },
-  input: {
-    padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border)',
-    fontSize: 13, outline: 'none', background: 'var(--c-input-bg)', color: 'inherit',
-    width: '100%', boxSizing: 'border-box',
   },
   cancelBtn: {
     padding: '8px 16px', borderRadius: 6, border: '1px solid var(--c-border)',

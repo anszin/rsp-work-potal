@@ -8,7 +8,7 @@ import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton, Input, Textarea } from '../../components/ui'
+import { Button, IconButton, Input, Select, Textarea } from '../../components/ui'
 import { ButtonGroup, ButtonGroupSeparator } from 'rsp-react-design-system/shadcn'
 
 // ── 업무 아이템 ───────────────────────────────────────────────────────────────
@@ -570,13 +570,12 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
         {!isEditing && !isConsolidated && pastReports && pastReports.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>📋 이전 보고서 차주</span>
-            <select value={copySourceId} onChange={e => copyFromReport(e.target.value)}
-              style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--c-action) 33%, transparent)', background: 'var(--c-bg)', color: 'var(--c-action)', cursor: 'pointer' }}>
+            <Select value={copySourceId} onValueChange={v => copyFromReport(v)}>
               <option value="">주차 선택...</option>
               {pastReports.map(r => (
                 <option key={r.id} value={String(r.id)}>{weekLabel(r.weekStart)}</option>
               ))}
-            </select>
+            </Select>
             <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>→ 금주 복사</span>
           </div>
         )}
@@ -658,9 +657,10 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
           {pastConsolidated && pastConsolidated.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 8 }}>
               <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>📋 이전 통합본 차주</span>
-              <select defaultValue="" onChange={e => {
-                if (!e.target.value) return
-                const src = pastConsolidated.find(r => String(r.id) === e.target.value)
+              {/* 선택 후 항상 '주차 선택...' 으로 복귀하도록 value 를 '' 로 고정 */}
+              <Select value="" onValueChange={v => {
+                if (!v) return
+                const src = pastConsolidated.find(r => String(r.id) === v)
                 if (!src) return
                 setConForm(f => ({
                   ...f,
@@ -668,14 +668,12 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
                   thisWeekProposal: [...f.thisWeekProposal, ...parseItems(src.nextWeekProposal)],
                   thisWeekEtc:      [...f.thisWeekEtc,      ...parseItems(src.nextWeekEtc)],
                 }))
-                e.target.value = ''
-              }}
-                style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 33%, transparent)', background: 'var(--c-bg)', color: 'var(--c-tag-pri-t)', cursor: 'pointer' }}>
+              }}>
                 <option value="">주차 선택...</option>
                 {pastConsolidated.map(r => (
                   <option key={r.id} value={String(r.id)}>{weekLabel(r.weekStart)}</option>
                 ))}
-              </select>
+              </Select>
               <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>→ 금주 추가</span>
             </div>
           )}
@@ -1079,12 +1077,11 @@ export default function WeeklyReportPage() {
             <div>
               {/* 주차 선택 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <select value={selectedWeek} onChange={e => setSelectedWeek(e.target.value)}
-                  style={{ flex: 1, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', cursor: 'pointer' }}>
+                <Select value={selectedWeek} onValueChange={v => setSelectedWeek(v)} style={{ flex: 1 }}>
                   {allWeekStarts.map(ws => (
                     <option key={ws} value={ws}>{weekLabel(ws)}{ws === thisWeekStart ? ' (이번 주)' : ''}</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {/* 제출 현황 요약 */}

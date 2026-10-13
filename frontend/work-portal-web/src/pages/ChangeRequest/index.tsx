@@ -10,7 +10,7 @@ import { getActiveSystems, getManagedSystemIds, getActiveSubSystems, getSystemMa
 import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import { Button, Input, Textarea } from '../../components/ui'
+import { Button, Input, Select, Textarea } from '../../components/ui'
 
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
@@ -255,20 +255,20 @@ export default function ChangeRequestPage() {
           <h3 style={s.formTitle}>{editing ? '요청 수정' : '새 변경 요청'}</h3>
           <div style={s.formGrid}>
             <label style={s.label}>운영시스템 *</label>
-            <select style={s.input} value={form.systemId} onChange={(e) => {
-              const sysId = Number(e.target.value)
+            <Select style={{ width: '100%' }} value={form.systemId} onValueChange={(v) => {
+              const sysId = Number(v)
               setForm({ ...form, systemId: sysId, subSystemId: null, redmineTrackerId: defaultTrackerId(sysId), redmineAssigneeId: null })
             }}>
               <option value={0}>선택</option>
               {systems.map((sys) => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
-            </select>
+            </Select>
             {subSystems.length > 0 && (
               <>
                 <label style={s.label}>하위시스템</label>
-                <select style={s.input} value={form.subSystemId ?? 0} onChange={(e) => setForm({ ...form, subSystemId: Number(e.target.value) || null })}>
+                <Select style={{ width: '100%' }} value={form.subSystemId ?? 0} onValueChange={(v) => setForm({ ...form, subSystemId: Number(v) || null })}>
                   <option value={0}>없음</option>
                   {subSystems.map((sub) => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
-                </select>
+                </Select>
               </>
             )}
             <label style={s.label}>제목 *</label>
@@ -280,12 +280,12 @@ export default function ChangeRequestPage() {
             {selectedSystem?.redmineProjectKey && (
               <>
                 <label style={s.label}>요청유형 *</label>
-                <select style={s.input} value={form.redmineTrackerId ?? ''} onChange={e => setForm({ ...form, redmineTrackerId: e.target.value ? Number(e.target.value) : null })}>
+                <Select style={{ width: '100%' }} value={form.redmineTrackerId ?? ''} onValueChange={v => setForm({ ...form, redmineTrackerId: v ? Number(v) : null })}>
                   <option value="" disabled>선택하세요</option>
                   {trackerConfigs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
+                </Select>
                 <label style={s.label}>메인 담당자</label>
-                <select style={s.input} value={form.redmineAssigneeId ?? ''} onChange={e => setForm({ ...form, redmineAssigneeId: e.target.value ? Number(e.target.value) : null })}>
+                <Select style={{ width: '100%' }} value={form.redmineAssigneeId ?? ''} onValueChange={v => setForm({ ...form, redmineAssigneeId: v ? Number(v) : null })}>
                   <option value="">선택 안함</option>
                   {systemManagers.filter(m => m.redmineUserId != null).map(m => (
                     <option key={m.userId} value={m.redmineUserId!}>{m.name ?? m.username}</option>
@@ -297,7 +297,7 @@ export default function ChangeRequestPage() {
                       ))}
                     </optgroup>
                   )}
-                </select>
+                </Select>
               </>
             )}
             <label style={s.label}>반영 목표일</label>

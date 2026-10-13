@@ -4,7 +4,7 @@ import axios from 'axios'
 import { getUsers, createUser, updateUser, deleteUser, resetPassword, getMenuPermissions, updateMenuPermissions, type UserSummary, type UserRole, type MenuPermission } from '../../api/users'
 import { useAuth } from '../../context/useAuth'
 import PageHeader from '../../components/PageHeader'
-import { Button, Input } from '../../components/ui'
+import { Button, Input, Select } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -212,9 +212,9 @@ export default function UserManagementPage() {
                 {editing && (
                   <>
                     <label style={s.label}>역할</label>
-                    <select style={s.input} value={form.role} onChange={e => setForm({ ...form, role: e.target.value as UserRole })}>
+                    <Select style={{ width: '100%' }} value={form.role} onValueChange={v => setForm({ ...form, role: v as UserRole })}>
                       {editableRoles.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
-                    </select>
+                    </Select>
                   </>
                 )}
               </div>
@@ -303,7 +303,6 @@ const s: Record<string, React.CSSProperties> = {
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   grid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
-  input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const },
   table: { width: '100%', borderCollapse: 'collapse' as const },
   thead: { background: 'var(--c-thead)' },
   th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },

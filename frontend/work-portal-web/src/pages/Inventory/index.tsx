@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi, ItemType, ItemStatus, SaveInventoryRequest, InventoryItem } from '../../api/inventory'
-import { Button, Input, Textarea } from '../../components/ui'
+import { Button, Input, Select, Textarea } from '../../components/ui'
 
 const TYPE_LABEL: Record<ItemType, string> = { CONTRACT: '수주', PROPOSAL: '제안' }
 const STATUS_LABEL: Record<ItemStatus, string> = {
@@ -110,11 +110,11 @@ export default function InventoryPage() {
             <div className="grid-2col">
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>구분 *</span>
-                <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as ItemType }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }}>
+                <Select value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v as ItemType }))}
+                  style={{ width: '100%' }}>
                   <option value="CONTRACT">수주</option>
                   <option value="PROPOSAL">제안</option>
-                </select>
+                </Select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>항목명 *</span>
@@ -130,12 +130,12 @@ export default function InventoryPage() {
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>상태</span>
-                <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as ItemStatus }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }}>
+                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as ItemStatus }))}
+                  style={{ width: '100%' }}>
                   {(Object.keys(STATUS_LABEL) as ItemStatus[]).map(s => (
                     <option key={s} value={s}>{STATUS_LABEL[s]}</option>
                   ))}
-                </select>
+                </Select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>시작일</span>

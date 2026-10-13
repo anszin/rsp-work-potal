@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
 import client from '../../api/client'
-import { Button, Input, Textarea } from '../../components/ui'
+import { Button, Input, Select, Textarea } from '../../components/ui'
 
 interface SystemOption { id: number; name: string }
 
@@ -100,11 +100,11 @@ export default function DailyCheckPage() {
             <div className="grid-2col">
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 13 }}>시스템 *</span>
-                <select value={form.systemId} onChange={e => setForm(f => ({ ...f, systemId: +e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }}>
+                <Select value={form.systemId} onValueChange={v => setForm(f => ({ ...f, systemId: +v }))}
+                  style={{ width: '100%' }}>
                   <option value={0}>-- 선택 --</option>
                   {systems.map((s: SystemOption) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
+                </Select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 13 }}>점검일 *</span>
@@ -113,12 +113,12 @@ export default function DailyCheckPage() {
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 13 }}>상태 *</span>
-                <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as CheckStatus }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }}>
+                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as CheckStatus }))}
+                  style={{ width: '100%' }}>
                   {(Object.keys(STATUS_LABEL) as CheckStatus[]).map(s => (
                     <option key={s} value={s}>{STATUS_LABEL[s]}</option>
                   ))}
-                </select>
+                </Select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                 <span style={{ fontSize: 13 }}>비고</span>

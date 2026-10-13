@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { financeApi, FinanceCategory, SaveFinanceRequest, FinanceRecord } from '../../api/finance'
-import { Button, Input } from '../../components/ui'
+import { Button, Input, Select } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -100,10 +100,9 @@ export default function FinancePage() {
             ))}
           </div>
         </div>
-        <select value={selectedYear} onChange={e => setSelectedYear(+e.target.value)}
-          style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14 }}>
+        <Select value={selectedYear} onValueChange={v => setSelectedYear(+v)}>
           {years.map(y => <option key={y} value={y}>{y}년</option>)}
-        </select>
+        </Select>
       </div>
 
       {tab === 'dashboard' && <FinanceDashboard summary={summary} year={selectedYear} />}
@@ -168,11 +167,11 @@ export default function FinancePage() {
             <div className="grid-2col">
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>구분 *</span>
-                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as FinanceCategory }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }}>
+                <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v as FinanceCategory }))}
+                  style={{ width: '100%' }}>
                   <option value="REVENUE">매출</option>
                   <option value="EXPENSE">지출</option>
-                </select>
+                </Select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>항목명 *</span>

@@ -7,7 +7,7 @@ import {
 } from '../../api/workUnits'
 import { getKeyTasks } from '../../api/keyTasks'
 import { todoApi, type Todo } from '../../api/todos'
-import { Button, IconButton, Input, Textarea } from '../../components/ui'
+import { Button, IconButton, Input, Select, Textarea } from '../../components/ui'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
@@ -138,18 +138,18 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
 
       {/* 필터 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <select style={styles.filter} value={filterKeyTask} onChange={e => setFilterKeyTask(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}>
+        <Select value={filterKeyTask} onValueChange={v => setFilterKeyTask(v === 'ALL' ? 'ALL' : Number(v))}>
           <option value="ALL">전체 중점과제</option>
           {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
-        </select>
-        <select style={styles.filter} value={filterType} onChange={e => setFilterType(e.target.value as WorkUnitType | 'ALL')}>
+        </Select>
+        <Select value={filterType} onValueChange={v => setFilterType(v as WorkUnitType | 'ALL')}>
           <option value="ALL">전체 유형</option>
           {(Object.entries(WORK_UNIT_TYPE_LABELS) as [WorkUnitType, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <select style={styles.filter} value={filterStatus} onChange={e => setFilterStatus(e.target.value as WorkUnitStatus | 'ALL')}>
+        </Select>
+        <Select value={filterStatus} onValueChange={v => setFilterStatus(v as WorkUnitStatus | 'ALL')}>
           <option value="ALL">전체 상태</option>
           {(Object.entries(WORK_UNIT_STATUS_LABELS) as [WorkUnitStatus, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
+        </Select>
       </div>
 
       {/* 상태별 섹션 */}
@@ -261,10 +261,10 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <label style={styles.label}>
                 중점과제 *
-                <select style={styles.input} value={form.keyTaskId} onChange={e => setForm(f => ({ ...f, keyTaskId: Number(e.target.value) }))}>
+                <Select style={{ width: '100%' }} value={form.keyTaskId} onValueChange={v => setForm(f => ({ ...f, keyTaskId: Number(v) }))}>
                   <option value={0} disabled>중점과제 선택</option>
                   {keyTasks.map(t => <option key={t.id} value={t.id}>{t.taskName}</option>)}
-                </select>
+                </Select>
               </label>
               <label style={styles.label}>
                 이름 *
@@ -273,15 +273,15 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={styles.label}>
                   유형
-                  <select style={styles.input} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as WorkUnitType }))}>
+                  <Select style={{ width: '100%' }} value={form.type} onValueChange={v => setForm(f => ({ ...f, type: v as WorkUnitType }))}>
                     {(Object.entries(WORK_UNIT_TYPE_LABELS) as [WorkUnitType, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                  </select>
+                  </Select>
                 </label>
                 <label style={styles.label}>
                   상태
-                  <select style={styles.input} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as WorkUnitStatus }))}>
+                  <Select style={{ width: '100%' }} value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as WorkUnitStatus }))}>
                     {(Object.entries(WORK_UNIT_STATUS_LABELS) as [WorkUnitStatus, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                  </select>
+                  </Select>
                 </label>
               </div>
               <label style={styles.label}>
@@ -305,11 +305,9 @@ function emptyForm(): SaveWorkUnitRequest {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  filter:    { padding: '6px 10px', borderRadius: 6, border: '1px solid var(--c-border)', fontSize: 13, background: 'var(--c-input-bg)', color: 'inherit', cursor: 'pointer' },
   card:      { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '12px 16px' },
   badge:     { fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' },
   overlay:   { position: 'fixed', inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal:     { background: 'var(--c-card)', borderRadius: 10, padding: 24, width: '100%', maxWidth: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' },
   label:     { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--c-text-sub)', fontWeight: 500 },
-  input:     { padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border)', fontSize: 13, outline: 'none', background: 'var(--c-input-bg)', color: 'inherit', width: '100%', boxSizing: 'border-box' },
 }

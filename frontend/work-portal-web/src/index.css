@@ -428,6 +428,11 @@ input, textarea, select, button {
    textarea 는 SDK 자동 높이(field-sizing: content)를 해제해 rows 가 기존처럼 동작하도록 함 */
 [data-portal-field="input"]    { height: 34px; padding-inline: 10px; font-size: 13px; }
 [data-portal-field="textarea"] { padding: 8px 10px; font-size: 13px; field-sizing: fixed; min-height: 0; }
+/* select 트리거: 입력창과 동일 높이·글자, 기본 너비는 내용 기준(w-fit) */
+[data-portal-field="select"]   { height: 34px; padding-left: 10px; font-size: 13px; min-width: 96px; }
+/* select 드롭다운: 포탈 모달(z-index 1000~9999) 위에 표시되도록 positioner z-index 상향, 항목 글자 13px */
+div:has(> [data-slot="select-content"]) { z-index: 10000; }
+[data-slot="select-content"] [data-slot="select-item"] { font-size: 13px; }
 
 /* ================================================================
    RSP Design System — UI Components

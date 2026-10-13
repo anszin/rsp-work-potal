@@ -7,7 +7,7 @@ import {
   getSystemServers, addSystemServer, deleteSystemServer,
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
-import { Button, Input } from '../../components/ui'
+import { Button, Input, Select } from '../../components/ui'
 
 const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '', sortOrder: '' })
 const emptySubForm = () => ({ code: '', name: '', description: '' })
@@ -380,11 +380,11 @@ export default function SystemManagementPage() {
 
             {availableUsers.length > 0 && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
-                <select value={selectedUserId} onChange={e => setSelectedUserId(Number(e.target.value))}
-                  style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, background: 'var(--c-input-bg)', color: 'var(--c-text)' }}>
+                <Select value={selectedUserId} onValueChange={v => setSelectedUserId(Number(v))}
+                  style={{ flex: 1 }}>
                   <option value={0}>담당자 선택</option>
                   {availableUsers.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
-                </select>
+                </Select>
                 <Button variant="filled"
                   onClick={() => { if (selectedUserId) addManagerMut.mutate({ systemId: managerPanel.id, userId: selectedUserId }) }}
                   disabled={!selectedUserId}

@@ -11,7 +11,7 @@ import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../.
 import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import { Button, IconButton, Input, Textarea } from '../../components/ui'
+import { Button, IconButton, Input, Select, Textarea } from '../../components/ui'
 
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
   RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치',
@@ -339,17 +339,17 @@ export default function DeployRequestPage() {
           <h3 style={s.formTitle}>{editing ? '배포 요청 수정' : '새 배포 요청'}</h3>
           <div style={s.formGrid}>
             <label style={s.label}>운영시스템 *</label>
-            <select style={s.input} value={form.systemId} onChange={(e) => setForm({ ...form, systemId: Number(e.target.value), subSystemId: null })}>
+            <Select style={{ width: '100%' }} value={form.systemId} onValueChange={(v) => setForm({ ...form, systemId: Number(v), subSystemId: null })}>
               <option value={0}>선택</option>
               {systems.map((sys) => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
-            </select>
+            </Select>
             {subSystems.length > 0 && (
               <>
                 <label style={s.label}>하위시스템</label>
-                <select style={s.input} value={form.subSystemId ?? 0} onChange={(e) => setForm({ ...form, subSystemId: Number(e.target.value) || null })}>
+                <Select style={{ width: '100%' }} value={form.subSystemId ?? 0} onValueChange={(v) => setForm({ ...form, subSystemId: Number(v) || null })}>
                   <option value={0}>없음</option>
                   {subSystems.map((sub) => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
-                </select>
+                </Select>
               </>
             )}
             <label style={s.label}>제목 *</label>
@@ -364,9 +364,9 @@ export default function DeployRequestPage() {
             <Input value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} placeholder="예: v1.2.3" />
             <label style={s.label}>배포 유형</label>
             <div>
-              <select style={s.input} value={form.deployType} onChange={(e) => setForm({ ...form, deployType: e.target.value as DeployType })}>
+              <Select style={{ width: '100%' }} value={form.deployType} onValueChange={(v) => setForm({ ...form, deployType: v as DeployType })}>
                 {Object.entries(DEPLOY_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
+              </Select>
               {form.deployType && (
                 <div style={{ marginTop: 5, fontSize: 12, color: 'var(--c-text-muted)', lineHeight: 1.5 }}>
                   {DEPLOY_TYPE_GUIDE[form.deployType as DeployType]}
@@ -375,9 +375,9 @@ export default function DeployRequestPage() {
             </div>
             <label style={s.label}>배포 범위</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select style={{ ...s.input, width: 'auto' }} value={form.deployScope ?? 'FULL'} onChange={(e) => setForm({ ...form, deployScope: e.target.value as DeployScope, deployTarget: e.target.value === 'FULL' ? '' : form.deployTarget })}>
+              <Select value={form.deployScope ?? 'FULL'} onValueChange={(v) => setForm({ ...form, deployScope: v as DeployScope, deployTarget: v === 'FULL' ? '' : form.deployTarget })}>
                 {Object.entries(DEPLOY_SCOPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
+              </Select>
               {form.deployScope === 'PARTIAL' && (
                 <Input style={{ flex: 1 }} value={form.deployTarget ?? ''} onChange={(e) => setForm({ ...form, deployTarget: e.target.value })} placeholder="대상 점포 (예: 강남점, 홍대점)" />
               )}
@@ -552,16 +552,12 @@ export default function DeployRequestPage() {
               <span>총 {topLevelFiltered.length}건</span>
               <span style={{ color: 'var(--c-border)' }}>|</span>
               <span>페이지당</span>
-              <select
+              <Select
                 value={pageSize}
-                onChange={e => setPageSize(Number(e.target.value))}
-                style={{
-                  padding: '3px 6px', border: '1px solid var(--c-border-in)', borderRadius: 4,
-                  fontSize: 12, background: 'var(--c-input-bg)', color: 'var(--c-text)', cursor: 'pointer',
-                }}
+                onValueChange={v => setPageSize(Number(v))}
               >
                 {PAGE_SIZES.map(n => <option key={n} value={n}>{n}건</option>)}
-              </select>
+              </Select>
             </div>
 
             {/* 우측: 페이지 버튼 */}
@@ -791,29 +787,29 @@ export default function DeployRequestPage() {
             </div>
             <div style={{ ...s.modalFilter, flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <select
+                <Select
                   value={pickerTrackerId ?? ''}
-                  onChange={e => {
-                    setPickerTrackerId(e.target.value ? Number(e.target.value) : undefined)
+                  onValueChange={v => {
+                    setPickerTrackerId(v ? Number(v) : undefined)
                     setPickerStatus('')
                   }}
-                  style={{ ...s.input, margin: 0, width: 'auto', minWidth: 100 }}
+                  style={{ margin: 0, minWidth: 100 }}
                 >
                   <option value="">전체 유형</option>
                   {trackerConfigs.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
-                </select>
-                <select
+                </Select>
+                <Select
                   value={pickerStatus}
-                  onChange={e => setPickerStatus(e.target.value)}
-                  style={{ ...s.input, margin: 0, width: 'auto', minWidth: 100 }}
+                  onValueChange={v => setPickerStatus(v)}
+                  style={{ margin: 0, minWidth: 100 }}
                 >
                   <option value="">전체 상태</option>
                   {pickerStatusOptions.map(st => (
                     <option key={st.id} value={String(st.id)}>{st.name}</option>
                   ))}
-                </select>
+                </Select>
                 <Input
                   value={pickerQuery}
                   onChange={e => setPickerQuery(e.target.value)}
@@ -981,7 +977,6 @@ const s: Record<string, React.CSSProperties> = {
   formGrid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'start', marginBottom: 16 },
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)', paddingTop: 8 },
-  input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   issueBadge: { display: 'flex', alignItems: 'center', gap: 4, background: 'var(--c-tag-done-bg)', border: '1px solid var(--c-tag-done-bg)', borderRadius: 4, padding: '3px 8px', fontSize: 12 },
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
@@ -1066,19 +1061,17 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
   const drillData = selSystem ? bySubSystem : bySystem
   const maxDrill  = Math.max(...drillData.map(([, n]) => n), 1)
 
-  const selectStyle: React.CSSProperties = { padding: '6px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, background: 'var(--c-input-bg)', color: 'var(--c-text)', cursor: 'pointer' }
-
   return (
     <div>
       {/* 필터 */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center' }}>
-        <select value={selYear} onChange={e => { setSelYear(Number(e.target.value)); setSelMonth('all') }} style={selectStyle}>
+        <Select value={selYear} onValueChange={v => { setSelYear(Number(v)); setSelMonth('all') }}>
           {years.map(y => <option key={y} value={y}>{y}년</option>)}
-        </select>
-        <select value={selMonth} onChange={e => setSelMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))} style={selectStyle}>
+        </Select>
+        <Select value={selMonth} onValueChange={v => setSelMonth(v === 'all' ? 'all' : Number(v))}>
           <option value="all">전체 월</option>
           {MONTHS_KR.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
-        </select>
+        </Select>
         {selMonth !== 'all' && (
           <Button variant="text" size="xs" onClick={() => setSelMonth('all')}>✕ 초기화</Button>
         )}
@@ -1124,16 +1117,15 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
               </span>
             </div>
             {/* 시스템 선택 드롭다운 */}
-            <select
+            <Select
               value={selSystem ?? ''}
-              onChange={e => setSelSystem(e.target.value || null)}
-              style={{ ...selectStyle, fontSize: 12, padding: '4px 8px' }}
+              onValueChange={v => setSelSystem(v || null)}
             >
               <option value="">전체 시스템</option>
               {bySystem.map(([name]) => (
                 <option key={name} value={name}>{name}</option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {drillData.length === 0 ? (
