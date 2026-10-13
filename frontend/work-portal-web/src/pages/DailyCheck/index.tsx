@@ -72,7 +72,7 @@ export default function DailyCheckPage() {
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)}
             style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
-          <Button size="sm" variant={dateFilter ? 'outlined' : 'filled'} onClick={() => setDateFilter('')}>
+          <Button size="md" variant={dateFilter ? 'outlined' : 'filled'} onClick={() => setDateFilter('')}>
             전체
           </Button>
           <Button variant="filled" onClick={() => { resetForm(); setShowForm(true) }}>+ 점검 등록</Button>

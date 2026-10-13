@@ -385,6 +385,20 @@ input, textarea, select, button {
 }
 
 /* ================================================================
+   SDK 버튼 크기 보정 — 포탈 화면 밀도(12~13px 텍스트)에 맞춤
+   - SDK 기본(xs 24 / sm 32 / md 36px, 14px)은 포탈 표·입력폼 대비 커서 높이·여백·글자만 조정
+   - 모양·색상·라운드는 SDK 그대로. unlayered 이므로 SDK 크기 유틸리티보다 우선, inline style 은 그대로 우선
+   ================================================================ */
+[data-portal-size="xs"] { height: 22px; padding-inline: 8px;  font-size: 12px; gap: 4px; }
+[data-portal-size="sm"] { height: 28px; padding-inline: 10px; font-size: 12px; gap: 4px; }
+[data-portal-size="md"] { height: 34px; padding-inline: 14px; font-size: 13px; gap: 6px; }
+[data-portal-size="lg"] { height: 40px; padding-inline: 18px; font-size: 14px; gap: 6px; }
+
+[data-portal-icon-size="sm"] { width: 28px; height: 28px; }
+[data-portal-icon-size="md"] { width: 34px; height: 34px; }
+[data-portal-icon-size="lg"] { width: 40px; height: 40px; }
+
+/* ================================================================
    RSP Design System — UI Components
    ================================================================ */
 

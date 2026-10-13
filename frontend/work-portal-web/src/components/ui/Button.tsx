@@ -26,7 +26,8 @@ export default function Button({
   ...rest
 }: ButtonProps) {
   return (
-    <SdkButton type={type} variant={VARIANT_MAP[variant]} size={SIZE_MAP[size]} {...rest}>
+    // data-portal-size: 포탈 밀도에 맞춘 크기 보정용 (index.css 참고)
+    <SdkButton type={type} variant={VARIANT_MAP[variant]} size={SIZE_MAP[size]} data-portal-size={size} {...rest}>
       {leadingIcon && <span data-icon="inline-start" style={{ display: 'inline-flex' }}>{leadingIcon}</span>}
       {children}
       {trailingIcon && <span data-icon="inline-end" style={{ display: 'inline-flex' }}>{trailingIcon}</span>}

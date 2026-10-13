@@ -58,9 +58,9 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
     <div>
       {/* 담당자 필터 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-        <Button size="sm" variant={selAssignee === 'all' ? 'filled' : 'outlined'} onClick={() => setSelAssignee('all')}>전체</Button>
+        <Button size="md" variant={selAssignee === 'all' ? 'filled' : 'outlined'} onClick={() => setSelAssignee('all')}>전체</Button>
         {assignees.map(a => (
-          <Button key={a} size="sm" variant={selAssignee === a ? 'filled' : 'outlined'} onClick={() => setSelAssignee(a)}>
+          <Button key={a} size="md" variant={selAssignee === a ? 'filled' : 'outlined'} onClick={() => setSelAssignee(a)}>
             {nameOf(a)}
           </Button>
         ))}

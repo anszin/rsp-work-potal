@@ -154,7 +154,7 @@ export default function FinancePage() {
       <div className="deploy-header" style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {MONTHS.map((m, i) => (
-            <Button key={i + 1} size="sm" variant={selectedMonth === i + 1 ? 'filled' : 'outlined'}
+            <Button key={i + 1} size="md" variant={selectedMonth === i + 1 ? 'filled' : 'outlined'}
               onClick={() => setSelectedMonth(i + 1)}>{m}</Button>
           ))}
         </div>

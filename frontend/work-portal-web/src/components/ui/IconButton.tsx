@@ -24,7 +24,8 @@ export default function IconButton({
   ...rest
 }: IconButtonProps) {
   return (
-    <SdkButton type={type} aria-label={label} variant={VARIANT_MAP[variant]} size={SIZE_MAP[size]} {...rest}>
+    // data-portal-icon-size: 포탈 밀도에 맞춘 크기 보정용 (index.css 참고)
+    <SdkButton type={type} aria-label={label} variant={VARIANT_MAP[variant]} size={SIZE_MAP[size]} data-portal-icon-size={size} {...rest}>
       {icon}
     </SdkButton>
   )

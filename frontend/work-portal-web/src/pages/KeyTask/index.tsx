@@ -355,9 +355,9 @@ export default function KeyTaskPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>중점과제</h2>
           <div style={{ display: 'flex', gap: 4 }}>
-            <Button size="sm" variant={pageTab === 'keytasks' ? 'filled' : 'text'} onClick={() => setPageTab('keytasks')}>중점과제</Button>
-            <Button size="sm" variant={pageTab === 'workunits' ? 'filled' : 'text'} onClick={() => setPageTab('workunits')}>단위업무</Button>
-            <Button size="sm" variant={pageTab === 'performance' ? 'filled' : 'text'} onClick={() => setPageTab('performance')}>성과 현황</Button>
+            <Button size="md" variant={pageTab === 'keytasks' ? 'filled' : 'text'} onClick={() => setPageTab('keytasks')}>중점과제</Button>
+            <Button size="md" variant={pageTab === 'workunits' ? 'filled' : 'text'} onClick={() => setPageTab('workunits')}>단위업무</Button>
+            <Button size="md" variant={pageTab === 'performance' ? 'filled' : 'text'} onClick={() => setPageTab('performance')}>성과 현황</Button>
           </div>
           <select
             value={selYear}
@@ -375,12 +375,12 @@ export default function KeyTaskPage() {
 
       {/* 레벨 탭 */}
       {pageTab === 'keytasks' && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, padding: '12px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
-        <Button size="sm" variant={selLevel === 'all' ? 'filled' : 'outlined'} onClick={() => setSelLevel('all')}>
+        <Button size="md" variant={selLevel === 'all' ? 'filled' : 'outlined'} onClick={() => setSelLevel('all')}>
           전체 <span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>{tasks.length}</span>
         </Button>
         <span style={{ color: 'var(--c-border-in)', fontSize: 16 }}>|</span>
         {LEVELS.map(lv => (
-          <Button key={lv} size="sm" variant={selLevel === lv ? 'filled' : 'outlined'} onClick={() => setSelLevel(lv)}>
+          <Button key={lv} size="md" variant={selLevel === lv ? 'filled' : 'outlined'} onClick={() => setSelLevel(lv)}>
             {lv} <span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>{countByLevel(lv)}</span>
           </Button>
         ))}

@@ -91,7 +91,7 @@ export default function InventoryPage() {
         </div>
         {tab === 'list' && <div style={{ display: 'flex', gap: 8 }}>
           {(['', 'CONTRACT', 'PROPOSAL'] as const).map(t => (
-            <Button key={t} size="sm" variant={typeFilter === t ? 'filled' : 'outlined'}
+            <Button key={t} size="md" variant={typeFilter === t ? 'filled' : 'outlined'}
               onClick={() => setTypeFilter(t)}>
               {t === '' ? '전체' : TYPE_LABEL[t]}
             </Button>

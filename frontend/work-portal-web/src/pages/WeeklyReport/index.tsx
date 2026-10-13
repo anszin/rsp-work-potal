@@ -970,16 +970,16 @@ export default function WeeklyReportPage() {
           <h2 style={{ margin: 0, fontSize: 18 }}>주간보고</h2>
           <div style={{ display: 'flex', gap: 6 }}>
             {isManager && (
-              <IconButton variant="outlined" size="sm" icon="🖨" label="이번 주 전체 보고서 인쇄"
+              <IconButton variant="outlined" size="md" icon="🖨" label="이번 주 전체 보고서 인쇄"
                 title="이번 주 전체 보고서 인쇄" onClick={() => setPrintOpen(true)} />
             )}
             <div style={{ position: 'relative' }}>
               {writeMenuOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setWriteMenuOpen(false)} />}
               {/* 작성 + 지난 주차 선택 분할 버튼 */}
               <ButtonGroup>
-                <Button size="sm" onClick={() => { setWriteMenuOpen(false); openForm({}) }}>+ 작성</Button>
+                <Button size="md" onClick={() => { setWriteMenuOpen(false); openForm({}) }}>+ 작성</Button>
                 <ButtonGroupSeparator />
-                <IconButton variant="filled" size="sm" icon="⌄" label="지난 주차 선택"
+                <IconButton variant="filled" size="md" icon="⌄" label="지난 주차 선택"
                   aria-expanded={writeMenuOpen} onClick={() => setWriteMenuOpen(o => !o)} />
               </ButtonGroup>
               {writeMenuOpen && (

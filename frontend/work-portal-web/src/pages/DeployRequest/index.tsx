@@ -428,7 +428,7 @@ export default function DeployRequestPage() {
           const topLevel = requests.filter(r => !r.parentDrId)
           const count = value === 'ALL' ? topLevel.length : topLevel.filter(r => r.status === value).length
           return (
-            <Button key={value} size="sm" variant={statusFilter === value ? 'filled' : 'outlined'}
+            <Button key={value} size="md" variant={statusFilter === value ? 'filled' : 'outlined'}
               onClick={() => setStatusFilter(value)}>
               {label} {count > 0 && <span style={s.badge}>{count}</span>}
             </Button>

@@ -355,7 +355,7 @@ export default function ChangeRequestPage() {
         {STATUS_FILTERS.map(({ label, value }) => {
           const count = value === 'ALL' ? requests.length : requests.filter(r => r.status === value).length
           return (
-            <Button key={value} size="sm" variant={statusFilter === value ? 'filled' : 'outlined'}
+            <Button key={value} size="md" variant={statusFilter === value ? 'filled' : 'outlined'}
               onClick={() => setStatusFilter(value)}>
               {label} {count > 0 && <span style={s.badge}>{count}</span>}
             </Button>
