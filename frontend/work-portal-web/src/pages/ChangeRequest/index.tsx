@@ -179,9 +179,9 @@ export default function ChangeRequestPage() {
   const canManage = (systemId: number) => isAdminOrManager || managedSystemIds.includes(systemId)
 
   const ACTION_MODAL_CONFIG: Partial<Record<RequestStatus, { title: string; btnLabel: string; btnColor: string; required: boolean }>> = {
-    APPROVED:  { title: '승인 처리', btnLabel: '승인 확정', btnColor: '#276749', required: false },
-    REJECTED:  { title: '반려 처리', btnLabel: '반려 확정', btnColor: '#e53e3e', required: true },
-    COMPLETED: { title: '완료 처리', btnLabel: '완료 확정', btnColor: '#285E61', required: false },
+    APPROVED:  { title: '승인 처리', btnLabel: '승인 확정', btnColor: 'var(--rsp-color-success-500)', required: false },
+    REJECTED:  { title: '반려 처리', btnLabel: '반려 확정', btnColor: 'var(--rsp-color-error-500)', required: true },
+    COMPLETED: { title: '완료 처리', btnLabel: '완료 확정', btnColor: 'var(--rsp-color-primary-600)', required: false },
   }
 
   const submitActionModal = () => {
@@ -237,7 +237,7 @@ export default function ChangeRequestPage() {
           <div style={{ display: 'flex', gap: 20 }}>
             {(['list', 'dashboard'] as const).map(t => (
               <button key={t} onClick={() => setTab(t)}
-                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? '#1a1a2e' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
+                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? 'var(--c-text)' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
                 {t === 'list' ? '목록' : '현황'}
               </button>
             ))}
@@ -319,9 +319,9 @@ export default function ChangeRequestPage() {
               <input ref={fileRef} type="file" style={{ ...s.input, marginBottom: 6 }}
                 onChange={(e) => { setPendingFile(e.target.files?.[0] ?? null) }} />
               <div style={{
-                padding: '8px 12px', border: `2px dashed ${pasteHighlight ? '#1976d2' : 'var(--c-border-in)'}`,
-                borderRadius: 6, fontSize: 12, color: pasteHighlight ? '#1976d2' : 'var(--c-text-muted)',
-                background: pasteHighlight ? '#e3f2fd' : 'var(--c-bg)', transition: 'all 0.3s', userSelect: 'none',
+                padding: '8px 12px', border: `2px dashed ${pasteHighlight ? 'var(--c-action)' : 'var(--c-border-in)'}`,
+                borderRadius: 6, fontSize: 12, color: pasteHighlight ? 'var(--c-action)' : 'var(--c-text-muted)',
+                background: pasteHighlight ? 'var(--c-tag-sys)' : 'var(--c-bg)', transition: 'all 0.3s', userSelect: 'none',
               }}>
                 {pendingFile?.name.startsWith('capture_')
                   ? `📋 붙여넣기됨: ${pendingFile.name}`
@@ -402,7 +402,7 @@ export default function ChangeRequestPage() {
                   <td style={s.td}>
                     <StatusBadge status={r.status} />
                     {r.status === 'REJECTED' && r.rejectionReason && (
-                      <div style={{ fontSize: 11, color: '#e53e3e', marginTop: 2 }}>
+                      <div style={{ fontSize: 11, color: 'var(--c-tag-err-t)', marginTop: 2 }}>
                         사유: {r.rejectionReason.length > 20 ? r.rejectionReason.slice(0, 20) + '…' : r.rejectionReason}
                       </div>
                     )}
@@ -412,14 +412,14 @@ export default function ChangeRequestPage() {
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {r.hasAttachment && (
                         <button onClick={() => downloadAttachment(r.id, r.attachmentOriginalName ?? '파일')}
-                          style={{ fontSize: 12, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                          style={{ fontSize: 12, color: 'var(--c-action)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                           📎 {r.attachmentOriginalName ?? '파일'}
                         </button>
                       )}
                       {r.attachmentLink && (
-                        <a href={r.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: '#7b1fa2' }}>🔗 링크</a>
+                        <a href={r.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: 'var(--c-tag-pri-t)' }}>🔗 링크</a>
                       )}
-                      {!r.hasAttachment && !r.attachmentLink && <span style={{ color: '#ccc', fontSize: 12 }}>-</span>}
+                      {!r.hasAttachment && !r.attachmentLink && <span style={{ color: 'var(--c-text-muted)', fontSize: 12 }}>-</span>}
                     </div>
                   </td>
                   <td style={s.td}>{r.createdAt?.slice(0, 10)}</td>
@@ -440,7 +440,7 @@ export default function ChangeRequestPage() {
                         return null
                       })}
                       {(r.status === 'DRAFT' || isAdminOrManager) && (
-                        <Button variant="outlined" size="sm" style={{ color: '#e53e3e' }}
+                        <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-err-t)' }}
                           onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
                           삭제
                         </Button>
@@ -494,12 +494,12 @@ export default function ChangeRequestPage() {
               <span style={s.detailLabel}>첨부</span>
               {detail.hasAttachment && (
                 <button onClick={() => downloadAttachment(detail.id, detail.attachmentOriginalName ?? '파일')}
-                  style={{ fontSize: 13, color: '#1976d2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  style={{ fontSize: 13, color: 'var(--c-action)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                   📎 {detail.attachmentOriginalName ?? '파일'} 다운로드
                 </button>
               )}
               {detail.attachmentLink && (
-                <a href={detail.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: '#7b1fa2' }}>🔗 링크 열기</a>
+                <a href={detail.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: 'var(--c-tag-pri-t)' }}>🔗 링크 열기</a>
               )}
             </div>
           )}
@@ -514,7 +514,7 @@ export default function ChangeRequestPage() {
                     <a key={i.redmineIssueId}
                       href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
                       target="_blank" rel="noreferrer"
-                      style={{ color: '#1976d2', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '3px 10px', borderRadius: 4 }}>
+                      style={{ color: 'var(--c-tag-sys-t)', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '3px 10px', borderRadius: 4 }}>
                       #{i.redmineIssueId} {i.redmineIssueTitle}
                     </a>
                   ))}
@@ -522,11 +522,11 @@ export default function ChangeRequestPage() {
               )}
               {detail.redmineSyncStatus && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {detail.redmineSyncStatus === 'SYNCED' && <span style={{ fontSize: 12, color: '#276749', background: '#F0FFF4', border: '1px solid #C6F6D5', padding: '2px 8px', borderRadius: 4 }}>일감 등록 완료</span>}
+                  {detail.redmineSyncStatus === 'SYNCED' && <span style={{ fontSize: 12, color: 'var(--c-tag-done-t)', background: 'var(--c-tag-done-bg)', border: '1px solid var(--c-tag-done-bg)', padding: '2px 8px', borderRadius: 4 }}>일감 등록 완료</span>}
                   {detail.redmineSyncStatus === 'FAILED' && (
                     <>
-                      <span style={{ fontSize: 12, color: '#9B2C2C', background: '#FFF5F5', border: '1px solid #FED7D7', padding: '2px 8px', borderRadius: 4 }}>일감 등록 실패</span>
-                      <Button variant="outlined" size="sm" style={{ color: '#C05621', borderColor: '#C05621' }}
+                      <span style={{ fontSize: 12, color: 'var(--c-tag-err-t)', background: 'var(--c-tag-err-bg)', border: '1px solid var(--c-tag-err-bg)', padding: '2px 8px', borderRadius: 4 }}>일감 등록 실패</span>
+                      <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-warn-t)', borderColor: 'var(--c-tag-warn-t)' }}
                         onClick={() => syncCRMut.mutate(detail.id)} disabled={syncCRMut.isPending}>
                         {syncCRMut.isPending ? '재시도 중...' : '재시도'}
                       </Button>
@@ -547,8 +547,8 @@ export default function ChangeRequestPage() {
 function ChangeRequestDashboard({ requests }: { requests: import('../../api/changeRequests').ChangeRequest[] }) {
   const statuses: RequestStatus[] = ['DRAFT', 'REQUESTED', 'APPROVED', 'COMPLETED', 'REJECTED']
   const statusLabels: Record<RequestStatus, string> = { DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려' }
-  const statusColors: Record<RequestStatus, string> = { DRAFT: '#718096', REQUESTED: '#3182ce', APPROVED: '#38a169', COMPLETED: '#285E61', REJECTED: '#e53e3e' }
-  const statusBg: Record<RequestStatus, string>    = { DRAFT: '#f7fafc', REQUESTED: '#ebf8ff', APPROVED: '#f0fff4', COMPLETED: '#e6fffa', REJECTED: '#fff5f5' }
+  const statusColors: Record<RequestStatus, string> = { DRAFT: 'var(--c-text-muted)', REQUESTED: 'var(--c-tag-sys-t)', APPROVED: 'var(--c-tag-done-t)', COMPLETED: 'var(--c-tag-teal-t)', REJECTED: 'var(--c-tag-err-t)' }
+  const statusBg: Record<RequestStatus, string>    = { DRAFT: 'var(--c-tag-draft-bg)', REQUESTED: 'var(--c-tag-sys)', APPROVED: 'var(--c-tag-done-bg)', COMPLETED: 'var(--c-tag-teal-bg)', REJECTED: 'var(--c-tag-err-bg)' }
 
   const byStatus = statuses.map(s => ({ status: s, count: requests.filter(r => r.status === s).length }))
   const bySystem = Object.entries(
@@ -564,7 +564,7 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
           <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-text)' }}>{requests.length}</div>
         </div>
         {byStatus.map(({ status, count }) => (
-          <div key={status} style={{ background: statusBg[status], border: `1px solid ${statusColors[status]}44`, borderRadius: 8, padding: '16px 20px' }}>
+          <div key={status} style={{ background: statusBg[status], border: `1px solid color-mix(in srgb, ${statusColors[status]} 27%, transparent)`, borderRadius: 8, padding: '16px 20px' }}>
             <div style={{ fontSize: 11, color: statusColors[status], marginBottom: 6, fontWeight: 600 }}>{statusLabels[status]}</div>
             <div style={{ fontSize: 28, fontWeight: 700, color: statusColors[status] }}>{count}</div>
           </div>
@@ -580,7 +580,7 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
                   <span>{name}</span><span style={{ fontWeight: 600 }}>{count}건</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: 'var(--c-bg)' }}>
-                  <div style={{ height: '100%', borderRadius: 3, background: '#1a1a2e', width: `${(count / maxSys) * 100}%` }} />
+                  <div style={{ height: '100%', borderRadius: 3, background: 'var(--c-action)', width: `${(count / maxSys) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -592,14 +592,14 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
 }
 
 function actionStyle(status: RequestStatus): React.CSSProperties {
-  if (status === 'APPROVED') return { color: '#276749', borderColor: '#276749' }
-  if (status === 'REJECTED') return { color: '#9B2C2C', borderColor: '#9B2C2C' }
-  if (status === 'COMPLETED') return { color: '#285E61', borderColor: '#285E61' }
+  if (status === 'APPROVED') return { color: 'var(--c-tag-done-t)', borderColor: 'var(--c-tag-done-t)' }
+  if (status === 'REJECTED') return { color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }
+  if (status === 'COMPLETED') return { color: 'var(--c-tag-teal-t)', borderColor: 'var(--c-tag-teal-t)' }
   return {}
 }
 
 const s: Record<string, React.CSSProperties> = {
-  btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
+  btn: { padding: '8px 16px', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
@@ -609,7 +609,7 @@ const s: Record<string, React.CSSProperties> = {
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
   input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   filterRow: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
-  badge: { background: 'rgba(255,255,255,0.25)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
+  badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
   table: { width: '100%', borderCollapse: 'collapse' as const },
   thead: { background: 'var(--c-thead)' },
@@ -619,7 +619,7 @@ const s: Record<string, React.CSSProperties> = {
   sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   actions: { display: 'flex', alignItems: 'center' },
   empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
-  overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  overlay: { position: 'fixed' as const, inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: 'var(--c-card)', borderRadius: 8, padding: 24, width: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
   detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
   contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },

@@ -25,7 +25,7 @@ interface WorkItem {
 }
 
 function itemBadge(item: WorkItem): { bg: string; color: string; label: string } {
-  if (item.workUnitId || item.keyTaskId) return { bg: '#1976d218', color: '#1976d2', label: item.type || '중점' }
+  if (item.workUnitId || item.keyTaskId) return { bg: 'color-mix(in srgb, var(--c-action) 9%, transparent)', color: 'var(--c-action)', label: item.type || '중점' }
   return { bg: 'var(--c-thead)', color: 'var(--c-text-muted)', label: '기타' }
 }
 
@@ -237,8 +237,8 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   const wuRowStyle = (active: boolean): React.CSSProperties => ({
     padding: '7px 12px 7px 24px', cursor: 'pointer', fontSize: 13,
     display: 'flex', alignItems: 'center', gap: 6,
-    background: active ? '#1976d20a' : 'transparent',
-    color: active ? '#1976d2' : 'var(--c-text)',
+    background: active ? 'color-mix(in srgb, var(--c-action) 4%, transparent)' : 'transparent',
+    color: active ? 'var(--c-action)' : 'var(--c-text)',
     fontWeight: active ? 600 : 400,
   })
 
@@ -253,9 +253,9 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
       <button ref={btnRef} type="button" onClick={handleOpen}
         style={{
           width: '100%', padding: '5px 7px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-          border: `1px solid ${isLinked ? '#1976d255' : 'var(--c-border-in)'}`,
-          background: isLinked ? '#1976d218' : 'var(--c-thead)',
-          color: isLinked ? '#1976d2' : 'var(--c-text-muted)',
+          border: `1px solid ${isLinked ? 'color-mix(in srgb, var(--c-action) 33%, transparent)' : 'var(--c-border-in)'}`,
+          background: isLinked ? 'color-mix(in srgb, var(--c-action) 9%, transparent)' : 'var(--c-thead)',
+          color: isLinked ? 'var(--c-action)' : 'var(--c-text-muted)',
           fontWeight: isLinked ? 700 : 400,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2,
           overflow: 'hidden',
@@ -285,7 +285,7 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
               <div key={kt.id}>
                 <div style={groupHeaderStyle}>
                   {kt.kpi && (
-                    <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: '#1976d215', color: '#1976d2', fontWeight: 700 }}>{kt.kpi}</span>
+                    <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: 'color-mix(in srgb, var(--c-action) 8%, transparent)', color: 'var(--c-action)', fontWeight: 700 }}>{kt.kpi}</span>
                   )}
                   <span>{kt.taskName}</span>
                 </div>
@@ -336,7 +336,7 @@ function SortableRow({ item, keyTasks, workUnits, onUpdate, onRemove }: {
         workUnits={workUnits}
       />
       {item.author && (
-        <span style={{ flexShrink: 0, fontSize: 11, padding: '4px 7px', borderRadius: 6, background: '#7c3aed15', color: '#7c3aed', fontWeight: 600, whiteSpace: 'nowrap', marginTop: 1 }}>
+        <span style={{ flexShrink: 0, fontSize: 11, padding: '4px 7px', borderRadius: 6, background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 8%, transparent)', color: 'var(--c-tag-pri-t)', fontWeight: 600, whiteSpace: 'nowrap', marginTop: 1 }}>
           {item.author}
         </span>
       )}
@@ -405,7 +405,7 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], 
 // ── 금주/차주 대칭 조회 뷰 ───────────────────────────────────────────────────
 
 function WeekCompareView({ report }: { report: WeeklyReport }) {
-  const TW = '#1976d2', NW = '#4caf50'
+  const TW = 'var(--c-action)', NW = 'var(--c-tag-done-t)'
   const sections = [
     { label: '수행',     tw: parseItems(report.thisWeekWork),     nw: parseItems(report.nextWeekWork) },
     { label: '제안',     tw: parseItems(report.thisWeekProposal), nw: parseItems(report.nextWeekProposal) },
@@ -422,7 +422,7 @@ function WeekCompareView({ report }: { report: WeeklyReport }) {
           return (
             <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border)' }}>
               <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 700, marginTop: 2, background: bg, color: bc, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bl}</span>
-              {item.author && <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 600, marginTop: 2, background: '#7c3aed15', color: '#7c3aed', whiteSpace: 'nowrap' }}>{item.author}</span>}
+              {item.author && <span style={{ flexShrink: 0, fontSize: 10, padding: '2px 7px', borderRadius: 10, fontWeight: 600, marginTop: 2, background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 8%, transparent)', color: 'var(--c-tag-pri-t)', whiteSpace: 'nowrap' }}>{item.author}</span>}
               <span style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--c-text-sub)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
             </div>
           )
@@ -436,11 +436,11 @@ function WeekCompareView({ report }: { report: WeeklyReport }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--c-border)' }}>
       {/* 헤더 행 */}
-      <div style={{ padding: '8px 14px', background: TW+'14', borderBottom: `1px solid ${TW}22`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '8px 14px', background: `color-mix(in srgb, ${TW} 8%, transparent)`, borderBottom: `1px solid color-mix(in srgb, ${TW} 13%, transparent)`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: TW }}>금주</span>
         <span style={{ fontSize: 11, color: TW, opacity: 0.65 }}>{fmtShort(report.weekStart, report.weekEnd)}</span>
       </div>
-      <div style={{ padding: '8px 14px', background: NW+'14', borderBottom: `1px solid ${NW}22`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '8px 14px', background: `color-mix(in srgb, ${NW} 8%, transparent)`, borderBottom: `1px solid color-mix(in srgb, ${NW} 13%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: NW }}>차주</span>
         <span style={{ fontSize: 11, color: NW, opacity: 0.65 }}>{fmtShort(addDays(report.weekStart, 7), addDays(report.weekEnd, 7))}</span>
       </div>
@@ -451,10 +451,10 @@ function WeekCompareView({ report }: { report: WeeklyReport }) {
       ] : visible.flatMap(({ label, tw, nw }, idx, arr) => {
         const isLast = idx === arr.length - 1
         return [
-          <div key={`${label}-twl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: TW, background: TW+'08', borderRight: '1px solid var(--c-border)', letterSpacing: '0.04em' }}>{label}</div>,
-          <div key={`${label}-nwl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: NW, background: NW+'08', letterSpacing: '0.04em' }}>{label}</div>,
-          <div key={`${label}-twi`} style={{ padding: '8px 14px', background: TW+'03', borderRight: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 8 }}>{renderItems(tw)}</div>,
-          <div key={`${label}-nwi`} style={{ padding: '8px 14px', background: NW+'03', paddingBottom: isLast ? 14 : 8 }}>{renderItems(nw)}</div>,
+          <div key={`${label}-twl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: TW, background: `color-mix(in srgb, ${TW} 3%, transparent)`, borderRight: '1px solid var(--c-border)', letterSpacing: '0.04em' }}>{label}</div>,
+          <div key={`${label}-nwl`} style={{ padding: '6px 14px 4px', fontSize: 11, fontWeight: 700, color: NW, background: `color-mix(in srgb, ${NW} 3%, transparent)`, letterSpacing: '0.04em' }}>{label}</div>,
+          <div key={`${label}-twi`} style={{ padding: '8px 14px', background: `color-mix(in srgb, ${TW} 1%, transparent)`, borderRight: '1px solid var(--c-border)', paddingBottom: isLast ? 14 : 8 }}>{renderItems(tw)}</div>,
+          <div key={`${label}-nwi`} style={{ padding: '8px 14px', background: `color-mix(in srgb, ${NW} 1%, transparent)`, paddingBottom: isLast ? 14 : 8 }}>{renderItems(nw)}</div>,
         ]
       })}
     </div>
@@ -467,12 +467,12 @@ function WeekCompareForm({ form, setForm, keyTasks, workUnits }: {
   form: WeeklyFormState; setForm: React.Dispatch<React.SetStateAction<WeeklyFormState>>
   keyTasks: KeyTask[]; workUnits: WorkUnit[]
 }) {
-  const TW = '#1976d2', NW = '#4caf50'
+  const TW = 'var(--c-action)', NW = 'var(--c-tag-done-t)'
   const setSection = (key: ContentKey, items: WorkItem[]) => setForm(f => ({ ...f, [key]: items }))
   const setThisDates = (s: string, e: string) => setForm(f => ({ ...f, weekStart: s, weekEnd: e }))
   const setNextDates = (s: string, e: string) => setForm(f => ({ ...f, nextWeekStart: s, nextWeekEnd: e }))
   const dateInput = (color: string): React.CSSProperties => ({
-    padding: '3px 6px', borderRadius: 5, border: `1px solid ${color}55`, background: color + '10', color, fontSize: 12, width: 110,
+    padding: '3px 6px', borderRadius: 5, border: `1px solid color-mix(in srgb, ${color} 33%, transparent)`, background: `color-mix(in srgb, ${color} 6%, transparent)`, color, fontSize: 12, width: 110,
   })
   const pairs: { tw: ContentKey; nw: ContentKey; label: string }[] = [
     { tw: 'thisWeekWork',     nw: 'nextWeekWork',     label: '수행' },
@@ -482,13 +482,13 @@ function WeekCompareForm({ form, setForm, keyTasks, workUnits }: {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--c-border)' }}>
       {/* 헤더 행 */}
-      <div style={{ padding: '8px 14px', background: TW+'14', borderBottom: `1px solid ${TW}22`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ padding: '8px 14px', background: `color-mix(in srgb, ${TW} 8%, transparent)`, borderBottom: `1px solid color-mix(in srgb, ${TW} 13%, transparent)`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: TW, flexShrink: 0 }}>금주</span>
         <input type="date" value={form.weekStart} onChange={e => setThisDates(e.target.value, form.weekEnd)} style={dateInput(TW)} />
         <span style={{ fontSize: 12, color: TW, opacity: 0.5 }}>~</span>
         <input type="date" value={form.weekEnd} onChange={e => setThisDates(form.weekStart, e.target.value)} style={dateInput(TW)} />
       </div>
-      <div style={{ padding: '8px 14px', background: NW+'14', borderBottom: `1px solid ${NW}22`, display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ padding: '8px 14px', background: `color-mix(in srgb, ${NW} 8%, transparent)`, borderBottom: `1px solid color-mix(in srgb, ${NW} 13%, transparent)`, display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: NW, flexShrink: 0 }}>차주</span>
         <input type="date" value={form.nextWeekStart} onChange={e => setNextDates(e.target.value, form.nextWeekEnd)} style={dateInput(NW)} />
         <span style={{ fontSize: 12, color: NW, opacity: 0.5 }}>~</span>
@@ -522,7 +522,7 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             {isConsolidated && (
-              <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700, border: '1px solid #7c3aed33' }}>통합</span>
+              <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 9%, transparent)', color: 'var(--c-tag-pri-t)', fontWeight: 700, border: '1px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 20%, transparent)' }}>통합</span>
             )}
             <h2 style={{ margin: 0, fontSize: 20 }}>{report.title}</h2>
           </div>
@@ -533,7 +533,7 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
         {canEdit && (
           <div style={{ display: 'flex', gap: 8 }}>
             <Button variant="outlined" onClick={onEdit}>수정</Button>
-            <Button variant="outlined" onClick={onDelete} style={{ color: '#c62828', borderColor: '#ef9a9a' }}>삭제</Button>
+            <Button variant="outlined" onClick={onDelete} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-bg)' }}>삭제</Button>
           </div>
         )}
       </div>
@@ -567,14 +567,14 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {isConsolidated && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700, border: '1px solid #7c3aed33' }}>통합</span>}
+          {isConsolidated && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 9%, transparent)', color: 'var(--c-tag-pri-t)', fontWeight: 700, border: '1px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 20%, transparent)' }}>통합</span>}
           <h3 style={{ margin: 0 }}>{isConsolidated ? '통합 주간보고' : (isEditing ? '주간보고 수정' : '새 주간보고 작성')}</h3>
         </div>
         {!isEditing && !isConsolidated && pastReports && pastReports.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 12, color: 'var(--c-text-muted)', flexShrink: 0 }}>📋 이전 보고서 차주</span>
             <select value={copySourceId} onChange={e => copyFromReport(e.target.value)}
-              style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #1976d255', background: 'var(--c-bg)', color: '#1976d2', cursor: 'pointer' }}>
+              style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--c-action) 33%, transparent)', background: 'var(--c-bg)', color: 'var(--c-action)', cursor: 'pointer' }}>
               <option value="">주차 선택...</option>
               {pastReports.map(r => (
                 <option key={r.id} value={String(r.id)}>{weekLabel(r.weekStart)}</option>
@@ -613,8 +613,8 @@ const SECTION_LABELS: Record<ContentKey, string> = {
   nextWeekWork: '차주 수행', nextWeekProposal: '차주 제안', nextWeekEtc: '차주 기타',
 }
 const SECTION_COLOR: Record<ContentKey, string> = {
-  thisWeekWork: '#1976d2', thisWeekProposal: '#1976d2', thisWeekEtc: '#1976d2',
-  nextWeekWork: '#4caf50', nextWeekProposal: '#4caf50', nextWeekEtc: '#4caf50',
+  thisWeekWork: 'var(--c-action)', thisWeekProposal: 'var(--c-action)', thisWeekEtc: 'var(--c-action)',
+  nextWeekWork: 'var(--c-tag-done-t)', nextWeekProposal: 'var(--c-tag-done-t)', nextWeekEtc: 'var(--c-tag-done-t)',
 }
 
 function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolidated, keyTasks, workUnits, onSave, onCancel }: {
@@ -655,9 +655,9 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', background: 'var(--c-bg)' }}>
 
       {/* 상단 헤더 */}
-      <div style={{ padding: '10px 20px', background: 'var(--c-card)', borderBottom: '2px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ padding: '10px 20px', background: 'var(--c-card)', borderBottom: '2px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 20%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700, border: '1px solid #7c3aed33' }}>통합</span>
+          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 9%, transparent)', color: 'var(--c-tag-pri-t)', fontWeight: 700, border: '1px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 20%, transparent)' }}>통합</span>
           <span style={{ fontSize: 16, fontWeight: 700 }}>{weekLbl} 통합 주간보고 편집</span>
           {pastConsolidated && pastConsolidated.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 8 }}>
@@ -674,7 +674,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
                 }))
                 e.target.value = ''
               }}
-                style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid #7c3aed55', background: 'var(--c-bg)', color: '#7c3aed', cursor: 'pointer' }}>
+                style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 33%, transparent)', background: 'var(--c-bg)', color: 'var(--c-tag-pri-t)', cursor: 'pointer' }}>
                 <option value="">주차 선택...</option>
                 {pastConsolidated.map(r => (
                   <option key={r.id} value={String(r.id)}>{weekLabel(r.weekStart)}</option>
@@ -714,7 +714,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
                   onClick={() => toggleExpand(report.author)}>
                   <span style={{ flex: 1, fontWeight: 700, fontSize: 13 }}>{report.author}</span>
                   {addedCount > 0 && (
-                    <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700 }}>{addedCount}/{reportItemCount} 추가됨</span>
+                    <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 9%, transparent)', color: 'var(--c-tag-pri-t)', fontWeight: 700 }}>{addedCount}/{reportItemCount} 추가됨</span>
                   )}
                   <span style={{ fontSize: 10, color: 'var(--c-text-muted)' }}>{isExp ? '▲' : '▼'}</span>
                 </div>
@@ -732,7 +732,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
                             const isAdded = addedKeys.has(key)
                             const { bg, color: badgeColor, label: badgeLabel } = itemBadge(item)
                             return (
-                              <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', borderRadius: 6, marginBottom: 3, background: isAdded ? '#f0fdf4' : 'var(--c-bg)', border: `1px solid ${isAdded ? '#22c55e44' : 'var(--c-border)'}` }}>
+                              <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', borderRadius: 6, marginBottom: 3, background: isAdded ? 'var(--c-tag-done-bg)' : 'var(--c-bg)', border: `1px solid ${isAdded ? 'color-mix(in srgb, var(--rsp-color-success-500) 27%, transparent)' : 'var(--c-border)'}` }}>
                                 <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor }}>{badgeLabel}</span>
                                 <span style={{ flex: 1, fontSize: 12, lineHeight: 1.5, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
                                 <Button size="xs" variant={isAdded ? 'outlined' : 'filled'} onClick={() => addItem(report.id, sec, item, report.author)} disabled={isAdded}
@@ -754,7 +754,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
 
         {/* ── 오른쪽: 통합 보고서 ── */}
         <div style={{ overflowY: 'auto', padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', marginBottom: 8, letterSpacing: '0.05em' }}>통합 보고서 (편집 중)</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--c-tag-pri-t)', marginBottom: 8, letterSpacing: '0.05em' }}>통합 보고서 (편집 중)</div>
           <input value={conForm.title} onChange={e => setConForm(f => ({ ...f, title: e.target.value }))}
             style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-text)', marginBottom: 12, boxSizing: 'border-box' }} />
           <WeekCompareForm form={conForm} setForm={setConForm} keyTasks={keyTasks} workUnits={workUnits} />
@@ -1003,7 +1003,7 @@ export default function WeeklyReportPage() {
           <div style={{ display: 'flex', gap: 0, marginBottom: 14, borderBottom: '1px solid var(--c-border)' }}>
             {(['mine', 'overview'] as const).map(tab => (
               <button key={tab} onClick={() => setMasterTab(tab)}
-                style={{ flex: 1, padding: '7px 0', border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: masterTab === tab ? 700 : 400, color: masterTab === tab ? '#1976d2' : 'var(--c-text-muted)', borderBottom: masterTab === tab ? '2px solid #1976d2' : '2px solid transparent', marginBottom: -1 }}>
+                style={{ flex: 1, padding: '7px 0', border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: masterTab === tab ? 700 : 400, color: masterTab === tab ? 'var(--c-action)' : 'var(--c-text-muted)', borderBottom: masterTab === tab ? '2px solid var(--c-action)' : '2px solid transparent', marginBottom: -1 }}>
                 {tab === 'mine' ? '내 보고서' : '전체 현황'}
               </button>
             ))}
@@ -1023,12 +1023,12 @@ export default function WeeklyReportPage() {
                     return (
                       <div key={group.weekStart}>
                         <div onClick={() => toggleWeek(group.weekStart)}
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 7, cursor: 'pointer', background: isThisWeek ? '#1976d210' : 'var(--c-thead)', marginBottom: expanded ? 4 : 0, userSelect: 'none' }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: isThisWeek ? '#1976d2' : 'var(--c-text-sub)', flex: 1 }}>
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 7, cursor: 'pointer', background: isThisWeek ? 'color-mix(in srgb, var(--c-action) 6%, transparent)' : 'var(--c-thead)', marginBottom: expanded ? 4 : 0, userSelect: 'none' }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: isThisWeek ? 'var(--c-action)' : 'var(--c-text-sub)', flex: 1 }}>
                             {group.label}
                             {isThisWeek && <span style={{ fontSize: 10, marginLeft: 5, opacity: 0.7 }}>이번 주</span>}
                           </span>
-                          <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: isThisWeek ? '#1976d225' : 'var(--c-border)', color: isThisWeek ? '#1976d2' : 'var(--c-text-muted)', fontWeight: 600 }}>
+                          <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 10, background: isThisWeek ? 'color-mix(in srgb, var(--c-action) 15%, transparent)' : 'var(--c-border)', color: isThisWeek ? 'var(--c-action)' : 'var(--c-text-muted)', fontWeight: 600 }}>
                             {isManager ? `${group.reports.length}명` : group.reports.length}
                           </span>
                           <span style={{ fontSize: 10, color: 'var(--c-text-muted)', opacity: 0.6 }}>{expanded ? '▲' : '▼'}</span>
@@ -1040,12 +1040,12 @@ export default function WeeklyReportPage() {
                               const isSelected = detail.type === 'view' && detail.report.id === item.id
                               return (
                                 <div key={item.id} onClick={() => setDetail({ type: 'view', report: item })}
-                                  style={{ padding: '8px 12px', borderRadius: 7, cursor: 'pointer', border: `1px solid ${isSelected ? '#1976d2' : 'var(--c-border)'}`, background: isSelected ? '#e3f2fd' : 'var(--c-card)' }}>
+                                  style={{ padding: '8px 12px', borderRadius: 7, cursor: 'pointer', border: `1px solid ${isSelected ? 'var(--c-action)' : 'var(--c-border)'}`, background: isSelected ? 'var(--c-tag-sys)' : 'var(--c-card)' }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                                       {isManager ? item.author : item.title}
                                     </div>
-                                    {isMine && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: '#1976d222', color: '#1976d2', fontWeight: 700, flexShrink: 0, marginLeft: 4 }}>Me</span>}
+                                    {isMine && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: 'color-mix(in srgb, var(--c-action) 13%, transparent)', color: 'var(--c-action)', fontWeight: 700, flexShrink: 0, marginLeft: 4 }}>Me</span>}
                                   </div>
                                   <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {isManager ? item.title : fmtWeek(item.weekStart, item.weekEnd)}
@@ -1063,12 +1063,12 @@ export default function WeeklyReportPage() {
               {/* 팀원: 통합보고서 섹션 */}
               {!isManager && consolidated.length > 0 && (
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--c-border)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed', marginBottom: 6, letterSpacing: '0.04em' }}>통합 보고서</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--c-tag-pri-t)', marginBottom: 6, letterSpacing: '0.04em' }}>통합 보고서</div>
                   {consolidated.map(c => {
                     const isSelected = detail.type === 'view' && detail.report.id === c.id
                     return (
                       <div key={c.id} onClick={() => setDetail({ type: 'view', report: c })}
-                        style={{ padding: '8px 12px', borderRadius: 7, cursor: 'pointer', border: `1px solid ${isSelected ? '#7c3aed' : 'var(--c-border)'}`, background: isSelected ? '#f3e8ff' : 'var(--c-card)', marginBottom: 4 }}>
+                        style={{ padding: '8px 12px', borderRadius: 7, cursor: 'pointer', border: `1px solid ${isSelected ? 'var(--rsp-color-tertiary-500)' : 'var(--c-border)'}`, background: isSelected ? 'var(--c-tag-pri-bg)' : 'var(--c-card)', marginBottom: 4 }}>
                         <div style={{ fontWeight: 600, fontSize: 13 }}>{c.title}</div>
                         <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{weekLabel(c.weekStart)} · {c.author}</div>
                       </div>
@@ -1093,7 +1093,7 @@ export default function WeeklyReportPage() {
 
               {/* 제출 현황 요약 */}
               <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 10 }}>
-                제출 <strong style={{ color: weekReports.length > 0 ? '#1976d2' : 'var(--c-text-muted)' }}>{weekReports.length}명</strong>
+                제출 <strong style={{ color: weekReports.length > 0 ? 'var(--c-action)' : 'var(--c-text-muted)' }}>{weekReports.length}명</strong>
               </div>
 
               {/* 팀원 목록 */}
@@ -1106,7 +1106,7 @@ export default function WeeklyReportPage() {
                     const isSelected = detail.type === 'view' && detail.report.id === r.id
                     return (
                       <div key={r.id} onClick={() => setDetail({ type: 'view', report: r })}
-                        style={{ padding: '9px 12px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${isSelected ? '#1976d2' : 'var(--c-border)'}`, background: isSelected ? '#e3f2fd' : 'var(--c-card)' }}>
+                        style={{ padding: '9px 12px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${isSelected ? 'var(--c-action)' : 'var(--c-border)'}`, background: isSelected ? 'var(--c-tag-sys)' : 'var(--c-card)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontWeight: 600, fontSize: 13 }}>✅ {r.author}</span>
                         </div>
@@ -1123,9 +1123,9 @@ export default function WeeklyReportPage() {
               <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--c-border)' }}>
                 {weekConsolidated ? (
                   <div onClick={() => setDetail({ type: 'view', report: weekConsolidated })}
-                    style={{ padding: '9px 12px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${detail.type === 'view' && detail.report.id === weekConsolidated.id ? '#7c3aed' : '#7c3aed44'}`, background: detail.type === 'view' && detail.report.id === weekConsolidated.id ? '#f3e8ff' : '#7c3aed08' }}>
+                    style={{ padding: '9px 12px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${detail.type === 'view' && detail.report.id === weekConsolidated.id ? 'var(--rsp-color-tertiary-500)' : 'color-mix(in srgb, var(--rsp-color-tertiary-500) 27%, transparent)'}`, background: detail.type === 'view' && detail.report.id === weekConsolidated.id ? 'var(--c-tag-pri-bg)' : 'color-mix(in srgb, var(--rsp-color-tertiary-500) 3%, transparent)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: '#7c3aed18', color: '#7c3aed', fontWeight: 700 }}>통합</span>
+                      <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 9%, transparent)', color: 'var(--c-tag-pri-t)', fontWeight: 700 }}>통합</span>
                       <span style={{ fontWeight: 600, fontSize: 13 }}>{weekConsolidated.title}</span>
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3 }}>{weekConsolidated.author} 작성</div>
@@ -1136,7 +1136,7 @@ export default function WeeklyReportPage() {
                     const selectedGroup = myReports.find(r => r.weekStart === selectedWeek)
                     setEditorConfig({ weekStart: selectedWeek, weekEnd: selectedGroup?.weekEnd ?? selectedWeek, weekLabel: label })
                   }}
-                    style={{ width: '100%', padding: '9px 12px', border: '1px dashed #7c3aed55', borderRadius: 8, background: 'none', cursor: 'pointer', color: '#7c3aed', fontSize: 13, fontWeight: 600, textAlign: 'center' }}>
+                    style={{ width: '100%', padding: '9px 12px', border: '1px dashed color-mix(in srgb, var(--rsp-color-tertiary-500) 33%, transparent)', borderRadius: 8, background: 'none', cursor: 'pointer', color: 'var(--c-tag-pri-t)', fontSize: 13, fontWeight: 600, textAlign: 'center' }}>
                     📋 통합 보고서 작성
                   </button>
                 )}

@@ -13,17 +13,20 @@ import { Button, IconButton } from '../../components/ui'
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
 const DEFAULT_ROLE_LIST: RoleItem[] = [
-  { value: 'backend',  label: '백엔드',    color: '#1976d2' },
-  { value: 'android',  label: '안드로이드', color: '#4caf50' },
-  { value: 'frontend', label: '프론트엔드', color: '#ff9800' },
-  { value: 'planner',  label: '기획',      color: '#9c27b0' },
+  { value: 'backend',  label: '백엔드',    color: 'var(--c-chart-1)' },
+  { value: 'android',  label: '안드로이드', color: 'var(--c-chart-2)' },
+  { value: 'frontend', label: '프론트엔드', color: 'var(--c-chart-3)' },
+  { value: 'planner',  label: '기획',      color: 'var(--c-chart-5)' },
 ]
 
-const EXTRA_COLORS = ['#e91e63', '#00bcd4', '#ff5722', '#795548', '#009688', '#673ab7', '#3f51b5']
+const EXTRA_COLORS = ['var(--c-chart-4)', 'var(--c-chart-6)', 'var(--c-chart-3)', 'var(--c-chart-8)', 'var(--c-chart-2)', 'var(--c-chart-5)', 'var(--c-chart-7)']
 
 const DEFAULT_COLORS: Record<string, string> = {
-  backend: '#1976d2', android: '#4caf50', frontend: '#ff9800', planner: '#9c27b0',
+  backend: 'var(--c-chart-1)', android: 'var(--c-chart-2)', frontend: 'var(--c-chart-3)', planner: 'var(--c-chart-5)',
 }
+
+// 토큰 색상에 투명도 적용 (CSS 변수는 hex 알파 접미사를 붙일 수 없음)
+const withAlpha = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`
 
 function getRoleColor(role: string, index: number): string {
   return DEFAULT_COLORS[role] ?? EXTRA_COLORS[index % EXTRA_COLORS.length]
@@ -84,11 +87,11 @@ function StepRow({ step }: { step: AgentStep }) {
         )}
         <span style={{ flexShrink: 0, width: 18, textAlign: 'center' }}>
           {step.status === 'running' ? (
-            <span style={{ display: 'inline-block', width: 11, height: 11, border: '2px solid var(--c-border)', borderTopColor: '#1976d2', borderRadius: '50%', animation: 'ai-spin 0.7s linear infinite' }} />
+            <span style={{ display: 'inline-block', width: 11, height: 11, border: '2px solid var(--c-border)', borderTopColor: 'var(--c-action)', borderRadius: '50%', animation: 'ai-spin 0.7s linear infinite' }} />
           ) : step.status === 'done' ? (
-            <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 13 }}>✓</span>
+            <span style={{ color: 'var(--c-tag-done-t)', fontWeight: 700, fontSize: 13 }}>✓</span>
           ) : (
-            <span style={{ color: '#f44336', fontSize: 13 }}>✗</span>
+            <span style={{ color: 'var(--c-tag-err-t)', fontSize: 13 }}>✗</span>
           )}
         </span>
       </div>
@@ -122,9 +125,9 @@ function StepTimeline({ steps }: { steps: AgentStep[] }) {
         }}
       >
         {running ? (
-          <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid var(--c-border)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'ai-spin 0.7s linear infinite', flexShrink: 0 }} />
+          <span style={{ display: 'inline-block', width: 10, height: 10, border: '2px solid var(--c-border)', borderTopColor: 'var(--rsp-color-tertiary-500)', borderRadius: '50%', animation: 'ai-spin 0.7s linear infinite', flexShrink: 0 }} />
         ) : (
-          <span style={{ color: '#4caf50', fontSize: 12 }}>✓</span>
+          <span style={{ color: 'var(--c-tag-done-t)', fontSize: 12 }}>✓</span>
         )}
         <span style={{ flex: 1, textAlign: 'left' }}>⚡ 에이전트 실행 — {headerText}</span>
         <span style={{ fontSize: 10, opacity: 0.55 }}>{collapsed ? '펼치기 ▼' : '접기 ▲'}</span>
@@ -169,14 +172,14 @@ function CodeBlockWrapper({ lang, children }: { lang: string; children: React.Re
   }
 
   return (
-    <div style={{ margin: '10px 0', borderRadius: 8, overflow: 'hidden', border: '1px solid #2d3748' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 14px', background: '#161b2e' }}>
-        <span style={{ fontSize: 11, color: '#718096', fontFamily: 'monospace' }}>{lang || 'code'}</span>
-        <button onClick={copy} style={{ fontSize: 11, color: copied ? '#4caf50' : '#a0aec0', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px' }}>
+    <div style={{ margin: '10px 0', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--rsp-color-neutral-800)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 14px', background: 'var(--rsp-color-neutral-800)' }}>
+        <span style={{ fontSize: 11, color: 'var(--rsp-color-neutral-500)', fontFamily: 'monospace' }}>{lang || 'code'}</span>
+        <button onClick={copy} style={{ fontSize: 11, color: copied ? 'var(--rsp-color-success-500)' : 'var(--rsp-color-neutral-400)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px' }}>
           {copied ? '✓ 복사됨' : '복사'}
         </button>
       </div>
-      <pre ref={preRef} style={{ margin: 0, padding: '12px 16px', overflowX: 'auto', background: '#1a1a2e', fontFamily: "'D2Coding', 'Consolas', 'Courier New', monospace", fontSize: 13, lineHeight: 1.5, color: '#e2e8f0', whiteSpace: 'pre' }}>
+      <pre ref={preRef} style={{ margin: 0, padding: '12px 16px', overflowX: 'auto', background: 'var(--rsp-color-neutral-900)', fontFamily: "'D2Coding', 'Consolas', 'Courier New', monospace", fontSize: 13, lineHeight: 1.5, color: 'var(--rsp-color-neutral-200)', whiteSpace: 'pre' }}>
         {children}
       </pre>
     </div>
@@ -199,8 +202,8 @@ const MD_COMPONENTS = {
         <pre style={{
           margin: '10px 0', padding: '12px 16px',
           overflowX: 'auto', whiteSpace: 'pre',
-          background: '#1a1a2e', borderRadius: 8, border: '1px solid #2d3748',
-          fontFamily: CODE_FONT, fontSize: 13, lineHeight: 1.5, color: '#e2e8f0',
+          background: 'var(--rsp-color-neutral-900)', borderRadius: 8, border: '1px solid var(--rsp-color-neutral-800)',
+          fontFamily: CODE_FONT, fontSize: 13, lineHeight: 1.5, color: 'var(--rsp-color-neutral-200)',
         }}>
           {rawText}
         </pre>
@@ -219,7 +222,7 @@ const MD_COMPONENTS = {
     }
     // 언어 지정 코드블록 내부 <code> — CodeBlockWrapper의 <pre> 안에서 렌더됨
     return (
-      <code className={className} style={{ fontFamily: CODE_FONT, fontSize: 13, lineHeight: 1.5, color: '#e2e8f0' }} {...props}>
+      <code className={className} style={{ fontFamily: CODE_FONT, fontSize: 13, lineHeight: 1.5, color: 'var(--rsp-color-neutral-200)' }} {...props}>
         {children}
       </code>
     )
@@ -246,7 +249,7 @@ function SourceList({ sources }: { sources?: RagSource[] }) {
               target="_blank"
               rel="noopener noreferrer"
               title={src.sourcePath}
-              style={{ color: src.sourceType === 'GITHUB' ? '#1976d2' : '#e65100', textDecoration: 'none', wordBreak: 'break-all' }}
+              style={{ color: src.sourceType === 'GITHUB' ? 'var(--c-action)' : 'var(--c-tag-warn-t)', textDecoration: 'none', wordBreak: 'break-all' }}
             >
               {fileName}
             </a>
@@ -307,7 +310,7 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
         {conversations.map(conv => {
           const selected = conv.id === current
           const ri = roleMap[conv.role]
-          const color = ri?.color ?? '#888'
+          const color = ri?.color ?? 'var(--c-chart-8)'
           const label = ri?.label ?? conv.role
           return (
             <div
@@ -326,7 +329,7 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
                   {conv.title || '새 대화'}
                 </div>
                 <div style={{ display: 'flex', gap: 5, marginTop: 3, alignItems: 'center' }}>
-                  <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: color + '22', color, fontWeight: 600 }}>
+                  <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: withAlpha(color, 13), color, fontWeight: 600 }}>
                     {label}
                   </span>
                   <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{formatDate(conv.updatedAt)}</span>
@@ -373,7 +376,7 @@ export default function AiChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const roleMap: Record<string, RoleItem> = Object.fromEntries(roleList.map(r => [r.value, r]))
-  const selectedRole: RoleItem = roleMap[role] ?? { value: role, label: role, color: '#888' }
+  const selectedRole: RoleItem = roleMap[role] ?? { value: role, label: role, color: 'var(--c-chart-8)' }
   const convIndex = currentConvId ? conversations.findIndex(c => c.id === currentConvId) + 1 : null
 
   useEffect(() => {
@@ -622,7 +625,7 @@ export default function AiChatPage() {
               <button key={r.value} onClick={() => handleRoleChange(r.value)} style={{
                 padding: '6px 14px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
                 border: `1.5px solid ${role === r.value ? r.color : 'var(--c-border)'}`,
-                background: role === r.value ? r.color + '18' : 'var(--c-card)',
+                background: role === r.value ? withAlpha(r.color, 9) : 'var(--c-card)',
                 color: role === r.value ? r.color : 'var(--c-text-muted)',
                 fontWeight: role === r.value ? 600 : 400,
                 transition: 'all 0.15s',
@@ -683,10 +686,10 @@ export default function AiChatPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {messages.map(msg => (
                 <div key={msg.id} style={{ display: 'flex', flexDirection: msg.from === 'user' ? 'row-reverse' : 'row', gap: 8, alignItems: 'flex-start' }}>
-                  <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, background: msg.from === 'user' ? selectedRole.color : '#1a1a2e', color: '#fff' }}>
+                  <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, background: msg.from === 'user' ? selectedRole.color : 'var(--rsp-color-neutral-900)', color: 'var(--rsp-color-text-on-primary)' }}>
                     {msg.from === 'user' ? 'ME' : 'AI'}
                   </div>
-                  <div style={{ maxWidth: '82%', padding: '9px 13px', borderRadius: 10, background: msg.from === 'user' ? selectedRole.color + '18' : 'var(--c-bg)', border: `1px solid ${msg.from === 'user' ? selectedRole.color + '44' : 'var(--c-border)'}`, color: msg.error ? '#f44336' : 'var(--c-text)', fontSize: 14, lineHeight: 1.7, borderTopRightRadius: msg.from === 'user' ? 2 : 10, borderTopLeftRadius: msg.from === 'ai' ? 2 : 10 }}>
+                  <div style={{ maxWidth: '82%', padding: '9px 13px', borderRadius: 10, background: msg.from === 'user' ? withAlpha(selectedRole.color, 9) : 'var(--c-bg)', border: `1px solid ${msg.from === 'user' ? withAlpha(selectedRole.color, 27) : 'var(--c-border)'}`, color: msg.error ? 'var(--c-tag-err-t)' : 'var(--c-text)', fontSize: 14, lineHeight: 1.7, borderTopRightRadius: msg.from === 'user' ? 2 : 10, borderTopLeftRadius: msg.from === 'ai' ? 2 : 10 }}>
                     {msg.from === 'ai' ? (
                       <>
                         {msg.steps && <StepTimeline steps={msg.steps} />}
@@ -739,15 +742,15 @@ export default function AiChatPage() {
               <span style={{ marginRight: 5 }}>📄</span>
               참조 가능 문서 <strong style={{ color: 'var(--c-text)' }}>{docCount}개</strong>
             </span>
-            <Link to="/ai/documents" style={{ fontSize: 11, color: '#1976d2', textDecoration: 'none' }}>관리 →</Link>
+            <Link to="/ai/documents" style={{ fontSize: 11, color: 'var(--c-action)', textDecoration: 'none' }}>관리 →</Link>
           </div>
         )}
 
         {/* 입력창 */}
-        <div style={{ flexShrink: 0, background: 'var(--c-card)', borderRadius: 10, border: `1px solid ${agentMode ? '#7c3aed44' : 'var(--c-border)'}`, padding: '10px 14px', marginBottom: 20 }}>
+        <div style={{ flexShrink: 0, background: 'var(--c-card)', borderRadius: 10, border: `1px solid ${agentMode ? 'color-mix(in srgb, var(--rsp-color-tertiary-500) 27%, transparent)' : 'var(--c-border)'}`, padding: '10px 14px', marginBottom: 20 }}>
           {agentMode && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '5px 8px', background: '#7c3aed10', borderRadius: 6, fontSize: 11, color: '#7c3aed' }}>
-              <span style={{ display: 'inline-block', width: 8, height: 8, border: '1.5px solid #7c3aed55', borderTopColor: '#7c3aed', borderRadius: '50%', animation: loading ? 'ai-spin 0.7s linear infinite' : 'none', flexShrink: 0 }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '5px 8px', background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 6%, transparent)', borderRadius: 6, fontSize: 11, color: 'var(--c-tag-pri-t)' }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, border: '1.5px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 33%, transparent)', borderTopColor: 'var(--rsp-color-tertiary-500)', borderRadius: '50%', animation: loading ? 'ai-spin 0.7s linear infinite' : 'none', flexShrink: 0 }} />
               여러 단계로 분석합니다 (1~3분 소요)
             </div>
           )}

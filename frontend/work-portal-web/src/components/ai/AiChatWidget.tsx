@@ -6,11 +6,14 @@ import { useAuth } from '../../context/useAuth'
 import { Button, IconButton } from '../ui'
 
 const ROLES: { value: AiRole; label: string; color: string }[] = [
-  { value: 'backend',  label: '백엔드',    color: '#1976d2' },
-  { value: 'android',  label: '안드로이드', color: '#4caf50' },
-  { value: 'frontend', label: '프론트엔드', color: '#ff9800' },
-  { value: 'planner',  label: '기획',      color: '#9c27b0' },
+  { value: 'backend',  label: '백엔드',    color: 'var(--c-chart-1)' },
+  { value: 'android',  label: '안드로이드', color: 'var(--c-chart-2)' },
+  { value: 'frontend', label: '프론트엔드', color: 'var(--c-chart-3)' },
+  { value: 'planner',  label: '기획',      color: 'var(--c-chart-5)' },
 ]
+
+// 토큰 색상에 투명도 적용 (CSS 변수는 hex 알파 접미사를 붙일 수 없음)
+const withAlpha = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`
 
 interface WMsg {
   id: number
@@ -36,7 +39,7 @@ export default function AiChatWidget() {
   // AI 비활성화 또는 비로그인 시 렌더링 안 함
   if (!aiConfig.enabled || !user) return null
 
-  const selectedColor = ROLES.find(r => r.value === role)?.color ?? '#1976d2'
+  const selectedColor = ROLES.find(r => r.value === role)?.color ?? 'var(--c-chart-1)'
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -105,19 +108,19 @@ export default function AiChatWidget() {
         }}>
           {/* 팝업 헤더 */}
           <div style={{
-            padding: '12px 16px', background: '#1a1a2e',
+            padding: '12px 16px', background: 'var(--rsp-color-neutral-900)',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 16 }}>⚡</span>
-              <span style={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>AI 어시스턴트</span>
+              <span style={{ color: 'var(--rsp-color-neutral-0)', fontWeight: 600, fontSize: 14 }}>AI 어시스턴트</span>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {/* 어두운 헤더 배경 위라 글자색만 유지 */}
-              <Button variant="text" size="xs" onClick={goToFullPage} style={{ color: '#a0aec0' }}>
+              <Button variant="text" size="xs" onClick={goToFullPage} style={{ color: 'var(--rsp-color-neutral-400)' }}>
                 전체화면
               </Button>
-              <IconButton variant="text" size="sm" icon="×" label="닫기" onClick={handleClose} style={{ color: '#a0aec0' }} />
+              <IconButton variant="text" size="sm" icon="×" label="닫기" onClick={handleClose} style={{ color: 'var(--rsp-color-neutral-400)' }} />
             </div>
           </div>
 
@@ -130,7 +133,7 @@ export default function AiChatWidget() {
               <button key={r.value} onClick={() => setRole(r.value)} style={{
                 flex: 1, padding: '4px 0', borderRadius: 4, fontSize: 11, cursor: 'pointer',
                 border: `1px solid ${role === r.value ? r.color : 'transparent'}`,
-                background: role === r.value ? r.color + '18' : 'transparent',
+                background: role === r.value ? withAlpha(r.color, 9) : 'transparent',
                 color: role === r.value ? r.color : 'var(--c-text-muted)',
                 fontWeight: role === r.value ? 600 : 400,
                 transition: 'all 0.12s',
@@ -156,7 +159,7 @@ export default function AiChatWidget() {
                 <div style={{
                   maxWidth: '85%', padding: '8px 12px', borderRadius: 10, fontSize: 13, lineHeight: 1.6,
                   background: msg.from === 'user' ? selectedColor : 'var(--c-bg)',
-                  color: msg.from === 'user' ? '#fff' : 'var(--c-text)',
+                  color: msg.from === 'user' ? 'var(--rsp-color-text-on-primary)' : 'var(--c-text)',
                   border: msg.from === 'ai' ? '1px solid var(--c-border)' : 'none',
                   borderTopRightRadius: msg.from === 'user' ? 2 : 10,
                   borderTopLeftRadius: msg.from === 'ai' ? 2 : 10,
@@ -216,9 +219,9 @@ export default function AiChatWidget() {
         style={{
           position: 'fixed', bottom: 24, right: 24, zIndex: 1001,
           width: 52, height: 52, borderRadius: '50%',
-          background: open ? '#4a5568' : '#1a1a2e',
-          border: `2px solid ${open ? '#718096' : selectedColor}`,
-          color: '#fff', fontSize: 22, cursor: 'pointer',
+          background: open ? 'var(--rsp-color-neutral-700)' : 'var(--rsp-color-neutral-900)',
+          border: `2px solid ${open ? 'var(--rsp-color-neutral-500)' : selectedColor}`,
+          color: 'var(--rsp-color-neutral-0)', fontSize: 22, cursor: 'pointer',
           boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.2s',

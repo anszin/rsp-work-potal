@@ -106,7 +106,7 @@ export default function NotificationPage() {
               </div>
               <div style={{ maxHeight: 220, overflowY: 'auto' }}>
                 {activeMembers.map(u => (
-                  <label key={u.username} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', cursor: 'pointer', borderBottom: '1px solid var(--c-border)', background: selectedUsernames.has(u.username) ? '#1976d208' : 'var(--c-card)' }}>
+                  <label key={u.username} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', cursor: 'pointer', borderBottom: '1px solid var(--c-border)', background: selectedUsernames.has(u.username) ? 'color-mix(in srgb, var(--c-action) 3%, transparent)' : 'var(--c-card)' }}>
                     <input type="checkbox" checked={selectedUsernames.has(u.username)} onChange={() => toggleUser(u.username)}
                       style={{ width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
@@ -159,7 +159,7 @@ export default function NotificationPage() {
             {sendMut.isPending ? '발송 중...' : '🚀 웹엑스 발송'}
           </Button>
           {result && (
-            <div style={{ fontSize: 13, color: result.sent > 0 ? '#2e7d32' : '#c62828', fontWeight: 600 }}>
+            <div style={{ fontSize: 13, color: result.sent > 0 ? 'var(--c-tag-done-t)' : 'var(--c-tag-err-t)', fontWeight: 600 }}>
               {result.sent > 0 ? `✅ ${result.sent}명에게 발송 완료` : `❌ ${result.msg}`}
             </div>
           )}

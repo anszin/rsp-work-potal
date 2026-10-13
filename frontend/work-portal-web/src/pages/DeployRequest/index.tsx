@@ -245,9 +245,9 @@ export default function DeployRequestPage() {
   }
 
   const ACTION_MODAL_CONFIG: Partial<Record<RequestStatus, { title: string; btnLabel: string; btnColor: string; required: boolean }>> = {
-    APPROVED:  { title: '승인 처리', btnLabel: '승인 확정', btnColor: '#276749', required: false },
-    REJECTED:  { title: '반려 처리', btnLabel: '반려 확정', btnColor: '#e53e3e', required: true },
-    COMPLETED: { title: '완료 처리', btnLabel: '완료 확정', btnColor: '#285E61', required: false },
+    APPROVED:  { title: '승인 처리', btnLabel: '승인 확정', btnColor: 'var(--rsp-color-success-500)', required: false },
+    REJECTED:  { title: '반려 처리', btnLabel: '반려 확정', btnColor: 'var(--rsp-color-error-500)', required: true },
+    COMPLETED: { title: '완료 처리', btnLabel: '완료 확정', btnColor: 'var(--rsp-color-primary-600)', required: false },
   }
 
   const submitActionModal = () => {
@@ -321,7 +321,7 @@ export default function DeployRequestPage() {
           <div style={{ display: 'flex', gap: 20 }}>
             {(['list', 'dashboard'] as const).map(t => (
               <button key={t} onClick={() => setTab(t)}
-                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? '#1a1a2e' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
+                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? 'var(--c-action)' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
                 {t === 'list' ? '목록' : '현황'}
               </button>
             ))}
@@ -392,10 +392,10 @@ export default function DeployRequestPage() {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
                       {selectedIssues.map(issue => (
                         <span key={issue.redmineIssueId} style={s.issueBadge}>
-                          <span style={{ color: '#1976d2', fontWeight: 600 }}>#{issue.redmineIssueId}</span>
+                          <span style={{ color: 'var(--c-action)', fontWeight: 600 }}>#{issue.redmineIssueId}</span>
                           <span style={{ color: 'var(--c-text)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{issue.redmineIssueTitle}</span>
                           <button type="button" onClick={() => setSelectedIssues(prev => prev.filter(i => i.redmineIssueId !== issue.redmineIssueId))}
-                            style={{ border: 'none', background: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
+                            style={{ border: 'none', background: 'none', color: 'var(--c-tag-err-t)', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
                         </span>
                       ))}
                     </div>
@@ -514,13 +514,13 @@ export default function DeployRequestPage() {
                           )
                         })}
                         {row.status === 'COMPLETED' && row.deployScope === 'PARTIAL' && !requests.some(x => x.parentDrId === row.id) && (
-                          <Button variant="outlined" size="xs" style={{ color: '#285E61', borderColor: '#285E61' }}
+                          <Button variant="outlined" size="xs" style={{ color: 'var(--c-tag-teal-t)', borderColor: 'var(--c-tag-teal-t)' }}
                             onClick={() => openCreate({ systemId: row.systemId, subSystemId: row.subSystemId ?? undefined, title: row.title, version: row.version ?? '', deployType: row.deployType ?? 'RELEASE', deployScope: 'FULL', content: row.content ?? '', redmineIssues: row.redmineIssues, parentDrId: row.id })}>
                             전점 배포
                           </Button>
                         )}
                         {(row.status === 'DRAFT' || isAdmin) && (
-                          <Button variant="outlined" size="xs" style={{ color: '#e53e3e', borderColor: '#e53e3e' }}
+                          <Button variant="outlined" size="xs" style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
                             onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(row.id) }}>
                             삭제
                           </Button>
@@ -655,7 +655,7 @@ export default function DeployRequestPage() {
                         onClick={() => !isCurrent && setDetail(dr)}
                         style={{
                           padding: '8px 14px', borderRadius: 8, flexShrink: 0,
-                          border: `2px solid ${isCurrent ? '#1a1a2e' : 'var(--c-border-in)'}`,
+                          border: `2px solid ${isCurrent ? 'var(--c-action)' : 'var(--c-border-in)'}`,
                           background: isCurrent ? 'var(--c-thead)' : 'var(--c-bg)',
                           cursor: isCurrent ? 'default' : 'pointer',
                         }}>
@@ -663,7 +663,7 @@ export default function DeployRequestPage() {
                           <span style={{ fontSize: 12, fontWeight: 700, color: isCurrent ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
                             {dr.deployNo ?? `DR#${dr.id}`}
                           </span>
-                          {isCurrent && <span style={{ fontSize: 10, background: '#1a1a2e', color: '#fff', borderRadius: 3, padding: '1px 5px' }}>현재</span>}
+                          {isCurrent && <span style={{ fontSize: 10, background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', borderRadius: 3, padding: '1px 5px' }}>현재</span>}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
                           {dr.deployScope && (
@@ -710,7 +710,7 @@ export default function DeployRequestPage() {
                     <a key={i.redmineIssueId}
                       href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
                       target="_blank" rel="noreferrer"
-                      style={{ color: '#1976d2', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '3px 10px', borderRadius: 4 }}>
+                      style={{ color: 'var(--c-action)', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '3px 10px', borderRadius: 4 }}>
                       #{i.redmineIssueId} {i.redmineIssueTitle}
                     </a>
                   ))}
@@ -718,11 +718,11 @@ export default function DeployRequestPage() {
               )}
               {detail.redmineSyncStatus && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {detail.redmineSyncStatus === 'SYNCED' && <span style={{ fontSize: 12, color: '#276749', background: '#F0FFF4', border: '1px solid #C6F6D5', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 완료</span>}
+                  {detail.redmineSyncStatus === 'SYNCED' && <span style={{ fontSize: 12, color: 'var(--c-tag-done-t)', background: 'var(--c-tag-done-bg)', border: '1px solid var(--c-tag-done-bg)', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 완료</span>}
                   {detail.redmineSyncStatus === 'FAILED' && (
                     <>
-                      <span style={{ fontSize: 12, color: '#9B2C2C', background: '#FFF5F5', border: '1px solid #FED7D7', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 실패</span>
-                      <Button variant="outlined" size="xs" style={{ color: '#C05621', borderColor: '#C05621' }}
+                      <span style={{ fontSize: 12, color: 'var(--c-tag-err-t)', background: 'var(--c-tag-err-bg)', border: '1px solid var(--c-tag-err-bg)', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 실패</span>
+                      <Button variant="outlined" size="xs" style={{ color: 'var(--c-tag-warn-t)', borderColor: 'var(--c-tag-warn-t)' }}
                         onClick={() => syncMut.mutate(detail.id)} disabled={syncMut.isPending}>
                         {syncMut.isPending ? '재시도 중...' : '재시도'}
                       </Button>
@@ -743,15 +743,15 @@ export default function DeployRequestPage() {
                   <div key={step.id} style={{
                     display: 'flex', alignItems: 'center', gap: 12,
                     padding: '10px 14px', borderRadius: 6,
-                    background: step.status === 'DONE' ? '#f0fdf4' : 'var(--c-bg)',
-                    border: `1px solid ${step.status === 'DONE' ? '#c6f6d5' : 'var(--c-border-in)'}`,
+                    background: step.status === 'DONE' ? 'var(--c-tag-done-bg)' : 'var(--c-bg)',
+                    border: `1px solid ${step.status === 'DONE' ? 'var(--c-tag-done-bg)' : 'var(--c-border-in)'}`,
                   }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: step.status === 'DONE' ? '#38a169' : 'var(--c-card)',
+                      background: step.status === 'DONE' ? 'var(--rsp-color-success-500)' : 'var(--c-card)',
                       border: step.status === 'DONE' ? 'none' : '2px solid var(--c-border-in)',
-                      fontSize: 12, fontWeight: 700, color: step.status === 'DONE' ? '#fff' : 'var(--c-text-muted)',
+                      fontSize: 12, fontWeight: 700, color: step.status === 'DONE' ? 'var(--rsp-color-text-on-primary)' : 'var(--c-text-muted)',
                     }}>
                       {step.status === 'DONE' ? '✓' : idx + 1}
                     </div>
@@ -764,7 +764,7 @@ export default function DeployRequestPage() {
                       )}
                     </div>
                     {step.status === 'PENDING' && (isAdmin || managedSystemIds.includes(detail.systemId)) && (
-                      <Button variant="outlined" size="xs" style={{ color: '#276749', borderColor: '#276749' }}
+                      <Button variant="outlined" size="xs" style={{ color: 'var(--c-tag-done-t)', borderColor: 'var(--c-tag-done-t)' }}
                         onClick={() => completeStepMut.mutate(step.id)}
                         disabled={completeStepMut.isPending}
                       >
@@ -826,7 +826,7 @@ export default function DeployRequestPage() {
               {pickerAllIssues.length === 0 && pickerLoading ? (
                 <div style={s.modalEmpty}>불러오는 중...</div>
               ) : pickerFetchError ? (
-                <div style={{ ...s.modalEmpty, color: '#e53e3e' }}>오류: {pickerFetchError}</div>
+                <div style={{ ...s.modalEmpty, color: 'var(--c-tag-err-t)' }}>오류: {pickerFetchError}</div>
               ) : filteredIssues.length === 0 ? (
                 <div style={s.modalEmpty}>일감이 없습니다</div>
               ) : (
@@ -838,17 +838,17 @@ export default function DeployRequestPage() {
                     const checked = pickerDraft.some(i => i.redmineIssueId === issue.id)
                     return (
                       <div key={issue.id} onClick={() => togglePickerIssue(issue)}
-                        style={{ ...s.issueRow, background: checked ? '#f0fdf4' : undefined }}>
-                        <div style={{ ...s.issueCheck, borderColor: checked ? '#38a169' : '#cbd5e0', background: checked ? '#38a169' : 'var(--c-card)' }}>
-                          {checked && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+                        style={{ ...s.issueRow, background: checked ? 'var(--c-tag-done-bg)' : undefined }}>
+                        <div style={{ ...s.issueCheck, borderColor: checked ? 'var(--rsp-color-success-500)' : 'var(--c-border-in)', background: checked ? 'var(--rsp-color-success-500)' : 'var(--c-card)' }}>
+                          {checked && <span style={{ color: 'var(--rsp-color-text-on-primary)', fontSize: 11, lineHeight: 1 }}>✓</span>}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ color: '#1976d2', fontWeight: 600, marginRight: 8, fontSize: 13 }}>#{issue.id}</span>
+                          <span style={{ color: 'var(--c-action)', fontWeight: 600, marginRight: 8, fontSize: 13 }}>#{issue.id}</span>
                           <span style={{ fontSize: 13 }}>{issue.subject}</span>
                         </div>
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                           {issue.trackerName && (
-                            <span style={{ fontSize: 11, color: '#1976d2', background: '#e3f2fd', padding: '2px 6px', borderRadius: 3 }}>{issue.trackerName}</span>
+                            <span style={{ fontSize: 11, color: 'var(--c-tag-sys-t)', background: 'var(--c-tag-sys)', padding: '2px 6px', borderRadius: 3 }}>{issue.trackerName}</span>
                           )}
                           {issue.statusName && (
                             <span style={{ fontSize: 11, color: 'var(--c-text-sub)', background: 'var(--c-thead)', padding: '2px 6px', borderRadius: 3 }}>{issue.statusName}</span>
@@ -917,14 +917,14 @@ function PageBtn({ label, active, disabled, onClick }: {
 }
 
 const SUB_COLORS = [
-  { bg: '#dbeafe', text: '#1e40af' },
-  { bg: '#ede9fe', text: '#5b21b6' },
-  { bg: '#dcfce7', text: '#15803d' },
-  { bg: '#fed7aa', text: '#c2410c' },
-  { bg: '#fce7f3', text: '#be185d' },
-  { bg: '#ccfbf1', text: '#0f766e' },
-  { bg: '#fef9c3', text: '#a16207' },
-  { bg: '#e0e7ff', text: '#3730a3' },
+  { bg: 'var(--c-tag-sys)', text: 'var(--c-tag-sys-t)' },
+  { bg: 'var(--c-tag-pri-bg)', text: 'var(--c-tag-pri-t)' },
+  { bg: 'var(--c-tag-done-bg)', text: 'var(--c-tag-done-t)' },
+  { bg: 'var(--c-tag-warn-bg)', text: 'var(--c-tag-warn-t)' },
+  { bg: 'var(--c-tag-err-bg)', text: 'var(--c-tag-err-t)' },
+  { bg: 'var(--c-tag-teal-bg)', text: 'var(--c-tag-teal-t)' },
+  { bg: 'var(--c-tag-draft-bg)', text: 'var(--c-tag-draft-t)' },
+  { bg: 'color-mix(in srgb, var(--c-chart-7) 15%, transparent)', text: 'var(--c-chart-7)' },
 ]
 function subTagStyle(name: string): React.CSSProperties {
   let hash = 0
@@ -934,9 +934,9 @@ function subTagStyle(name: string): React.CSSProperties {
 }
 
 function actionStyle(status: RequestStatus): React.CSSProperties {
-  if (status === 'APPROVED') return { color: '#276749', borderColor: '#276749' }
-  if (status === 'REJECTED') return { color: '#9B2C2C', borderColor: '#9B2C2C' }
-  if (status === 'COMPLETED') return { color: '#285E61', borderColor: '#285E61' }
+  if (status === 'APPROVED') return { color: 'var(--c-tag-done-t)', borderColor: 'var(--c-tag-done-t)' }
+  if (status === 'REJECTED') return { color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }
+  if (status === 'COMPLETED') return { color: 'var(--c-tag-teal-t)', borderColor: 'var(--c-tag-teal-t)' }
   return {}
 }
 
@@ -972,9 +972,9 @@ function ScheduledCell({ scheduledAt, rowStatus }: { scheduledAt: string | null 
 }
 
 const s: Record<string, React.CSSProperties> = {
-  btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
+  btn: { padding: '8px 16px', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
-  btnOutline: { padding: '6px 14px', background: 'var(--c-card)', color: '#1976d2', border: '1px dashed #1976d2', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
+  btnOutline: { padding: '6px 14px', background: 'var(--c-card)', color: 'var(--c-action)', border: '1px dashed var(--c-action)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
   formTitle: { fontSize: 15, fontWeight: 600, marginBottom: 16 },
@@ -982,9 +982,9 @@ const s: Record<string, React.CSSProperties> = {
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)', paddingTop: 8 },
   input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
-  issueBadge: { display: 'flex', alignItems: 'center', gap: 4, background: '#f0fdf4', border: '1px solid #c6f6d5', borderRadius: 4, padding: '3px 8px', fontSize: 12 },
+  issueBadge: { display: 'flex', alignItems: 'center', gap: 4, background: 'var(--c-tag-done-bg)', border: '1px solid var(--c-tag-done-bg)', borderRadius: 4, padding: '3px 8px', fontSize: 12 },
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  badge: { background: 'rgba(255,255,255,0.25)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
+  badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
   table: { width: '100%', borderCollapse: 'collapse' as const },
   thead: { background: 'var(--c-thead)' },
@@ -999,27 +999,27 @@ const s: Record<string, React.CSSProperties> = {
   infoSection: { background: 'var(--c-bg)', borderRadius: 8, padding: '14px 16px' },
   infoSectionTitle: { fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 10 },
   contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  overlay: { position: 'fixed', inset: 0, background: 'var(--c-overlay)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   modal: { background: 'var(--c-card)', borderRadius: 12, width: 720, maxWidth: '90vw', maxHeight: '85vh', display: 'flex', flexDirection: 'column' as const, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
   modalHeader: { padding: '16px 20px', borderBottom: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   modalClose: { border: 'none', background: 'none', fontSize: 18, cursor: 'pointer', color: 'var(--c-text-muted)', lineHeight: 1, padding: 4 },
   modalFilter: { padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', display: 'flex', gap: 10, alignItems: 'center' },
   tabBtn: { padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: 'var(--c-card)', color: 'var(--c-text-sub)' },
-  tabBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
+  tabBtnActive: { background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', borderColor: 'var(--c-action)' },
   modalBody: { flex: 1, overflowY: 'auto' as const },
   modalEmpty: { padding: 32, textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   issueRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', cursor: 'pointer' },
-  issueCheck: { width: 18, height: 18, borderRadius: 4, border: '2px solid #cbd5e0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  issueCheck: { width: 18, height: 18, borderRadius: 4, border: '2px solid var(--c-border-in)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   modalFooter: { padding: '12px 20px', borderTop: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
 }
 
 const MONTHS_KR = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
 const STATUSES: RequestStatus[] = ['DRAFT','REQUESTED','APPROVED','COMPLETED','REJECTED']
 const STATUS_LABELS: Record<RequestStatus, string> = { DRAFT:'임시저장', REQUESTED:'요청', APPROVED:'승인', COMPLETED:'완료', REJECTED:'반려' }
-const STATUS_COLORS: Record<RequestStatus, string> = { DRAFT:'#718096', REQUESTED:'#3182ce', APPROVED:'#38a169', COMPLETED:'#285E61', REJECTED:'#e53e3e' }
-const STATUS_BG: Record<RequestStatus, string>     = { DRAFT:'#f7fafc', REQUESTED:'#ebf8ff', APPROVED:'#f0fff4', COMPLETED:'#e6fffa', REJECTED:'#fff5f5' }
+const STATUS_COLORS: Record<RequestStatus, string> = { DRAFT:'var(--c-text-muted)', REQUESTED:'var(--c-tag-sys-t)', APPROVED:'var(--c-tag-done-t)', COMPLETED:'var(--c-tag-teal-t)', REJECTED:'var(--c-tag-err-t)' }
+const STATUS_BG: Record<RequestStatus, string>     = { DRAFT:'var(--c-thead)', REQUESTED:'var(--c-tag-sys)', APPROVED:'var(--c-tag-done-bg)', COMPLETED:'var(--c-tag-teal-bg)', REJECTED:'var(--c-tag-err-bg)' }
 const TYPE_LABELS: Record<string, string>  = { RELEASE:'릴리즈', HOTFIX:'핫픽스', ROLLBACK:'롤백', PATCH:'패치' }
-const TYPE_COLORS: Record<string, string>  = { RELEASE:'#3182ce', HOTFIX:'#e53e3e', ROLLBACK:'#d69e2e', PATCH:'#38a169' }
+const TYPE_COLORS: Record<string, string>  = { RELEASE:'var(--c-tag-sys-t)', HOTFIX:'var(--c-tag-err-t)', ROLLBACK:'var(--c-tag-warn-t)', PATCH:'var(--c-tag-done-t)' }
 
 function DeployDashboard({ requests }: { requests: import('../../api/deployRequests').DeployRequest[] }) {
   const now = new Date()
@@ -1037,7 +1037,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
   }
   const filtered = requests.filter(inPeriod)
 
-  const SYS_COLORS = ['#3182ce','#e53e3e','#d69e2e','#38a169','#805ad5','#dd6b20','#319795','#b7791f']
+  const SYS_COLORS = ['var(--c-chart-1)','var(--c-chart-4)','var(--c-chart-3)','var(--c-chart-2)','var(--c-chart-5)','var(--c-chart-7)','var(--c-chart-6)','var(--c-chart-8)']
   const systemsInYear = [...new Set(requests.filter(r => new Date(r.createdAt).getFullYear() === selYear).map(r => r.systemName))].sort()
   const systemMonthlyData = systemsInYear.map((sysName, si) => ({
     name: sysName,
@@ -1092,7 +1092,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
           <div style={{ fontSize: 28, fontWeight: 700 }}>{filtered.length}</div>
         </div>
         {STATUSES.map(s => (
-          <div key={s} style={{ background: STATUS_BG[s], border: `1px solid ${STATUS_COLORS[s]}44`, borderRadius: 8, padding: '16px 20px' }}>
+          <div key={s} style={{ background: STATUS_BG[s], border: `1px solid color-mix(in srgb, ${STATUS_COLORS[s]} 27%, transparent)`, borderRadius: 8, padding: '16px 20px' }}>
             <div style={{ fontSize: 11, color: STATUS_COLORS[s], marginBottom: 6, fontWeight: 600 }}>{STATUS_LABELS[s]}</div>
             <div style={{ fontSize: 28, fontWeight: 700, color: STATUS_COLORS[s] }}>{filtered.filter(r => r.status === s).length}</div>
           </div>
@@ -1143,7 +1143,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
               {drillData.map(([name, count], i) => {
                 const barColor = selSystem
                   ? SYS_COLORS[i % SYS_COLORS.length]
-                  : '#1a1a2e'
+                  : 'var(--c-action)'
                 const isClickable = !selSystem
                 return (
                   <div
@@ -1176,7 +1176,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
               {byType.map(([type, count]) => (
                 <div key={type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 12, background: TYPE_COLORS[type] + '22', color: TYPE_COLORS[type], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>{TYPE_LABELS[type] ?? type}</span>
+                  <span style={{ fontSize: 12, background: `color-mix(in srgb, ${TYPE_COLORS[type]} 13%, transparent)`, color: TYPE_COLORS[type], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>{TYPE_LABELS[type] ?? type}</span>
                   <span style={{ fontWeight: 700, fontSize: 22 }}>{count}</span>
                 </div>
               ))}
@@ -1229,10 +1229,10 @@ function SystemMonthlyLineChart({
             <g key={sys.name}>
               <polyline
                 points={points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}
-                fill="none" stroke={sys.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" opacity={0.85}
+                fill="none" style={{ stroke: sys.color }} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" opacity={0.85}
               />
               {points.map((p, i) => p.v > 0 && (
-                <circle key={i} cx={p.x} cy={p.y} r={3.5} fill={sys.color} opacity={0.9} />
+                <circle key={i} cx={p.x} cy={p.y} r={3.5} style={{ fill: sys.color }} opacity={0.9} />
               ))}
             </g>
           )
@@ -1245,12 +1245,12 @@ function SystemMonthlyLineChart({
           return (
             <g key={i} style={{ cursor: 'pointer' }} onClick={() => onClickMonth(m)}>
               <text x={x} y={H - 4} textAnchor="middle" fontSize={10}
-                fill={isSelected ? '#1a1a2e' : 'var(--c-text-muted)'}
+                style={{ fill: isSelected ? 'var(--c-text)' : 'var(--c-text-muted)' }}
                 fontWeight={isSelected ? 700 : 400}>
                 {m}월
               </text>
               <rect x={x - 14} y={padT} width={28} height={plotH} fill="transparent" />
-              {isSelected && <line x1={x} y1={padT} x2={x} y2={padT + plotH} stroke="#1a1a2e" strokeWidth={1} strokeDasharray="3,3" opacity={0.3} />}
+              {isSelected && <line x1={x} y1={padT} x2={x} y2={padT + plotH} style={{ stroke: 'var(--c-text)' }} strokeWidth={1} strokeDasharray="3,3" opacity={0.3} />}
             </g>
           )
         })}
@@ -1258,7 +1258,7 @@ function SystemMonthlyLineChart({
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' as const, marginTop: 8 }}>
         {systems.map(sys => (
           <span key={sys.name} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
-            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke={sys.color} strokeWidth="2.5" strokeLinecap="round" /></svg>
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" style={{ stroke: sys.color }} strokeWidth="2.5" strokeLinecap="round" /></svg>
             {sys.name}
           </span>
         ))}
@@ -1292,14 +1292,14 @@ function DeployTimeline({ detail }: { detail: import('../../api/deployRequests')
     <div style={{ background: 'var(--c-bg)', borderRadius: 8, padding: '20px 32px', display: 'flex', alignItems: 'flex-start' }}>
       {steps.map((step, idx) => {
         const nextStep = steps[idx + 1]
-        const lineColor = nextStep?.rejected ? '#e53e3e' : (nextStep?.done ? '#1a1a2e' : 'var(--c-border)')
-        const circleColor = step.rejected ? '#e53e3e' : step.done ? '#1a1a2e' : 'transparent'
+        const lineColor = nextStep?.rejected ? 'var(--rsp-color-error-500)' : (nextStep?.done ? 'var(--c-action)' : 'var(--c-border)')
+        const circleColor = step.rejected ? 'var(--rsp-color-error-500)' : step.done ? 'var(--c-action)' : 'transparent'
         const circleBorder = step.done || step.rejected ? 'none' : '2px solid var(--c-border)'
-        const textColor = step.rejected ? '#e53e3e' : step.done ? 'var(--c-text)' : 'var(--c-text-muted)'
+        const textColor = step.rejected ? 'var(--c-tag-err-t)' : step.done ? 'var(--c-text)' : 'var(--c-text-muted)'
         return (
           <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', flex: idx < steps.length - 1 ? 1 : 'initial' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 70 }}>
-              <div style={{ width: 30, height: 30, borderRadius: '50%', background: circleColor, border: circleBorder, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: step.done || step.rejected ? '#fff' : 'var(--c-text-muted)', fontWeight: 700, flexShrink: 0 }}>
+              <div style={{ width: 30, height: 30, borderRadius: '50%', background: circleColor, border: circleBorder, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: step.done || step.rejected ? 'var(--rsp-color-text-on-primary)' : 'var(--c-text-muted)', fontWeight: 700, flexShrink: 0 }}>
                 {step.rejected ? '✕' : step.done ? '✓' : idx + 1}
               </div>
               <div style={{ fontSize: 12, fontWeight: 600, color: textColor, marginTop: 7, whiteSpace: 'nowrap' }}>{step.label}</div>

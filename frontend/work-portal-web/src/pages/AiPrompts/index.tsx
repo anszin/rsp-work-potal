@@ -8,9 +8,12 @@ import { Button, IconButton } from '../../components/ui'
 const DEFAULT_ROLES = ['backend', 'android', 'frontend', 'planner']
 
 const DEFAULT_COLORS: Record<string, string> = {
-  backend: '#1976d2', android: '#4caf50', frontend: '#ff9800', planner: '#9c27b0',
+  backend: 'var(--c-chart-1)', android: 'var(--c-chart-2)', frontend: 'var(--c-chart-3)', planner: 'var(--c-chart-5)',
 }
-const EXTRA_COLORS = ['#e91e63', '#00bcd4', '#ff5722', '#795548', '#009688', '#673ab7', '#3f51b5']
+const EXTRA_COLORS = ['var(--c-chart-4)', 'var(--c-chart-6)', 'var(--c-chart-3)', 'var(--c-chart-8)', 'var(--c-chart-2)', 'var(--c-chart-5)', 'var(--c-chart-7)']
+
+// 토큰 색상에 투명도 적용 (CSS 변수는 hex 알파 접미사를 붙일 수 없음)
+const withAlpha = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`
 
 function getRoleColor(role: string, index: number): string {
   return DEFAULT_COLORS[role] ?? EXTRA_COLORS[index % EXTRA_COLORS.length]
@@ -25,9 +28,9 @@ function VisibilityBadge({ visibility }: { visibility: 'public' | 'private' }) {
   return (
     <span style={{
       fontSize: 10, padding: '1px 6px', borderRadius: 8, fontWeight: 600,
-      background: isPublic ? '#4caf5022' : '#78909c22',
-      color: isPublic ? '#4caf50' : '#78909c',
-      border: `1px solid ${isPublic ? '#4caf5044' : '#78909c44'}`,
+      background: isPublic ? 'color-mix(in srgb, var(--c-tag-done-t) 13%, transparent)' : 'color-mix(in srgb, var(--c-text-muted) 13%, transparent)',
+      color: isPublic ? 'var(--c-tag-done-t)' : 'var(--c-text-muted)',
+      border: `1px solid ${isPublic ? 'color-mix(in srgb, var(--c-tag-done-t) 27%, transparent)' : 'color-mix(in srgb, var(--c-text-muted) 27%, transparent)'}`,
       whiteSpace: 'nowrap', flexShrink: 0,
     }}>
       {isPublic ? '팀 공통' : '개인'}
@@ -46,8 +49,8 @@ function ToastList({ toasts }: { toasts: Toast[] }) {
       {toasts.map(t => (
         <div key={t.id} style={{
           padding: '11px 18px', borderRadius: 8, fontSize: 13, fontWeight: 500,
-          background: t.type === 'success' ? '#4caf50' : '#f44336',
-          color: '#fff', boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+          background: t.type === 'success' ? 'var(--rsp-color-success-500)' : 'var(--rsp-color-error-500)',
+          color: 'var(--rsp-color-text-on-primary)', boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
           animation: 'ai-toast-in 0.2s ease',
         }}>
           {t.type === 'success' ? '✓ ' : '✕ '}{t.message}
@@ -63,7 +66,7 @@ function ConfirmDialog({ roleName, onConfirm, onCancel }: {
   roleName: string; onConfirm: () => void; onCancel: () => void
 }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 12, padding: '24px 28px', maxWidth: 360, width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
         <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--c-text)' }}>역할 삭제</div>
         <div style={{ fontSize: 13, color: 'var(--c-text-sub)', marginBottom: 20, lineHeight: 1.6 }}>
@@ -119,13 +122,13 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 12, padding: '24px 28px', width: 480, maxWidth: '95vw', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
         <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 18, color: 'var(--c-text)' }}>새 역할 추가</div>
 
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 12, color: 'var(--c-text-muted)', display: 'block', marginBottom: 5 }}>
-            역할 ID <span style={{ color: '#f44336' }}>*</span>
+            역할 ID <span style={{ color: 'var(--c-tag-err-t)' }}>*</span>
             <span style={{ fontSize: 11, marginLeft: 6 }}>(영문 소문자, 예: qa, devops)</span>
           </label>
           <input
@@ -134,16 +137,16 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
             placeholder="qa"
             style={{
               width: '100%', padding: '8px 10px', borderRadius: 7, fontSize: 13,
-              border: `1px solid ${errors.role ? '#f44336' : 'var(--c-border)'}`,
+              border: `1px solid ${errors.role ? 'var(--c-tag-err-t)' : 'var(--c-border)'}`,
               background: 'var(--c-bg)', color: 'var(--c-text)', boxSizing: 'border-box',
             }}
           />
-          {errors.role && <div style={{ fontSize: 11, color: '#f44336', marginTop: 4 }}>{errors.role}</div>}
+          {errors.role && <div style={{ fontSize: 11, color: 'var(--c-tag-err-t)', marginTop: 4 }}>{errors.role}</div>}
         </div>
 
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 12, color: 'var(--c-text-muted)', display: 'block', marginBottom: 5 }}>
-            역할명 <span style={{ color: '#f44336' }}>*</span>
+            역할명 <span style={{ color: 'var(--c-tag-err-t)' }}>*</span>
             <span style={{ fontSize: 11, marginLeft: 6 }}>(한글 표시명, 예: QA 엔지니어)</span>
           </label>
           <input
@@ -152,11 +155,11 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
             placeholder="QA 엔지니어"
             style={{
               width: '100%', padding: '8px 10px', borderRadius: 7, fontSize: 13,
-              border: `1px solid ${errors.roleName ? '#f44336' : 'var(--c-border)'}`,
+              border: `1px solid ${errors.roleName ? 'var(--c-tag-err-t)' : 'var(--c-border)'}`,
               background: 'var(--c-bg)', color: 'var(--c-text)', boxSizing: 'border-box',
             }}
           />
-          {errors.roleName && <div style={{ fontSize: 11, color: '#f44336', marginTop: 4 }}>{errors.roleName}</div>}
+          {errors.roleName && <div style={{ fontSize: 11, color: 'var(--c-tag-err-t)', marginTop: 4 }}>{errors.roleName}</div>}
         </div>
 
         {/* 공개 범위 선택 */}
@@ -164,15 +167,15 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
           <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8 }}>공개 범위</div>
           <div style={{ display: 'flex', gap: 10 }}>
             {([
-              { value: 'public',  label: '팀 공통', desc: '모든 구성원이 사용 가능', color: '#4caf50' },
-              { value: 'private', label: '나만 사용', desc: '본인만 사용 가능', color: '#78909c' },
+              { value: 'public',  label: '팀 공통', desc: '모든 구성원이 사용 가능', color: 'var(--c-tag-done-t)' },
+              { value: 'private', label: '나만 사용', desc: '본인만 사용 가능', color: 'var(--c-text-muted)' },
             ] as const).map(opt => (
               <label
                 key={opt.value}
                 style={{
                   flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
                   border: `1.5px solid ${visibility === opt.value ? opt.color : 'var(--c-border)'}`,
-                  background: visibility === opt.value ? opt.color + '11' : 'var(--c-bg)',
+                  background: visibility === opt.value ? withAlpha(opt.color, 7) : 'var(--c-bg)',
                   display: 'flex', alignItems: 'flex-start', gap: 8,
                 }}
               >
@@ -213,7 +216,7 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
           />
         </div>
 
-        {errors.submit && <div style={{ fontSize: 12, color: '#f44336', marginBottom: 12 }}>{errors.submit}</div>}
+        {errors.submit && <div style={{ fontSize: 12, color: 'var(--c-tag-err-t)', marginBottom: 12 }}>{errors.submit}</div>}
 
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <Button variant="outlined" size="md" onClick={onClose} disabled={saving}>취소</Button>
@@ -340,7 +343,7 @@ export default function AiPromptsPage() {
   const isDirty = activePrompt !== null &&
     (editText !== activePrompt.systemPrompt || editName !== activePrompt.roleName)
   const charCount = editText.length
-  const activeColor = activeRole ? getRoleColor(activeRole, prompts.findIndex(p => p.role === activeRole)) : '#888'
+  const activeColor = activeRole ? getRoleColor(activeRole, prompts.findIndex(p => p.role === activeRole)) : 'var(--c-chart-8)'
   const isActivePublic = activePrompt?.visibility === 'public'
 
   // ── 렌더 ────────────────────────────────────────────────────────────────────
@@ -453,8 +456,8 @@ export default function AiPromptsPage() {
               {isActivePublic && (
                 <div style={{
                   marginBottom: 14, padding: '10px 14px', borderRadius: 8, flexShrink: 0,
-                  background: '#ff980011', border: '1px solid #ff980044',
-                  fontSize: 12, color: '#e65100', lineHeight: 1.6,
+                  background: 'color-mix(in srgb, var(--rsp-color-warning-500) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--rsp-color-warning-500) 27%, transparent)',
+                  fontSize: 12, color: 'var(--c-tag-warn-t)', lineHeight: 1.6,
                 }}>
                   ⚠️ <strong>팀 공통 역할</strong>입니다. 변경 시 모든 구성원에게 영향을 줍니다.
                 </div>
@@ -465,7 +468,7 @@ export default function AiPromptsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <span style={{
                     fontSize: 11, padding: '2px 8px', borderRadius: 10,
-                    background: activeColor + '22', color: activeColor, fontWeight: 600,
+                    background: withAlpha(activeColor, 13), color: activeColor, fontWeight: 600,
                   }}>{activeRole}</span>
                   <VisibilityBadge visibility={activePrompt.visibility} />
                   {activePrompt.updatedAt && (
@@ -493,7 +496,7 @@ export default function AiPromptsPage() {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexShrink: 0 }}>
                   <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>시스템 프롬프트</span>
-                  <span style={{ fontSize: 12, color: charCount > 8000 ? '#f44336' : 'var(--c-text-muted)' }}>
+                  <span style={{ fontSize: 12, color: charCount > 8000 ? 'var(--c-tag-err-t)' : 'var(--c-text-muted)' }}>
                     {charCount.toLocaleString()}자
                   </span>
                 </div>

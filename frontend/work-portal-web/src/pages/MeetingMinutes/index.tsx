@@ -77,8 +77,8 @@ export default function MeetingMinutesPage() {
                   onClick={() => { setSelected(item); setShowForm(false) }}
                   style={{
                     padding: '10px 14px', borderRadius: 8, border: '1px solid',
-                    borderColor: selected?.id === item.id ? '#1976d2' : 'var(--c-border)',
-                    background: selected?.id === item.id ? '#e3f2fd' : 'var(--c-card)',
+                    borderColor: selected?.id === item.id ? 'var(--c-action)' : 'var(--c-border)',
+                    background: selected?.id === item.id ? 'var(--c-tag-sys)' : 'var(--c-card)',
                     cursor: 'pointer',
                   }}>
                   <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 3 }}>{item.title}</div>
@@ -149,7 +149,7 @@ export default function MeetingMinutesPage() {
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <Button variant="outlined" onClick={() => openEdit(selected)}>수정</Button>
-                <Button variant="outlined" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(selected.id) }} style={{ color: '#c62828', borderColor: '#ef9a9a' }}>삭제</Button>
+                <Button variant="outlined" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(selected.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-bg)' }}>삭제</Button>
               </div>
             </div>
             {selected.attendees && (
@@ -167,7 +167,7 @@ export default function MeetingMinutesPage() {
             {selected.actionItems && (
               <div>
                 <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>액션 아이템</div>
-                <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#fffde7', padding: '14px 16px', borderRadius: 6, border: '1px solid #fff9c4' }}>{selected.actionItems}</div>
+                <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: 'var(--c-tag-warn-bg)', padding: '14px 16px', borderRadius: 6, border: '1px solid var(--c-tag-warn-bg)' }}>{selected.actionItems}</div>
               </div>
             )}
           </>

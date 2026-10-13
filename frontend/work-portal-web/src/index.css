@@ -46,6 +46,20 @@
   --c-status-review: #d69e2e;
   --c-status-done:   #38a169;
   --c-status-hold:   #c05621;
+  /* 강조(teal) 태그 — SDK primary(그린) 계열 */
+  --c-tag-teal-bg:  var(--rsp-color-primary-50);
+  --c-tag-teal-t:   var(--rsp-color-primary-700);
+  /* 범주형 팔레트(차트 시리즈·시스템/역할 구분색) — SDK primitive 중간 톤 */
+  --c-chart-1: var(--rsp-color-secondary-500);
+  --c-chart-2: var(--rsp-color-success-500);
+  --c-chart-3: var(--rsp-color-warning-500);
+  --c-chart-4: var(--rsp-color-error-500);
+  --c-chart-5: var(--rsp-color-tertiary-500);
+  --c-chart-6: var(--rsp-color-primary-600);
+  --c-chart-7: var(--rsp-color-info-700);
+  --c-chart-8: var(--rsp-color-neutral-500);
+  /* 모달 뒤 배경 */
+  --c-overlay: rgba(0, 0, 0, 0.45);
 }
 
 /*
@@ -93,6 +107,18 @@
   --c-status-review: #f6ad55;
   --c-status-done:   #68d391;
   --c-status-hold:   #ed8936;
+  --c-tag-teal-bg:  var(--rsp-color-primary-900);
+  --c-tag-teal-t:   var(--rsp-color-primary-200);
+  /* 범주형 팔레트: 채움 배경 + 흰 글자 조합에서도 읽히도록 중간 톤 유지 */
+  --c-chart-1: var(--rsp-color-secondary-400);
+  --c-chart-2: var(--rsp-color-success-500);
+  --c-chart-3: var(--rsp-color-warning-600);
+  --c-chart-4: var(--rsp-color-error-500);
+  --c-chart-5: var(--rsp-color-tertiary-400);
+  --c-chart-6: var(--rsp-color-primary-600);
+  --c-chart-7: var(--rsp-color-secondary-300);
+  --c-chart-8: var(--rsp-color-neutral-500);
+  --c-overlay: rgba(0, 0, 0, 0.6);
 }
 
 /*

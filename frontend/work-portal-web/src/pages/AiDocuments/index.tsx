@@ -6,11 +6,11 @@ import { Button } from '../../components/ui'
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
 const SCOPES: { value: DocScope; label: string; color: string }[] = [
-  { value: 'shared',   label: '전체 공유',    color: '#4caf50' },
-  { value: 'backend',  label: '백엔드 전용',  color: '#1976d2' },
-  { value: 'android',  label: '안드로이드 전용', color: '#9c27b0' },
-  { value: 'frontend', label: '프론트 전용',  color: '#ff9800' },
-  { value: 'planner',  label: '기획 전용',    color: '#607d8b' },
+  { value: 'shared',   label: '전체 공유',    color: 'var(--c-chart-2)' },
+  { value: 'backend',  label: '백엔드 전용',  color: 'var(--c-chart-1)' },
+  { value: 'android',  label: '안드로이드 전용', color: 'var(--c-chart-5)' },
+  { value: 'frontend', label: '프론트 전용',  color: 'var(--c-chart-3)' },
+  { value: 'planner',  label: '기획 전용',    color: 'var(--c-chart-8)' },
 ]
 
 const ROLES: { value: string; label: string }[] = [
@@ -42,8 +42,8 @@ function ScopeBadge({ scope }: { scope: DocScope }) {
   return (
     <span style={{
       fontSize: 11, padding: '2px 7px', borderRadius: 10,
-      background: s.color + '22', color: s.color, fontWeight: 600,
-      border: `1px solid ${s.color}44`, whiteSpace: 'nowrap',
+      background: `color-mix(in srgb, ${s.color} 13%, transparent)`, color: s.color, fontWeight: 600,
+      border: `1px solid color-mix(in srgb, ${s.color} 27%, transparent)`, whiteSpace: 'nowrap',
     }}>
       {s.label}
     </span>
@@ -69,7 +69,7 @@ function ConfirmDialog({
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 500,
-      background: 'rgba(0,0,0,0.45)',
+      background: 'var(--c-overlay)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{
@@ -257,12 +257,12 @@ export default function AiDocumentsPage() {
           onDragLeave={handleDragLeave}
           onClick={() => fileInputRef.current?.click()}
           style={{
-            border: `2px dashed ${dragOver ? '#1976d2' : 'var(--c-border)'}`,
+            border: `2px dashed ${dragOver ? 'var(--c-action)' : 'var(--c-border)'}`,
             borderRadius: 10,
             padding: '28px 20px',
             textAlign: 'center',
             cursor: 'pointer',
-            background: dragOver ? '#1976d211' : 'var(--c-bg)',
+            background: dragOver ? 'var(--c-tag-sys)' : 'var(--c-bg)',
             transition: 'all 0.15s',
           }}
         >
@@ -295,7 +295,7 @@ export default function AiDocumentsPage() {
                 <div style={{ height: 4, background: 'var(--c-border)', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{
                     height: '100%', borderRadius: 2,
-                    background: '#1976d2',
+                    background: 'var(--rsp-color-secondary-500)',
                     width: `${u.progress}%`,
                     transition: 'width 0.2s',
                   }} />
@@ -307,13 +307,13 @@ export default function AiDocumentsPage() {
               <div style={{ marginTop: 8 }}>
                 {finishedUploads.map(u => (
                   <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '3px 0' }}>
-                    <span style={{ color: u.status === 'done' ? '#4caf50' : '#f44336', flexShrink: 0 }}>
+                    <span style={{ color: u.status === 'done' ? 'var(--c-tag-done-t)' : 'var(--c-tag-err-t)', flexShrink: 0 }}>
                       {u.status === 'done' ? '✓' : '✕'}
                     </span>
                     <span style={{ color: 'var(--c-text-sub)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {u.file.name}
                     </span>
-                    {u.error && <span style={{ color: '#f44336', fontSize: 11 }}>{u.error}</span>}
+                    {u.error && <span style={{ color: 'var(--c-tag-err-t)', fontSize: 11 }}>{u.error}</span>}
                   </div>
                 ))}
                 <Button variant="outlined" size="xs" onClick={clearDoneUploads} style={{ marginTop: 6 }}>완료 항목 지우기</Button>
@@ -342,9 +342,9 @@ export default function AiDocumentsPage() {
                 onClick={() => setFilterRole(r.value)}
                 style={{
                   fontSize: 11, padding: '4px 10px', borderRadius: 14, cursor: 'pointer',
-                  border: `1px solid ${filterRole === r.value ? '#1976d2' : 'var(--c-border)'}`,
-                  background: filterRole === r.value ? '#1976d218' : 'var(--c-bg)',
-                  color: filterRole === r.value ? '#1976d2' : 'var(--c-text-muted)',
+                  border: `1px solid ${filterRole === r.value ? 'var(--c-action)' : 'var(--c-border)'}`,
+                  background: filterRole === r.value ? 'var(--c-tag-sys)' : 'var(--c-bg)',
+                  color: filterRole === r.value ? 'var(--c-action)' : 'var(--c-text-muted)',
                   fontWeight: filterRole === r.value ? 600 : 400,
                 }}
               >
@@ -394,7 +394,7 @@ export default function AiDocumentsPage() {
                         {doc.originalFilename}
                       </div>
                       {doc.status !== 'DONE' && doc.status !== 'done' && (
-                        <div style={{ fontSize: 10, color: '#ff9800', marginTop: 2 }}>{doc.status}</div>
+                        <div style={{ fontSize: 10, color: 'var(--c-tag-warn-t)', marginTop: 2 }}>{doc.status}</div>
                       )}
                     </td>
                     <td style={{ padding: '10px 14px' }}><ScopeBadge scope={doc.scope} /></td>

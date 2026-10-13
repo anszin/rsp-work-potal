@@ -52,9 +52,9 @@ const emptyForm = (level: TaskLevel = '팀'): FormData => ({
 })
 
 const LEVEL_COLOR: Record<TaskLevel, { bg: string; color: string; border: string }> = {
-  '팀':     { bg: '#EBF8FF', color: '#2B6CB0', border: '#BEE3F8' },
-  '담당부서': { bg: '#F0FFF4', color: '#276749', border: '#C6F6D5' },
-  '담당자':  { bg: '#FFF5F5', color: '#9B2C2C', border: '#FED7D7' },
+  '팀':     { bg: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', border: 'var(--c-tag-sys)' },
+  '담당부서': { bg: 'var(--c-tag-done-bg)', color: 'var(--c-tag-done-t)', border: 'var(--c-tag-done-bg)' },
+  '담당자':  { bg: 'var(--c-tag-err-bg)', color: 'var(--c-tag-err-t)', border: 'var(--c-tag-err-bg)' },
 }
 
 
@@ -172,7 +172,7 @@ export default function KeyTaskPage() {
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: '6px 0', border: 'none',
-    borderBottom: `2px solid ${active ? '#1a1a2e' : 'transparent'}`,
+    borderBottom: `2px solid ${active ? 'var(--c-text)' : 'transparent'}`,
     background: 'none', cursor: 'pointer', fontSize: 13,
     fontWeight: active ? 600 : 400,
     color: active ? 'var(--c-text)' : 'var(--c-text-muted)',
@@ -327,13 +327,13 @@ export default function KeyTaskPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {weeks.map(ws => (
                     <div key={ws} style={{ border: '1px solid var(--c-border)', borderRadius: 8, overflow: 'hidden' }}>
-                      <div style={{ padding: '8px 14px', background: 'var(--c-thead)', fontWeight: 700, fontSize: 13, color: '#1976d2' }}>
+                      <div style={{ padding: '8px 14px', background: 'var(--c-thead)', fontWeight: 700, fontSize: 13, color: 'var(--c-action)' }}>
                         {weekLabelFrom(ws)}
                       </div>
                       <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                         {weekMap.get(ws)!.map((e, i) => (
                           <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>
-                            <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 6px', borderRadius: 8, background: '#1976d212', color: '#1976d2', fontWeight: 700, marginTop: 2 }}>{e.section}</span>
+                            <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 6px', borderRadius: 8, background: 'color-mix(in srgb, var(--c-action) 7%, transparent)', color: 'var(--c-action)', fontWeight: 700, marginTop: 2 }}>{e.section}</span>
                             <div style={{ flex: 1 }}>
                               <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 2 }}>{e.report.author}</div>
                               <div style={{ fontSize: 13, color: 'var(--c-text)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{e.item.content}</div>
@@ -479,10 +479,10 @@ export default function KeyTaskPage() {
                   {visibleQs.map((q, i) => <td key={`reason-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></td>)}
                   <td style={s.td}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      <Button variant="outlined" size="sm" style={{ color: '#1976d2', borderColor: '#90caf9' }} onClick={() => setProgressTask(t)}>실적</Button>
-                      <Button variant="outlined" size="sm" style={{ color: '#6b46c1', borderColor: '#d6bcfa' }} onClick={() => { setWorkUnitFilterId(t.id); setPageTab('workunits') }}>단위업무</Button>
+                      <Button variant="outlined" size="sm" style={{ color: 'var(--c-action)', borderColor: 'var(--c-tag-sys)' }} onClick={() => setProgressTask(t)}>실적</Button>
+                      <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-pri-t)', borderColor: 'var(--c-tag-pri-bg)' }} onClick={() => { setWorkUnitFilterId(t.id); setPageTab('workunits') }}>단위업무</Button>
                       <Button variant="outlined" size="sm" onClick={() => openEdit(t)}>수정</Button>
-                      <Button variant="outlined" size="sm" style={{ color: '#e53e3e', borderColor: '#e53e3e' }}
+                      <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
                         onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</Button>
                     </div>
                   </td>
@@ -499,9 +499,9 @@ export default function KeyTaskPage() {
 
 
 const s: Record<string, React.CSSProperties> = {
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  overlay: { position: 'fixed', inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: 'var(--c-card)', borderRadius: 10, padding: 28, width: '90vw', maxWidth: 920, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.25)' },
-  btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
+  btn: { padding: '8px 16px', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12 },
   label: { display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--c-text-sub)', marginBottom: 6 },
@@ -512,7 +512,7 @@ const s: Record<string, React.CSSProperties> = {
   tr: { borderBottom: '1px solid var(--c-border-in)' },
   td: { padding: '10px 12px', fontSize: 13, verticalAlign: 'top', borderLeft: '1px solid var(--c-border-in)' },
   cell: { margin: 0, fontFamily: 'inherit', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: 'var(--c-text)' },
-  achBadge: { fontSize: 12, background: '#EBF8FF', color: '#2B6CB0', padding: '2px 8px', borderRadius: 4, fontWeight: 600 },
+  achBadge: { fontSize: 12, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontWeight: 600 },
   empty: { padding: 40, textAlign: 'center', color: 'var(--c-text-muted)', fontSize: 13 },
   sep: { borderLeft: '1px solid var(--c-border)' },
 }

@@ -189,7 +189,7 @@ export default function TodoPage() {
     return acc
   }, {} as Record<TodoStatus, Todo[]>)
 
-  if (isLoading) return <div style={{ padding: 40, textAlign: 'center', color: '#718096' }}>로딩 중...</div>
+  if (isLoading) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--c-text-muted)' }}>로딩 중...</div>
 
   return (
     <div style={{ padding: 24, height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -198,7 +198,7 @@ export default function TodoPage() {
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>To-Do</h2>
           <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 2 }}>
             총 {todos.length}개 · 완료 {grouped.DONE.length}개
-            {grouped.HOLD.length > 0 && <span style={{ color: '#c05621', marginLeft: 8 }}>· 보류 {grouped.HOLD.length}개</span>}
+            {grouped.HOLD.length > 0 && <span style={{ color: 'var(--c-tag-warn-t)', marginLeft: 8 }}>· 보류 {grouped.HOLD.length}개</span>}
           </div>
         </div>
         <Button variant="filled" onClick={openCreate}>+ 추가</Button>
@@ -716,7 +716,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
 
 const styles: Record<string, React.CSSProperties> = {
   addBtn: {
-    background: '#3182ce', color: '#fff', border: 'none',
+    background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none',
     padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600,
   },
   colHeader: {
@@ -734,7 +734,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 12, padding: '2px 3px', opacity: 0.5, lineHeight: 1,
   },
   overlay: {
-    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+    position: 'fixed', inset: 0, background: 'var(--c-overlay)',
     display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
   },
   modal: {
@@ -762,7 +762,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   submitBtn: {
     padding: '8px 20px', borderRadius: 6, border: 'none',
-    background: '#3182ce', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+    background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', cursor: 'pointer', fontSize: 13, fontWeight: 600,
   },
   deleteBtn: {
     padding: '8px 14px', borderRadius: 6, border: '1px solid var(--c-tag-err-t)',

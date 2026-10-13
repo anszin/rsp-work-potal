@@ -14,7 +14,7 @@ const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 const TODO_STATUS: Record<string, { label: string; bg: string; color: string }> = {
   DONE:        { label: '완료',   bg: 'var(--c-tag-done-bg)',  color: 'var(--c-tag-done-t)' },
   IN_PROGRESS: { label: '진행중', bg: 'var(--c-tag-sys)',      color: 'var(--c-tag-sys-t)' },
-  REVIEW:      { label: '검토',   bg: '#FEFCBF',              color: '#975A16' },
+  REVIEW:      { label: '검토',   bg: 'var(--c-tag-warn-bg)', color: 'var(--c-tag-warn-t)' },
   TODO:        { label: '대기',   bg: 'var(--c-tag-draft-bg)', color: 'var(--c-tag-draft-t)' },
   HOLD:        { label: '보류',   bg: 'var(--c-tag-err-bg)',   color: 'var(--c-tag-err-t)' },
 }
@@ -205,7 +205,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                       style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--c-border)', cursor: total > 0 ? 'pointer' : 'default' }}
                     >
                       <div style={{ flex: 1, height: 6, background: 'var(--c-border)', borderRadius: 3, overflow: 'hidden' }}>
-                        {total > 0 && <div style={{ width: `${rate}%`, height: '100%', background: '#38a169', borderRadius: 3, transition: 'width 0.3s' }} />}
+                        {total > 0 && <div style={{ width: `${rate}%`, height: '100%', background: 'var(--rsp-color-success-500)', borderRadius: 3, transition: 'width 0.3s' }} />}
                       </div>
                       <span style={{ fontSize: 12, color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
                         {total > 0 ? `완료 ${doneCount}/${total} (${rate}%)` : 'Todo 없음'}
@@ -308,7 +308,7 @@ const styles: Record<string, React.CSSProperties> = {
   filter:    { padding: '6px 10px', borderRadius: 6, border: '1px solid var(--c-border)', fontSize: 13, background: 'var(--c-input-bg)', color: 'inherit', cursor: 'pointer' },
   card:      { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '12px 16px' },
   badge:     { fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' },
-  overlay:   { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  overlay:   { position: 'fixed', inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal:     { background: 'var(--c-card)', borderRadius: 10, padding: 24, width: '100%', maxWidth: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' },
   label:     { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--c-text-sub)', fontWeight: 500 },
   input:     { padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border)', fontSize: 13, outline: 'none', background: 'var(--c-input-bg)', color: 'inherit', width: '100%', boxSizing: 'border-box' },

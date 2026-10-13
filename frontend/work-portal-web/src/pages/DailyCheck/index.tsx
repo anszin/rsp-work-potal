@@ -7,7 +7,7 @@ import { Button } from '../../components/ui'
 interface SystemOption { id: number; name: string }
 
 const STATUS_LABEL: Record<CheckStatus, string> = { NORMAL: '정상', WARNING: '주의', CRITICAL: '위험' }
-const STATUS_COLOR: Record<CheckStatus, string> = { NORMAL: '#4caf50', WARNING: '#ff9800', CRITICAL: '#f44336' }
+const STATUS_COLOR: Record<CheckStatus, string> = { NORMAL: 'var(--c-tag-done-t)', WARNING: 'var(--c-tag-warn-t)', CRITICAL: 'var(--c-tag-err-t)' }
 
 const emptyForm = (): SaveDailyCheckRequest => ({
   systemId: 0, checkDate: new Date().toISOString().slice(0, 10), status: 'NORMAL', note: '',
@@ -83,10 +83,10 @@ export default function DailyCheckPage() {
       {dateFilter === today && reports.length > 0 && (
         <div style={{
           padding: '10px 16px', borderRadius: 8, marginBottom: 16,
-          background: hasCritical ? '#ffebee' : hasWarning ? '#fff3e0' : '#e8f5e9',
-          border: `1px solid ${hasCritical ? '#ef9a9a' : hasWarning ? '#ffcc80' : '#a5d6a7'}`,
+          background: hasCritical ? 'var(--c-tag-err-bg)' : hasWarning ? 'var(--c-tag-warn-bg)' : 'var(--c-tag-done-bg)',
+          border: `1px solid ${hasCritical ? 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' : hasWarning ? 'color-mix(in srgb, var(--c-tag-warn-t) 40%, transparent)' : 'color-mix(in srgb, var(--c-tag-done-t) 40%, transparent)'}`,
           fontSize: 14, fontWeight: 600,
-          color: hasCritical ? '#c62828' : hasWarning ? '#e65100' : '#2e7d32',
+          color: hasCritical ? 'var(--c-tag-err-t)' : hasWarning ? 'var(--c-tag-warn-t)' : 'var(--c-tag-done-t)',
         }}>
           {hasCritical ? '위험 시스템이 있습니다' : hasWarning ? '주의가 필요한 시스템이 있습니다' : '모든 시스템 정상'}
           <span style={{ fontWeight: 400, marginLeft: 8 }}>({reports.length}개 시스템 점검 완료)</span>
@@ -154,7 +154,7 @@ export default function DailyCheckPage() {
                 <td style={{ padding: '10px 14px' }}>
                   <span style={{
                     padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600,
-                    background: STATUS_COLOR[r.status] + '22', color: STATUS_COLOR[r.status],
+                    background: `color-mix(in srgb, ${STATUS_COLOR[r.status]} 13%, transparent)`, color: STATUS_COLOR[r.status],
                   }}>
                     {STATUS_LABEL[r.status]}
                   </span>
@@ -168,7 +168,7 @@ export default function DailyCheckPage() {
                 </td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
                   <Button variant="outlined" size="sm" onClick={() => openEdit(r)}>수정</Button>
-                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }} style={{ color: '#c62828', borderColor: '#ef9a9a' }}>삭제</Button>
+                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' }}>삭제</Button>
                 </td>
               </tr>
             ))}

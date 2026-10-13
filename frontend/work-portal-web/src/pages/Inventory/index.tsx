@@ -8,7 +8,7 @@ const STATUS_LABEL: Record<ItemStatus, string> = {
   ACTIVE: '진행중', COMPLETED: '완료', CANCELLED: '취소', ON_HOLD: '보류',
 }
 const STATUS_COLOR: Record<ItemStatus, string> = {
-  ACTIVE: '#2196f3', COMPLETED: '#4caf50', CANCELLED: '#9e9e9e', ON_HOLD: '#ff9800',
+  ACTIVE: 'var(--c-tag-sys-t)', COMPLETED: 'var(--c-tag-done-t)', CANCELLED: 'var(--c-text-muted)', ON_HOLD: 'var(--c-tag-warn-t)',
 }
 
 const emptyForm = (): SaveInventoryRequest => ({
@@ -83,7 +83,7 @@ export default function InventoryPage() {
           <div style={{ display: 'flex', gap: 20 }}>
             {(['list', 'dashboard'] as const).map(t => (
               <button key={t} onClick={() => setTab(t)}
-                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? '#1a1a2e' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
+                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? 'var(--c-action)' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
                 {t === 'list' ? '목록' : '현황'}
               </button>
             ))}
@@ -182,7 +182,7 @@ export default function InventoryPage() {
             ) : items.map(item => (
               <tr key={item.id} style={{ borderBottom: '1px solid var(--c-border-in)' }}>
                 <td style={{ padding: '10px 14px', fontSize: 13 }}>
-                  <span style={{ padding: '2px 8px', borderRadius: 4, background: item.type === 'CONTRACT' ? '#e3f2fd' : '#fff3e0', color: item.type === 'CONTRACT' ? '#1565c0' : '#e65100', fontSize: 12 }}>
+                  <span style={{ padding: '2px 8px', borderRadius: 4, background: item.type === 'CONTRACT' ? 'var(--c-tag-sys)' : 'var(--c-tag-warn-bg)', color: item.type === 'CONTRACT' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-warn-t)', fontSize: 12 }}>
                     {TYPE_LABEL[item.type]}
                   </span>
                 </td>
@@ -190,7 +190,7 @@ export default function InventoryPage() {
                 <td style={{ padding: '10px 14px', color: 'var(--c-text-sub)' }}>{item.client ?? '-'}</td>
                 <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace' }}>{fmt(item.amount)}</td>
                 <td style={{ padding: '10px 14px' }}>
-                  <span style={{ padding: '2px 8px', borderRadius: 4, background: STATUS_COLOR[item.status] + '22', color: STATUS_COLOR[item.status], fontSize: 12 }}>
+                  <span style={{ padding: '2px 8px', borderRadius: 4, background: `color-mix(in srgb, ${STATUS_COLOR[item.status]} 13%, transparent)`, color: STATUS_COLOR[item.status], fontSize: 12 }}>
                     {STATUS_LABEL[item.status]}
                   </span>
                 </td>
@@ -200,7 +200,7 @@ export default function InventoryPage() {
                 <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-sub)', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.note ?? '-'}</td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
                   <Button variant="outlined" size="sm" onClick={() => openEdit(item)}>수정</Button>
-                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(item.id) }} style={{ color: '#c62828', borderColor: '#ef9a9a' }}>삭제</Button>
+                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(item.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' }}>삭제</Button>
                 </td>
               </tr>
             ))}
@@ -217,9 +217,9 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
   const fmt = (n: number) => n.toLocaleString('ko-KR') + '원'
   const types: ItemType[] = ['CONTRACT', 'PROPOSAL']
   const statuses: ItemStatus[] = ['ACTIVE', 'COMPLETED', 'ON_HOLD', 'CANCELLED']
-  const typeColors: Record<ItemType, string> = { CONTRACT: '#1565c0', PROPOSAL: '#e65100' }
-  const typeBg: Record<ItemType, string>    = { CONTRACT: '#e3f2fd', PROPOSAL: '#fff3e0' }
-  const statusColors: Record<ItemStatus, string> = { ACTIVE: '#2196f3', COMPLETED: '#4caf50', ON_HOLD: '#ff9800', CANCELLED: '#9e9e9e' }
+  const typeColors: Record<ItemType, string> = { CONTRACT: 'var(--c-tag-sys-t)', PROPOSAL: 'var(--c-tag-warn-t)' }
+  const typeBg: Record<ItemType, string>    = { CONTRACT: 'var(--c-tag-sys)', PROPOSAL: 'var(--c-tag-warn-bg)' }
+  const statusColors: Record<ItemStatus, string> = { ACTIVE: 'var(--c-tag-sys-t)', COMPLETED: 'var(--c-tag-done-t)', ON_HOLD: 'var(--c-tag-warn-t)', CANCELLED: 'var(--c-text-muted)' }
 
   const totalAmount = (t: ItemType) => items.filter(i => i.type === t).reduce((s, i) => s + (i.amount ?? 0), 0)
   const byStatus = (t: ItemType) => statuses.map(st => ({ st, count: items.filter(i => i.type === t && i.status === st).length }))
@@ -243,7 +243,7 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
                 {byStatus(t).filter(({ count }) => count > 0).map(({ st, count }) => (
-                  <span key={st} style={{ fontSize: 12, background: statusColors[st] + '22', color: statusColors[st], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>
+                  <span key={st} style={{ fontSize: 12, background: `color-mix(in srgb, ${statusColors[st]} 13%, transparent)`, color: statusColors[st], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>
                     {STATUS_LABEL[st]} {count}
                   </span>
                 ))}
@@ -256,7 +256,7 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>상태별 현황</div>
         <div className="grid-4col">
           {statuses.map(st => (
-            <div key={st} style={{ background: statusColors[st] + '11', border: `1px solid ${statusColors[st]}44`, borderRadius: 8, padding: '14px 18px' }}>
+            <div key={st} style={{ background: `color-mix(in srgb, ${statusColors[st]} 7%, transparent)`, border: `1px solid color-mix(in srgb, ${statusColors[st]} 27%, transparent)`, borderRadius: 8, padding: '14px 18px' }}>
               <div style={{ fontSize: 11, color: statusColors[st], fontWeight: 600, marginBottom: 6 }}>{STATUS_LABEL[st]}</div>
               <div style={{ fontSize: 24, fontWeight: 700, color: statusColors[st] }}>{items.filter(i => i.status === st).length}</div>
             </div>

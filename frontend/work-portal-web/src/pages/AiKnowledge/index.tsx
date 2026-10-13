@@ -7,9 +7,9 @@ import {
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
 const SOURCE_BADGE: Record<SourceType, { label: string; color: string }> = {
-  GITHUB: { label: 'GitHub', color: '#1976d2' },
-  GITLAB: { label: 'GitLab', color: '#e65100' },
-  UPLOAD: { label: '업로드', color: '#4caf50' },
+  GITHUB: { label: 'GitHub', color: 'var(--c-chart-1)' },
+  GITLAB: { label: 'GitLab', color: 'var(--c-chart-3)' },
+  UPLOAD: { label: '업로드', color: 'var(--c-chart-2)' },
 }
 
 // ── 유틸 ──────────────────────────────────────────────────────────────────────
@@ -33,11 +33,11 @@ function fmtDate(iso: string | null | undefined): string {
 // ── 소스 타입 배지 ────────────────────────────────────────────────────────────
 
 function SourceBadge({ type }: { type: SourceType }) {
-  const b = SOURCE_BADGE[type] ?? { label: type, color: '#888' }
+  const b = SOURCE_BADGE[type] ?? { label: type, color: 'var(--c-chart-8)' }
   return (
     <span style={{
       fontSize: 11, padding: '2px 7px', borderRadius: 10, fontWeight: 600,
-      background: b.color + '22', color: b.color, border: `1px solid ${b.color}44`,
+      background: `color-mix(in srgb, ${b.color} 13%, transparent)`, color: b.color, border: `1px solid color-mix(in srgb, ${b.color} 27%, transparent)`,
       whiteSpace: 'nowrap',
     }}>
       {b.label}
@@ -81,7 +81,7 @@ function FileRows({ repo, sourceType }: FileRowsParams) {
 
   const inner = (() => {
     if (error) return (
-      <div style={{ padding: '10px 14px 10px 48px', fontSize: 12, color: '#f44336' }}>{error}</div>
+      <div style={{ padding: '10px 14px 10px 48px', fontSize: 12, color: 'var(--c-tag-err-t)' }}>{error}</div>
     )
     if (!files) return (
       <div style={{ padding: '10px 14px 10px 48px', fontSize: 12, color: 'var(--c-text-muted)' }}>불러오는 중...</div>
@@ -259,7 +259,7 @@ export default function AiKnowledgePage() {
             불러오는 중...
           </div>
         ) : error ? (
-          <div style={{ padding: '48px 20px', textAlign: 'center', color: '#f44336', fontSize: 13 }}>
+          <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--c-tag-err-t)', fontSize: 13 }}>
             {error}
           </div>
         ) : !stats || stats.sources.length === 0 ? (

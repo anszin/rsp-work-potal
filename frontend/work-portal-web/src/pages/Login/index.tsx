@@ -60,5 +60,5 @@ const styles: Record<string, React.CSSProperties> = {
   field: { display: 'flex', flexDirection: 'column', gap: 6 },
   label: { fontSize: 14, fontWeight: 500, color: 'var(--c-text-sub)' },
   input: { padding: '10px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 14, outline: 'none' },
-  error: { color: '#e53e3e', fontSize: 13, margin: 0 },
+  error: { color: 'var(--c-tag-err-t)', fontSize: 13, margin: 0 },
 }

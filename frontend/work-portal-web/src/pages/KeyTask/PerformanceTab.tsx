@@ -9,7 +9,7 @@ import { Button } from '../../components/ui'
 const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   DONE:        { bg: 'var(--c-tag-done-bg)',  text: 'var(--c-tag-done-t)',  label: '완료' },
   IN_PROGRESS: { bg: 'var(--c-tag-sys)',       text: 'var(--c-tag-sys-t)',   label: '진행중' },
-  REVIEW:      { bg: '#FEFCBF',               text: '#975A16',              label: '검토' },
+  REVIEW:      { bg: 'var(--c-tag-warn-bg)',  text: 'var(--c-tag-warn-t)',  label: '검토' },
   TODO:        { bg: 'var(--c-tag-draft-bg)', text: 'var(--c-tag-draft-t)', label: '대기' },
   HOLD:        { bg: 'var(--c-tag-err-bg)',   text: 'var(--c-tag-err-t)',   label: '보류' },
 }
@@ -111,7 +111,7 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 100, height: 6, background: 'var(--c-border)', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ width: `${ktRate}%`, height: '100%', background: '#38a169', borderRadius: 3, transition: 'width 0.3s' }} />
+                          <div style={{ width: `${ktRate}%`, height: '100%', background: 'var(--rsp-color-success-500)', borderRadius: 3, transition: 'width 0.3s' }} />
                         </div>
                         <span style={{ fontSize: 12, color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
                           {ktDone}/{ktTotal} ({ktRate}%)

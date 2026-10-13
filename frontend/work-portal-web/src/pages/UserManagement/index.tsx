@@ -157,7 +157,7 @@ export default function UserManagementPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ margin: 0, fontSize: 15 }}>역할별 메뉴 접근 권한</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {menuSaved && <span style={{ fontSize: 13, color: '#276749' }}>저장되었습니다 ✓</span>}
+              {menuSaved && <span style={{ fontSize: 13, color: 'var(--c-tag-done-t)' }}>저장되었습니다 ✓</span>}
               <Button variant="filled" style={{ opacity: (!menuDirty || menuMut.isPending) ? 0.6 : 1 }}
                 onClick={saveMenuPerms} disabled={!menuDirty || menuMut.isPending}>
                 {menuMut.isPending ? '저장 중...' : '저장'}
@@ -259,20 +259,20 @@ export default function UserManagementPage() {
                     <td style={{ ...s.td, color: u.redmineUserId ? 'var(--c-text)' : 'var(--c-text-muted)', fontSize: 12 }}>{u.redmineUserId ?? '-'}</td>
                     <td style={s.td}><span style={{ ...s.roleTag, ...roleStyle(u.role) }}>{ROLE_LABELS[u.role]}</span></td>
                     <td style={s.td}>
-                      <span style={{ color: u.active ? '#276749' : '#e53e3e', fontSize: 12 }}>
+                      <span style={{ color: u.active ? 'var(--c-tag-done-t)' : 'var(--c-tag-err-t)', fontSize: 12 }}>
                         {u.active ? '활성' : '비활성'}
                       </span>
-                      {u.mustChangePassword && <span style={{ marginLeft: 6, fontSize: 11, color: '#e69900' }}>비번변경필요</span>}
+                      {u.mustChangePassword && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--c-tag-warn-t)' }}>비번변경필요</span>}
                     </td>
                     <td style={s.td}>{u.createdAt?.slice(0, 10)}</td>
                     {isAdminOrManager && (
                       <td style={s.td}>
                         <Button variant="outlined" size="sm" onClick={() => openEdit(u)}>수정</Button>
-                        <Button variant="outlined" size="sm" style={{ color: '#d97706' }}
+                        <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-warn-t)' }}
                           onClick={() => { if (confirm(`${u.username} 비밀번호를 초기화하시겠습니까?`)) resetMut.mutate(u.id) }}>
                           비번초기화
                         </Button>
-                        <Button variant="outlined" size="sm" style={{ color: '#e53e3e' }}
+                        <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-err-t)' }}
                           onClick={() => { if (confirm(`${u.username} 계정을 삭제하시겠습니까?`)) deleteMut.mutate(u.id) }}>
                           삭제
                         </Button>
@@ -291,7 +291,7 @@ export default function UserManagementPage() {
 }
 
 function roleStyle(role: string): React.CSSProperties {
-  if (role === 'ADMIN') return { background: '#fff0f0', color: '#c53030' }
+  if (role === 'ADMIN') return { background: 'var(--c-tag-err-bg)', color: 'var(--c-tag-err-t)' }
   if (role === 'MANAGER') return { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }
   if (role === 'MEMBER') return { background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' }
   return { background: 'var(--c-bg)', color: 'var(--c-text-muted)' }
@@ -312,8 +312,8 @@ const s: Record<string, React.CSSProperties> = {
   roleTag: { padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   empty: { padding: 32, textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   progressBar: { height: 3, background: 'var(--c-border)', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
-  progressFill: { height: '100%', background: '#1a1a2e', borderRadius: 2, animation: 'progress 1.2s ease-in-out infinite', width: '40%' },
-  overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  progressFill: { height: '100%', background: 'var(--c-action)', borderRadius: 2, animation: 'progress 1.2s ease-in-out infinite', width: '40%' },
+  overlay: { position: 'fixed' as const, inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: 'var(--c-card)', borderRadius: 8, padding: 24, width: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
   infoBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 14, display: 'flex', flexDirection: 'column' as const, gap: 6 },
 }
