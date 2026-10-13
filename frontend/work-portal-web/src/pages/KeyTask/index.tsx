@@ -170,11 +170,6 @@ export default function KeyTaskPage() {
   // 컬럼 수: 구분(1) + 소속/담당자(1) + KPI(1) + 과제명(1) + quarters*4 + 액션(1)
   const totalCols = 5 + visibleQs.length * 4
 
-  const pageTabStyle = (active: boolean): React.CSSProperties => ({
-    padding: '5px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: active ? 600 : 400,
-    background: active ? '#1a1a2e' : 'transparent', color: active ? '#fff' : 'var(--c-text-muted)',
-  })
-
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: '6px 0', border: 'none',
     borderBottom: `2px solid ${active ? '#1a1a2e' : 'transparent'}`,
@@ -182,18 +177,6 @@ export default function KeyTaskPage() {
     fontWeight: active ? 600 : 400,
     color: active ? 'var(--c-text)' : 'var(--c-text-muted)',
   })
-
-  const levelTabStyle = (lv: SelLevel): React.CSSProperties => {
-    const active = selLevel === lv
-    if (lv === 'all') return { ...tabStyle(active) }
-    const c = active ? LEVEL_COLOR[lv as TaskLevel] : null
-    return {
-      padding: '5px 14px', border: `1px solid ${active ? (c?.border ?? '#ccc') : 'var(--c-border-in)'}`,
-      borderRadius: 20, background: active ? (c?.bg ?? '#f5f5f5') : 'transparent',
-      cursor: 'pointer', fontSize: 13, fontWeight: active ? 600 : 400,
-      color: active ? (c?.color ?? 'inherit') : 'var(--c-text-muted)',
-    }
-  }
 
   // 모달에서 현재 레벨에 따라 레이블 표시
   const teamLabel = curLevel === '담당자' ? '소속 팀/부서' : curLevel === '담당부서' ? '부서명 *' : '팀명 *'
@@ -221,18 +204,13 @@ export default function KeyTaskPage() {
               <div style={{ display: 'flex', gap: 8 }}>
                 {LEVELS.map(lv => {
                   const active = curLevel === lv
-                  const c = LEVEL_COLOR[lv]
                   return (
-                    <button
+                    <Button
                       key={lv}
-                      style={{
-                        padding: '6px 18px', borderRadius: 20, cursor: 'pointer', fontSize: 13, fontWeight: active ? 600 : 400,
-                        border: `1px solid ${active ? c.border : 'var(--c-border-in)'}`,
-                        background: active ? c.bg : 'transparent',
-                        color: active ? c.color : 'var(--c-text-muted)',
-                      }}
+                      size="sm"
+                      variant={active ? 'filled' : 'outlined'}
                       onClick={() => setForm(prev => ({ ...prev, taskLevel: lv }))}
-                    >{lv}</button>
+                    >{lv}</Button>
                   )
                 })}
               </div>
@@ -377,9 +355,9 @@ export default function KeyTaskPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>중점과제</h2>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setPageTab('keytasks')} style={pageTabStyle(pageTab === 'keytasks')}>중점과제</button>
-            <button onClick={() => setPageTab('workunits')} style={pageTabStyle(pageTab === 'workunits')}>단위업무</button>
-            <button onClick={() => setPageTab('performance')} style={pageTabStyle(pageTab === 'performance')}>성과 현황</button>
+            <Button size="sm" variant={pageTab === 'keytasks' ? 'filled' : 'text'} onClick={() => setPageTab('keytasks')}>중점과제</Button>
+            <Button size="sm" variant={pageTab === 'workunits' ? 'filled' : 'text'} onClick={() => setPageTab('workunits')}>단위업무</Button>
+            <Button size="sm" variant={pageTab === 'performance' ? 'filled' : 'text'} onClick={() => setPageTab('performance')}>성과 현황</Button>
           </div>
           <select
             value={selYear}
@@ -397,14 +375,14 @@ export default function KeyTaskPage() {
 
       {/* 레벨 탭 */}
       {pageTab === 'keytasks' && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, padding: '12px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
-        <button style={{ ...levelTabStyle('all'), padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20 }} onClick={() => setSelLevel('all')}>
-          전체 <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginLeft: 4 }}>{tasks.length}</span>
-        </button>
+        <Button size="sm" variant={selLevel === 'all' ? 'filled' : 'outlined'} onClick={() => setSelLevel('all')}>
+          전체 <span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>{tasks.length}</span>
+        </Button>
         <span style={{ color: 'var(--c-border-in)', fontSize: 16 }}>|</span>
         {LEVELS.map(lv => (
-          <button key={lv} style={levelTabStyle(lv)} onClick={() => setSelLevel(lv)}>
+          <Button key={lv} size="sm" variant={selLevel === lv ? 'filled' : 'outlined'} onClick={() => setSelLevel(lv)}>
             {lv} <span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>{countByLevel(lv)}</span>
-          </button>
+          </Button>
         ))}
       </div>}
 

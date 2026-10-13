@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getPrompts, createPrompt, updatePrompt, deletePrompt, RolePrompt } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
+import { Button, IconButton } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -70,8 +71,8 @@ function ConfirmDialog({ roleName, onConfirm, onCancel }: {
           이 작업은 되돌릴 수 없습니다.
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onCancel} style={{ padding: '7px 16px', borderRadius: 7, fontSize: 13, cursor: 'pointer', background: 'var(--c-bg)', border: '1px solid var(--c-border)', color: 'var(--c-text)' }}>취소</button>
-          <button onClick={onConfirm} style={{ padding: '7px 16px', borderRadius: 7, fontSize: 13, cursor: 'pointer', background: '#f44336', border: 'none', color: '#fff', fontWeight: 600 }}>삭제</button>
+          <Button variant="outlined" size="sm" onClick={onCancel}>취소</Button>
+          <Button variant="outlined" size="sm" onClick={onConfirm} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>삭제</Button>
         </div>
       </div>
     </div>
@@ -215,10 +216,10 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
         {errors.submit && <div style={{ fontSize: 12, color: '#f44336', marginBottom: 12 }}>{errors.submit}</div>}
 
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} disabled={saving} style={{ padding: '8px 16px', borderRadius: 7, fontSize: 13, cursor: 'pointer', background: 'var(--c-bg)', border: '1px solid var(--c-border)', color: 'var(--c-text)' }}>취소</button>
-          <button onClick={handleSubmit} disabled={saving} style={{ padding: '8px 20px', borderRadius: 7, fontSize: 13, cursor: saving ? 'default' : 'pointer', background: '#1976d2', border: 'none', color: '#fff', fontWeight: 600 }}>
+          <Button variant="outlined" size="md" onClick={onClose} disabled={saving}>취소</Button>
+          <Button variant="filled" size="md" onClick={handleSubmit} disabled={saving}>
             {saving ? '추가 중...' : '추가'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -374,17 +375,15 @@ export default function AiPromptsPage() {
           borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}>
           <div style={{ padding: '12px 12px 8px', borderBottom: '1px solid var(--c-border)' }}>
-            <button
+            <Button
+              variant="outlined"
+              size="md"
               onClick={() => setShowNewModal(true)}
-              style={{
-                width: '100%', padding: '8px 10px', borderRadius: 7, fontSize: 13,
-                cursor: 'pointer', border: '1px dashed var(--c-border)',
-                background: 'var(--c-bg)', color: 'var(--c-text)',
-                display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500,
-              }}
+              leadingIcon={<span style={{ fontSize: 16, lineHeight: 1 }}>+</span>}
+              style={{ width: '100%' }}
             >
-              <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> 새 역할 추가
-            </button>
+              새 역할 추가
+            </Button>
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -422,17 +421,15 @@ export default function AiPromptsPage() {
                     </div>
                   </div>
                   {canDelete && (
-                    <button
+                    <IconButton
+                      variant="text"
+                      size="sm"
+                      icon="×"
+                      label="역할 삭제"
                       onClick={e => { e.stopPropagation(); setDeleteTarget(p) }}
-                      style={{
-                        flexShrink: 0, width: 20, height: 20, borderRadius: 4,
-                        border: 'none', background: 'none', cursor: 'pointer',
-                        color: 'var(--c-text-muted)', fontSize: 14, lineHeight: 1,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        opacity: 0.6,
-                      }}
+                      style={{ flexShrink: 0, opacity: 0.6 }}
                       title="삭제"
-                    >×</button>
+                    />
                   )}
                 </div>
               )
@@ -519,29 +516,19 @@ export default function AiPromptsPage() {
 
               {/* 하단 버튼 */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, flexShrink: 0 }}>
-                <button
+                <Button
+                  variant="outlined"
+                  size="md"
                   onClick={() => { setEditName(activePrompt.roleName); setEditText(activePrompt.systemPrompt) }}
                   disabled={!isDirty || saving}
-                  style={{
-                    fontSize: 13, padding: '8px 16px', borderRadius: 7,
-                    cursor: isDirty ? 'pointer' : 'default',
-                    border: '1px solid var(--c-border)', background: 'var(--c-bg)',
-                    color: isDirty ? 'var(--c-text-sub)' : 'var(--c-text-muted)',
-                    opacity: isDirty ? 1 : 0.4,
-                  }}
-                >되돌리기</button>
-                <button
+                >되돌리기</Button>
+                <Button
+                  variant="filled"
+                  size="md"
                   onClick={handleSave}
                   disabled={saving || !isDirty}
-                  style={{
-                    fontSize: 13, padding: '8px 24px', borderRadius: 7,
-                    cursor: isDirty && !saving ? 'pointer' : 'default',
-                    border: 'none', fontWeight: 600, minWidth: 80,
-                    background: isDirty && !saving ? activeColor : 'var(--c-border)',
-                    color: isDirty && !saving ? '#fff' : 'var(--c-text-muted)',
-                    transition: 'background 0.15s',
-                  }}
-                >{saving ? '저장 중...' : '저장'}</button>
+                  style={{ minWidth: 80 }}
+                >{saving ? '저장 중...' : '저장'}</Button>
               </div>
             </div>
           )}

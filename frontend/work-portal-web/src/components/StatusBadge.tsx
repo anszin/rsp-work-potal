@@ -1,3 +1,4 @@
+import { Badge } from 'rsp-react-design-system/shadcn'
 import type { RequestStatus } from '../api/changeRequests'
 
 const config: Record<RequestStatus, { label: string; color: string; bg: string }> = {
@@ -8,19 +9,12 @@ const config: Record<RequestStatus, { label: string; color: string; bg: string }
   REJECTED:  { label: '반려', color: 'var(--c-tag-err-t)',    bg: 'var(--c-tag-err-bg)' },
 }
 
+// SDK Badge 형태(크기·라운드)에 포탈 상태 색상 토큰 적용
 export default function StatusBadge({ status }: { status: RequestStatus }) {
-  const { label, color, bg } = config[status] ?? { label: status, color: '#333', bg: '#eee' }
+  const { label, color, bg } = config[status] ?? { label: status, color: 'var(--c-tag-draft-t)', bg: 'var(--c-tag-draft-bg)' }
   return (
-    <span style={{
-      display: 'inline-block',
-      padding: '2px 10px',
-      borderRadius: 12,
-      fontSize: 12,
-      fontWeight: 600,
-      color,
-      background: bg,
-    }}>
+    <Badge variant="secondary" style={{ color, background: bg }}>
       {label}
-    </span>
+    </Badge>
   )
 }

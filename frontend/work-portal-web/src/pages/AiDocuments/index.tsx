@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, DragEvent } from 'react'
 import { uploadDocument, getDocuments, deleteDocument, AiDocument, DocScope } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
+import { Button } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -82,14 +83,8 @@ function ConfirmDialog({
           RAG 인덱스에서도 제거됩니다. 계속하시겠습니까?
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onCancel} style={{
-            padding: '7px 16px', borderRadius: 7, fontSize: 13, cursor: 'pointer',
-            background: 'var(--c-bg)', border: '1px solid var(--c-border)', color: 'var(--c-text)',
-          }}>취소</button>
-          <button onClick={onConfirm} style={{
-            padding: '7px 16px', borderRadius: 7, fontSize: 13, cursor: 'pointer',
-            background: '#f44336', border: 'none', color: '#fff', fontWeight: 600,
-          }}>삭제</button>
+          <Button variant="outlined" size="sm" onClick={onCancel}>취소</Button>
+          <Button variant="outlined" size="sm" onClick={onConfirm} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>삭제</Button>
         </div>
       </div>
     </div>
@@ -321,11 +316,7 @@ export default function AiDocumentsPage() {
                     {u.error && <span style={{ color: '#f44336', fontSize: 11 }}>{u.error}</span>}
                   </div>
                 ))}
-                <button onClick={clearDoneUploads} style={{
-                  marginTop: 6, fontSize: 11, padding: '3px 9px', borderRadius: 5,
-                  background: 'none', border: '1px solid var(--c-border)',
-                  color: 'var(--c-text-muted)', cursor: 'pointer',
-                }}>완료 항목 지우기</button>
+                <Button variant="outlined" size="xs" onClick={clearDoneUploads} style={{ marginTop: 6 }}>완료 항목 지우기</Button>
               </div>
             )}
           </div>
@@ -360,11 +351,7 @@ export default function AiDocumentsPage() {
                 {r.label}
               </button>
             ))}
-            <button onClick={loadDocs} style={{
-              fontSize: 11, padding: '4px 10px', borderRadius: 14, cursor: 'pointer',
-              border: '1px solid var(--c-border)', background: 'var(--c-bg)',
-              color: 'var(--c-text-muted)',
-            }}>새로고침</button>
+            <Button variant="outlined" size="xs" onClick={loadDocs}>새로고침</Button>
           </div>
         </div>
 
@@ -435,14 +422,12 @@ export default function AiDocumentsPage() {
                             textDecoration: 'none', display: 'inline-block',
                           }}
                         >다운로드</a>
-                        <button
+                        <Button
+                          variant="outlined"
+                          size="xs"
                           onClick={() => setDeleteTarget(doc)}
-                          style={{
-                            fontSize: 12, padding: '4px 10px', borderRadius: 6,
-                            border: '1px solid #f4433644', background: 'none',
-                            color: '#f44336', cursor: 'pointer',
-                          }}
-                        >삭제</button>
+                          style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
+                        >삭제</Button>
                       </div>
                     </td>
                   </tr>

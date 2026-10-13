@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { getUsers, UserSummary } from '../../api/users'
 import { notificationApi } from '../../api/notifications'
 import { useAuth } from '../../context/useAuth'
+import { Button } from '../../components/ui'
 
 const TEMPLATES = [
   { label: '주간보고 제출 요청', text: '이번 주 주간보고 등록 부탁드립니다. 금일 오후 6시까지 포탈에 등록해 주세요.' },
@@ -74,10 +75,9 @@ export default function NotificationPage() {
           <label style={s.sectionLabel}>수신자</label>
           <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
             {(['ALL', 'SELECTED'] as const).map(t => (
-              <button key={t} onClick={() => setTarget(t)}
-                style={{ ...s.toggleBtn, ...(target === t ? s.toggleBtnActive : {}) }}>
+              <Button key={t} size="sm" variant={target === t ? 'filled' : 'outlined'} onClick={() => setTarget(t)}>
                 {t === 'ALL' ? '전체 팀원' : '개별 선택'}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -129,10 +129,9 @@ export default function NotificationPage() {
           <label style={s.sectionLabel}>빠른 템플릿</label>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {TEMPLATES.map(t => (
-              <button key={t.label} onClick={() => setMessage(t.text)}
-                style={{ fontSize: 12, padding: '5px 12px', border: '1px solid var(--c-border)', borderRadius: 16, background: 'var(--c-card)', color: 'var(--c-text)', cursor: 'pointer' }}>
+              <Button key={t.label} size="sm" variant="outlined" onClick={() => setMessage(t.text)}>
                 {t.label}
-              </button>
+              </Button>
             ))}
           </div>
         </section>
@@ -154,12 +153,11 @@ export default function NotificationPage() {
 
         {/* 발송 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button
+          <Button variant="filled"
             onClick={() => { setResult(null); sendMut.mutate() }}
-            disabled={!canSend || sendMut.isPending}
-            style={{ padding: '10px 28px', background: canSend ? '#1976d2' : 'var(--c-border)', color: canSend ? '#fff' : 'var(--c-text-muted)', border: 'none', borderRadius: 8, cursor: canSend ? 'pointer' : 'not-allowed', fontSize: 14, fontWeight: 700 }}>
+            disabled={!canSend || sendMut.isPending}>
             {sendMut.isPending ? '발송 중...' : '🚀 웹엑스 발송'}
-          </button>
+          </Button>
           {result && (
             <div style={{ fontSize: 13, color: result.sent > 0 ? '#2e7d32' : '#c62828', fontWeight: 600 }}>
               {result.sent > 0 ? `✅ ${result.sent}명에게 발송 완료` : `❌ ${result.msg}`}
@@ -189,21 +187,5 @@ const s = {
     fontWeight: 700,
     marginBottom: 10,
     color: 'var(--c-text)',
-  },
-  toggleBtn: {
-    padding: '7px 18px',
-    border: '1px solid var(--c-border)',
-    borderRadius: 20,
-    background: 'var(--c-card)',
-    color: 'var(--c-text-muted)',
-    cursor: 'pointer',
-    fontSize: 13,
-    fontWeight: 500,
-  },
-  toggleBtnActive: {
-    background: '#1976d2',
-    color: '#fff',
-    border: '1px solid #1976d2',
-    fontWeight: 700,
   },
 }

@@ -309,10 +309,9 @@ export default function ChangeRequestPage() {
               {editing?.hasAttachment && !pendingFile && (
                 <div style={{ marginBottom: 6, fontSize: 12, color: 'var(--c-text-sub)', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span>현재 첨부: <strong>{editing.attachmentOriginalName ?? '파일'}</strong></span>
-                  <button onClick={() => downloadAttachment(editing.id, editing.attachmentOriginalName ?? '파일')}
-                    style={{ fontSize: 11, border: 'none', background: 'none', color: '#1976d2', cursor: 'pointer', padding: 0 }}>
+                  <Button variant="text" size="xs" onClick={() => downloadAttachment(editing.id, editing.attachmentOriginalName ?? '파일')}>
                     다운로드
-                  </button>
+                  </Button>
                   <span style={{ color: 'var(--c-text-muted)' }}>|</span>
                   <span style={{ color: 'var(--c-text-muted)', fontSize: 11 }}>새 파일 선택 시 교체됩니다</span>
                 </div>
@@ -331,10 +330,10 @@ export default function ChangeRequestPage() {
               {pendingFile && (
                 <div style={{ marginTop: 4, fontSize: 12, color: 'var(--c-text-sub)' }}>
                   선택된 파일: <strong>{pendingFile.name}</strong>
-                  <button onClick={() => { setPendingFile(null); if (fileRef.current) fileRef.current.value = '' }}
-                    style={{ marginLeft: 8, fontSize: 11, border: 'none', background: 'none', color: '#e53e3e', cursor: 'pointer' }}>
+                  <Button variant="text" size="xs" onClick={() => { setPendingFile(null); if (fileRef.current) fileRef.current.value = '' }}
+                    style={{ marginLeft: 8, color: 'var(--c-tag-err-t)' }}>
                     ✕ 제거
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -356,10 +355,10 @@ export default function ChangeRequestPage() {
         {STATUS_FILTERS.map(({ label, value }) => {
           const count = value === 'ALL' ? requests.length : requests.filter(r => r.status === value).length
           return (
-            <button key={value} style={{ ...s.filterBtn, ...(statusFilter === value ? s.filterBtnActive : {}) }}
+            <Button key={value} size="sm" variant={statusFilter === value ? 'filled' : 'outlined'}
               onClick={() => setStatusFilter(value)}>
               {label} {count > 0 && <span style={s.badge}>{count}</span>}
-            </button>
+            </Button>
           )
         })}
       </div>
@@ -610,8 +609,6 @@ const s: Record<string, React.CSSProperties> = {
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
   input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   filterRow: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
-  filterBtn: { padding: '5px 12px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-sub)', display: 'flex', alignItems: 'center', gap: 4 },
-  filterBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
   badge: { background: 'rgba(255,255,255,0.25)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
   table: { width: '100%', borderCollapse: 'collapse' as const },

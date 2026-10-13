@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { chat, AiRole } from '../../api/aiApi'
 import { aiConfig } from '../../config/aiConfig'
 import { useAuth } from '../../context/useAuth'
+import { Button, IconButton } from '../ui'
 
 const ROLES: { value: AiRole; label: string; color: string }[] = [
   { value: 'backend',  label: '백엔드',    color: '#1976d2' },
@@ -112,19 +113,11 @@ export default function AiChatWidget() {
               <span style={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>AI 어시스턴트</span>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={goToFullPage} style={{
-                fontSize: 11, color: '#a0aec0', background: 'none',
-                border: '1px solid #2d3748', borderRadius: 4,
-                padding: '3px 8px', cursor: 'pointer',
-              }}>
+              {/* 어두운 헤더 배경 위라 글자색만 유지 */}
+              <Button variant="text" size="xs" onClick={goToFullPage} style={{ color: '#a0aec0' }}>
                 전체화면
-              </button>
-              <button onClick={handleClose} style={{
-                fontSize: 16, color: '#a0aec0', background: 'none',
-                border: 'none', cursor: 'pointer', lineHeight: 1, padding: '2px 4px',
-              }}>
-                ×
-              </button>
+              </Button>
+              <IconButton variant="text" size="sm" icon="×" label="닫기" onClick={handleClose} style={{ color: '#a0aec0' }} />
             </div>
           </div>
 
@@ -200,22 +193,18 @@ export default function AiChatWidget() {
               }}
             />
             {loading ? (
-              <button onClick={() => { abortRef.current?.abort(); setLoading(false) }} style={{
-                padding: '7px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-                background: '#f44336', color: '#fff', border: 'none', fontWeight: 600,
-              }}>
+              <Button
+                variant="outlined"
+                size="sm"
+                onClick={() => { abortRef.current?.abort(); setLoading(false) }}
+                style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
+              >
                 중지
-              </button>
+              </Button>
             ) : (
-              <button onClick={send} disabled={!input.trim()} style={{
-                padding: '7px 12px', borderRadius: 6, fontSize: 12,
-                cursor: input.trim() ? 'pointer' : 'default',
-                background: input.trim() ? selectedColor : 'var(--c-border)',
-                color: input.trim() ? '#fff' : 'var(--c-text-muted)',
-                border: 'none', fontWeight: 600, transition: 'background 0.15s',
-              }}>
+              <Button variant="filled" size="sm" onClick={send} disabled={!input.trim()}>
                 전송
-              </button>
+              </Button>
             )}
           </div>
         </div>

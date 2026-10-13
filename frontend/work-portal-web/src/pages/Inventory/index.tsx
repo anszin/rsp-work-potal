@@ -91,15 +91,10 @@ export default function InventoryPage() {
         </div>
         {tab === 'list' && <div style={{ display: 'flex', gap: 8 }}>
           {(['', 'CONTRACT', 'PROPOSAL'] as const).map(t => (
-            <button key={t}
-              onClick={() => setTypeFilter(t)}
-              style={{
-                padding: '6px 14px', borderRadius: 6, border: '1px solid var(--c-border-in)', cursor: 'pointer',
-                background: typeFilter === t ? '#1976d2' : 'var(--c-card)',
-                color: typeFilter === t ? '#fff' : 'var(--c-text)',
-              }}>
+            <Button key={t} size="sm" variant={typeFilter === t ? 'filled' : 'outlined'}
+              onClick={() => setTypeFilter(t)}>
               {t === '' ? '전체' : TYPE_LABEL[t]}
-            </button>
+            </Button>
           ))}
           <Button variant="filled" onClick={() => { resetForm(); setShowForm(true) }}>+ 추가</Button>
         </div>}

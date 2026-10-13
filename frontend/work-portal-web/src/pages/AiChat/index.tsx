@@ -8,6 +8,7 @@ import {
   RagSource, ConversationSummary, ConversationMessage, AgentStep,
 } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
+import { Button, IconButton } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -275,20 +276,18 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
     <div className={`ai-conv-drawer${open ? ' open' : ''}`}>
       <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--c-text)' }}>대화 이력</span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 18, lineHeight: 1, padding: '0 2px' }}>×</button>
+        <IconButton variant="text" size="sm" icon="×" label="닫기" onClick={onClose} />
       </div>
       <div style={{ padding: '10px', borderBottom: '1px solid var(--c-border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <button
+        <Button
+          variant="outlined"
+          size="md"
           onClick={() => { onNew(); onClose() }}
-          style={{
-            width: '100%', padding: '8px 12px', borderRadius: 6, fontSize: 13,
-            cursor: 'pointer', border: '1px solid var(--c-border)',
-            background: 'var(--c-bg)', color: 'var(--c-text)',
-            display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500,
-          }}
+          leadingIcon={<span style={{ fontSize: 16, lineHeight: 1 }}>+</span>}
+          style={{ width: '100%' }}
         >
-          <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> 새 대화
-        </button>
+          새 대화
+        </Button>
         <Link
           to="/ai/documents"
           onClick={onClose}
@@ -333,11 +332,15 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
                   <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{formatDate(conv.updatedAt)}</span>
                 </div>
               </div>
-              <button
+              <IconButton
+                variant="text"
+                size="sm"
+                icon="×"
+                label="대화 삭제"
                 onClick={e => { e.stopPropagation(); onDelete(conv.id) }}
-                style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 4, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 14, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6 }}
+                style={{ flexShrink: 0, opacity: 0.6 }}
                 title="삭제"
-              >×</button>
+              />
             </div>
           )
         })}
@@ -593,30 +596,21 @@ export default function AiChatPage() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-              <button
+              {/* 토글 상태: ON이면 filled, OFF면 outlined */}
+              <Button
+                variant={agentMode ? 'filled' : 'outlined'}
+                size="sm"
                 onClick={() => setAgentMode(v => !v)}
                 title="에이전트 모드: 도구를 순차적으로 사용하는 멀티스텝 추론"
-                style={{
-                  fontSize: 12, padding: '5px 11px', borderRadius: 6, cursor: 'pointer',
-                  border: `1px solid ${agentMode ? '#7c3aed' : 'var(--c-border)'}`,
-                  background: agentMode ? '#7c3aed18' : 'var(--c-card)',
-                  color: agentMode ? '#7c3aed' : 'var(--c-text-muted)',
-                  fontWeight: agentMode ? 700 : 400,
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  transition: 'all 0.15s',
-                }}
               >
                 ⚡ 에이전트 모드
-              </button>
-              <button
-                onClick={() => setSidebarOpen(v => !v)}
-                style={{ fontSize: 12, padding: '5px 11px', borderRadius: 6, cursor: 'pointer', border: '1px solid var(--c-border)', background: sidebarOpen ? 'var(--c-thead)' : 'var(--c-card)', color: 'var(--c-text)', display: 'flex', alignItems: 'center', gap: 5 }}
-              >
+              </Button>
+              <Button variant="outlined" size="sm" onClick={() => setSidebarOpen(v => !v)}>
                 🕐 대화 이력
-              </button>
-              <button onClick={handleClear} style={{ fontSize: 12, color: 'var(--c-text-muted)', background: 'none', border: '1px solid var(--c-border)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer' }}>
+              </Button>
+              <Button variant="outlined" size="sm" onClick={handleClear}>
                 초기화
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -769,9 +763,9 @@ export default function AiChatPage() {
             />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
               {loading ? (
-                <button onClick={handleStop} style={{ padding: '7px 14px', borderRadius: 8, fontSize: 13, cursor: 'pointer', background: '#f44336', color: '#fff', border: 'none', fontWeight: 600 }}>중지</button>
+                <Button variant="outlined" size="sm" onClick={handleStop} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>중지</Button>
               ) : (
-                <button onClick={sendMessage} disabled={!input.trim()} style={{ padding: '7px 14px', borderRadius: 8, fontSize: 13, cursor: input.trim() ? 'pointer' : 'default', background: input.trim() ? selectedRole.color : 'var(--c-border)', color: input.trim() ? '#fff' : 'var(--c-text-muted)', border: 'none', fontWeight: 600, transition: 'background 0.15s' }}>전송</button>
+                <Button variant="filled" size="sm" onClick={sendMessage} disabled={!input.trim()}>전송</Button>
               )}
             </div>
           </div>

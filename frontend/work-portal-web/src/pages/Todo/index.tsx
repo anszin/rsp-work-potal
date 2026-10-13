@@ -544,23 +544,18 @@ export default function TodoPage() {
                         {users.filter(u => u.active && u.username !== form.assignee).map(u => {
                           const selected = (form.collaborators ?? []).includes(u.username)
                           return (
-                            <button
+                            <Button
                               key={u.username}
                               type="button"
+                              size="xs"
+                              variant={selected ? 'filled' : 'outlined'}
                               onClick={() => setForm(f => {
                                 const cols = f.collaborators ?? []
                                 return { ...f, collaborators: selected ? cols.filter(c => c !== u.username) : [...cols, u.username] }
                               })}
-                              style={{
-                                padding: '4px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer', border: '1px solid',
-                                borderColor: selected ? 'var(--c-action)' : 'var(--c-border)',
-                                background: selected ? 'color-mix(in srgb, var(--c-action) 12%, transparent)' : 'transparent',
-                                color: selected ? 'var(--c-action)' : 'var(--c-text-muted)',
-                                fontWeight: selected ? 600 : 400,
-                              }}
                             >
                               {u.name ?? u.username}
-                            </button>
+                            </Button>
                           )
                         })}
                       </div>
@@ -592,11 +587,11 @@ export default function TodoPage() {
               {/* ── 버튼 ── */}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--c-border)', alignItems: 'center' }}>
                 {!readOnly && editing && (
-                  <button type="button" className="ds-btn ds-btn--outlined ds-btn--md"
-                    style={{ borderColor: 'var(--c-tag-err-t)', color: 'var(--c-tag-err-t)' }}
+                  <Button type="button" variant="outlined"
+                    style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
                     onClick={() => { if (confirm(`"${editing.title}" 삭제할까요?`)) { deleteMut.mutate(editing.id); closeModal() } }}>
                     삭제
-                  </button>
+                  </Button>
                 )}
                 <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
                   <Button type="button" variant="outlined" onClick={closeModal}>{readOnly ? '닫기' : '취소'}</Button>

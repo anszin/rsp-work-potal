@@ -428,10 +428,10 @@ export default function DeployRequestPage() {
           const topLevel = requests.filter(r => !r.parentDrId)
           const count = value === 'ALL' ? topLevel.length : topLevel.filter(r => r.status === value).length
           return (
-            <button key={value} style={{ ...s.filterBtn, ...(statusFilter === value ? s.filterBtnActive : {}) }}
+            <Button key={value} size="sm" variant={statusFilter === value ? 'filled' : 'outlined'}
               onClick={() => setStatusFilter(value)}>
               {label} {count > 0 && <span style={s.badge}>{count}</span>}
-            </button>
+            </Button>
           )
         })}
       </div>
@@ -904,21 +904,15 @@ function PageBtn({ label, active, disabled, onClick }: {
   label: string; active?: boolean; disabled?: boolean; onClick: () => void
 }) {
   return (
-    <button
+    <Button
+      size="sm"
+      variant={active ? 'filled' : 'outlined'}
       onClick={onClick}
       disabled={disabled}
-      style={{
-        minWidth: 30, height: 28, padding: '0 6px', borderRadius: 4, fontSize: 12,
-        cursor: disabled ? 'default' : 'pointer',
-        border: `1px solid ${active ? '#1a1a2e' : 'var(--c-border-in)'}`,
-        background: active ? '#1a1a2e' : 'var(--c-card)',
-        color: active ? '#fff' : disabled ? 'var(--c-text-muted)' : 'var(--c-text-sub)',
-        fontWeight: active ? 600 : 400,
-        opacity: disabled ? 0.4 : 1,
-      }}
+      style={{ minWidth: 30 }}
     >
       {label}
-    </button>
+    </Button>
   )
 }
 
@@ -990,8 +984,6 @@ const s: Record<string, React.CSSProperties> = {
   input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   issueBadge: { display: 'flex', alignItems: 'center', gap: 4, background: '#f0fdf4', border: '1px solid #c6f6d5', borderRadius: 4, padding: '3px 8px', fontSize: 12 },
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  filterBtn: { padding: '5px 12px', background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-sub)', display: 'flex', alignItems: 'center', gap: 4 },
-  filterBtnActive: { background: '#1a1a2e', color: '#fff', borderColor: '#1a1a2e' },
   badge: { background: 'rgba(255,255,255,0.25)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
   table: { width: '100%', borderCollapse: 'collapse' as const },
@@ -1088,7 +1080,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
           {MONTHS_KR.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
         </select>
         {selMonth !== 'all' && (
-          <button onClick={() => setSelMonth('all')} style={{ fontSize: 12, color: 'var(--c-text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px' }}>✕ 초기화</button>
+          <Button variant="text" size="xs" onClick={() => setSelMonth('all')}>✕ 초기화</Button>
         )}
         <span style={{ fontSize: 13, color: 'var(--c-text-muted)', marginLeft: 4 }}>총 {filtered.length}건</span>
       </div>
@@ -1124,10 +1116,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 8, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {selSystem && (
-                <button
-                  onClick={() => setSelSystem(null)}
-                  style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid var(--c-border-in)', background: 'var(--c-bg)', color: 'var(--c-text-sub)', cursor: 'pointer' }}
-                >← 전체</button>
+                <Button variant="outlined" size="xs" onClick={() => setSelSystem(null)}>← 전체</Button>
               )}
               <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>
                 {selSystem ? `${selSystem} · 하위 시스템` : `시스템별`}

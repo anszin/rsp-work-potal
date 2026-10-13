@@ -154,14 +154,8 @@ export default function FinancePage() {
       <div className="deploy-header" style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {MONTHS.map((m, i) => (
-            <button key={i + 1} onClick={() => setSelectedMonth(i + 1)}
-              style={{
-                padding: '4px 10px', borderRadius: 6, border: '1px solid',
-                borderColor: selectedMonth === i + 1 ? '#1976d2' : 'var(--c-border-in)',
-                background: selectedMonth === i + 1 ? '#1976d2' : 'var(--c-card)',
-                color: selectedMonth === i + 1 ? '#fff' : 'var(--c-text)',
-                cursor: 'pointer', fontSize: 12,
-              }}>{m}</button>
+            <Button key={i + 1} size="sm" variant={selectedMonth === i + 1 ? 'filled' : 'outlined'}
+              onClick={() => setSelectedMonth(i + 1)}>{m}</Button>
           ))}
         </div>
         <Button variant="filled" onClick={() => { resetForm(); setShowForm(true) }}>+ 추가</Button>

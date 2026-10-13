@@ -8,7 +8,8 @@ import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
-import { Button } from '../../components/ui'
+import { Button, IconButton } from '../../components/ui'
+import { ButtonGroup, ButtonGroupSeparator } from 'rsp-react-design-system/shadcn'
 
 // ── 업무 아이템 ───────────────────────────────────────────────────────────────
 
@@ -344,8 +345,8 @@ function SortableRow({ item, keyTasks, workUnits, onUpdate, onRemove }: {
         onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
         placeholder="업무 내용 입력..." rows={1}
         style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
-      <button type="button" onClick={onRemove}
-        style={{ flexShrink: 0, width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--c-text-muted)', fontSize: 16, lineHeight: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.6, marginTop: 4 }}>×</button>
+      <IconButton variant="text" size="sm" icon="×" label="행 삭제" onClick={onRemove}
+        style={{ flexShrink: 0 }} />
     </div>
   )
 }
@@ -371,10 +372,9 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], 
     <div style={{ marginBottom: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: sectionColor, letterSpacing: '0.03em' }}>{label}</span>
-        <button type="button" onClick={add}
-          style={{ fontSize: 11, padding: '2px 9px', border: `1px solid ${sectionColor}55`, borderRadius: 10, background: sectionColor + '12', color: sectionColor, cursor: 'pointer', fontWeight: 600 }}>
+        <Button variant="text" size="xs" onClick={add}>
           + 행 추가
-        </button>
+        </Button>
       </div>
       {items.length === 0 ? (
         <div onClick={add} style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '7px 12px', background: 'var(--c-bg)', borderRadius: 6, border: '1px dashed var(--c-border)', textAlign: 'center', cursor: 'pointer', userSelect: 'none' }}>
@@ -592,10 +592,9 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
         </label>
         <WeekCompareForm form={form} setForm={setForm} keyTasks={keyTasks} workUnits={workUnits} />
         <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
-          <button type="submit" disabled={saving}
-            style={{ padding: '8px 20px', background: isConsolidated ? '#7c3aed' : '#1976d2', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600, opacity: saving ? 0.7 : 1 }}>
+          <Button type="submit" disabled={saving}>
             {saving ? '저장 중...' : (isEditing ? '수정' : '저장')}
-          </button>
+          </Button>
           <Button variant="outlined" type="button" onClick={onCancel}>취소</Button>
         </div>
       </form>
@@ -687,10 +686,9 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <Button variant="outlined" onClick={onCancel}>취소</Button>
-          <button onClick={() => onSave(conForm)} disabled={totalRight === 0}
-            style={{ padding: '7px 20px', background: totalRight > 0 ? '#7c3aed' : '#ccc', color: '#fff', border: 'none', borderRadius: 6, cursor: totalRight > 0 ? 'pointer' : 'not-allowed', fontWeight: 600, fontSize: 13 }}>
+          <Button onClick={() => onSave(conForm)} disabled={totalRight === 0}>
             저장 ({totalRight}개)
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -737,10 +735,10 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
                               <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', borderRadius: 6, marginBottom: 3, background: isAdded ? '#f0fdf4' : 'var(--c-bg)', border: `1px solid ${isAdded ? '#22c55e44' : 'var(--c-border)'}` }}>
                                 <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 2, background: bg, color: badgeColor }}>{badgeLabel}</span>
                                 <span style={{ flex: 1, fontSize: 12, lineHeight: 1.5, color: 'var(--c-text)', whiteSpace: 'pre-wrap' }}>{item.content}</span>
-                                <button onClick={() => addItem(report.id, sec, item, report.author)} disabled={isAdded}
-                                  style={{ flexShrink: 0, padding: '2px 9px', fontSize: 12, border: 'none', borderRadius: 4, cursor: isAdded ? 'default' : 'pointer', background: isAdded ? '#22c55e22' : '#7c3aed', color: isAdded ? '#16a34a' : '#fff', fontWeight: 700, minWidth: 32 }}>
+                                <Button size="xs" variant={isAdded ? 'outlined' : 'filled'} onClick={() => addItem(report.id, sec, item, report.author)} disabled={isAdded}
+                                  style={{ flexShrink: 0, minWidth: 32 }}>
                                   {isAdded ? '✓' : '+'}
-                                </button>
+                                </Button>
                               </div>
                             )
                           })}
@@ -972,28 +970,23 @@ export default function WeeklyReportPage() {
           <h2 style={{ margin: 0, fontSize: 18 }}>주간보고</h2>
           <div style={{ display: 'flex', gap: 6 }}>
             {isManager && (
-              <button onClick={() => setPrintOpen(true)} title="이번 주 전체 보고서 인쇄"
-                style={{ padding: '5px 10px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 6, cursor: 'pointer', fontSize: 12, color: 'var(--c-text-muted)' }}>
-                🖨
-              </button>
+              <IconButton variant="outlined" size="sm" icon="🖨" label="이번 주 전체 보고서 인쇄"
+                title="이번 주 전체 보고서 인쇄" onClick={() => setPrintOpen(true)} />
             )}
             <div style={{ position: 'relative' }}>
               {writeMenuOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setWriteMenuOpen(false)} />}
-              <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: '1px solid #1565c0' }}>
-                <button onClick={() => { setWriteMenuOpen(false); openForm({}) }}
-                  style={{ padding: '6px 12px', background: '#1976d2', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-                  + 작성
-                </button>
-                <button onClick={() => setWriteMenuOpen(o => !o)}
-                  style={{ padding: '6px 10px', background: '#1976d2', color: '#fff', border: 'none', borderLeft: '2px solid rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: 13, lineHeight: 1 }}>
-                  ⌄
-                </button>
-              </div>
+              {/* 작성 + 지난 주차 선택 분할 버튼 */}
+              <ButtonGroup>
+                <Button size="sm" onClick={() => { setWriteMenuOpen(false); openForm({}) }}>+ 작성</Button>
+                <ButtonGroupSeparator />
+                <IconButton variant="filled" size="sm" icon="⌄" label="지난 주차 선택"
+                  aria-expanded={writeMenuOpen} onClick={() => setWriteMenuOpen(o => !o)} />
+              </ButtonGroup>
               {writeMenuOpen && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 100, background: 'var(--c-card)', border: '1px solid var(--c-border-in)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.15)', minWidth: 210, overflow: 'hidden' }}>
                   {getPastWeeks(5).map((w, i) => (
                     <div key={w.weekStart} onClick={() => { setWriteMenuOpen(false); openForm({ weekStart: w.weekStart, weekEnd: w.weekEnd, weekLabel: w.weekLabel }) }}
-                      style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid var(--c-border-in)', color: i === 0 ? '#1976d2' : 'var(--c-text)', fontWeight: i === 0 ? 600 : 400, background: 'transparent' }}
+                      style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid var(--c-border-in)', color: i === 0 ? 'var(--c-action)' : 'var(--c-text)', fontWeight: i === 0 ? 600 : 400, background: 'transparent' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-bg)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                       {w.label}

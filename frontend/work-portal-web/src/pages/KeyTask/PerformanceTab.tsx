@@ -4,6 +4,7 @@ import { todoApi, type Todo } from '../../api/todos'
 import { workUnitApi, type WorkUnit } from '../../api/workUnits'
 import { getUsers, type UserSummary } from '../../api/users'
 import { type KeyTask } from '../../api/keyTasks'
+import { Button } from '../../components/ui'
 
 const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   DONE:        { bg: 'var(--c-tag-done-bg)',  text: 'var(--c-tag-done-t)',  label: '완료' },
@@ -57,11 +58,11 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
     <div>
       {/* 담당자 필터 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-        <button style={chip(selAssignee === 'all')} onClick={() => setSelAssignee('all')}>전체</button>
+        <Button size="sm" variant={selAssignee === 'all' ? 'filled' : 'outlined'} onClick={() => setSelAssignee('all')}>전체</Button>
         {assignees.map(a => (
-          <button key={a} style={chip(selAssignee === a)} onClick={() => setSelAssignee(a)}>
+          <Button key={a} size="sm" variant={selAssignee === a ? 'filled' : 'outlined'} onClick={() => setSelAssignee(a)}>
             {nameOf(a)}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -155,13 +156,4 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
       </div>
     </div>
   )
-}
-
-function chip(active: boolean): React.CSSProperties {
-  return {
-    padding: '5px 14px', borderRadius: 20, cursor: 'pointer', fontSize: 13, fontWeight: active ? 600 : 400,
-    border: `1px solid ${active ? '#1a1a2e' : 'var(--c-border-in)'}`,
-    background: active ? '#1a1a2e' : 'transparent',
-    color: active ? '#fff' : 'var(--c-text-muted)',
-  }
 }

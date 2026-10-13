@@ -142,10 +142,10 @@ export default function UserManagementPage() {
         action={
           <div style={{ display: 'flex', gap: 8 }}>
             {isAdminOrManager && (
-              <button style={{ ...s.btn, background: tab === 'menus' ? '#1976d2' : '#1a1a2e' }}
+              <Button variant="outlined"
                 onClick={() => { setTab(tab === 'menus' ? 'users' : 'menus'); if (tab !== 'menus') setTimeout(initMenuEdits, 100) }}>
                 {tab === 'menus' ? '사용자 목록' : '메뉴 권한 설정'}
-              </button>
+              </Button>
             )}
             <Button variant="filled" onClick={openCreate}>+ 사용자 추가</Button>
           </div>
@@ -299,7 +299,6 @@ function roleStyle(role: string): React.CSSProperties {
 
 const s: Record<string, React.CSSProperties> = {
   card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
-  btn: { padding: '8px 16px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   grid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center' },

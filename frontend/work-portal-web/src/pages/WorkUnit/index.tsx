@@ -7,6 +7,7 @@ import {
 } from '../../api/workUnits'
 import { getKeyTasks } from '../../api/keyTasks'
 import { todoApi, type Todo } from '../../api/todos'
+import { Button, IconButton } from '../../components/ui'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
@@ -132,7 +133,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
             전체 {workUnits.length}개 · 진행중 {grouped.IN_PROGRESS.length}개 · 보류 {grouped.ON_HOLD.length}개 · 완료 {grouped.DONE.length}개
           </div>
         </div>
-        <button onClick={openCreate} style={styles.addBtn}>+ 추가</button>
+        <Button onClick={openCreate}>+ 추가</Button>
       </div>
 
       {/* 필터 */}
@@ -192,9 +193,9 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                        <button style={styles.btnSm} onClick={() => openEdit(wu)}>수정</button>
-                        <button style={{ ...styles.btnSm, color: '#e53e3e' }}
-                          onClick={() => { if (confirm(`"${wu.title}" 삭제할까요?`)) deleteMut.mutate(wu.id) }}>삭제</button>
+                        <Button variant="outlined" size="xs" onClick={() => openEdit(wu)}>수정</Button>
+                        <Button variant="outlined" size="xs" style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
+                          onClick={() => { if (confirm(`"${wu.title}" 삭제할까요?`)) deleteMut.mutate(wu.id) }}>삭제</Button>
                       </div>
                     </div>
 
@@ -255,7 +256,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
           <div style={styles.modal}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? '단위업무 수정' : '단위업무 추가'}</span>
-              <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--c-text-muted)' }}>✕</button>
+              <IconButton variant="text" size="sm" icon="✕" label="닫기" onClick={closeModal} />
             </div>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <label style={styles.label}>
@@ -288,8 +289,8 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                 <textarea style={{ ...styles.input, height: 72, resize: 'vertical' }} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
               </label>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button type="button" onClick={closeModal} style={styles.cancelBtn}>취소</button>
-                <button type="submit" style={styles.submitBtn} disabled={createMut.isPending || updateMut.isPending}>저장</button>
+                <Button variant="outlined" onClick={closeModal}>취소</Button>
+                <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>저장</Button>
               </div>
             </form>
           </div>
@@ -307,12 +308,8 @@ const styles: Record<string, React.CSSProperties> = {
   filter:    { padding: '6px 10px', borderRadius: 6, border: '1px solid var(--c-border)', fontSize: 13, background: 'var(--c-input-bg)', color: 'inherit', cursor: 'pointer' },
   card:      { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '12px 16px' },
   badge:     { fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' },
-  btnSm:     { padding: '4px 10px', fontSize: 12, borderRadius: 5, border: '1px solid var(--c-border)', background: 'transparent', cursor: 'pointer', color: 'var(--c-text-sub)' },
   overlay:   { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal:     { background: 'var(--c-card)', borderRadius: 10, padding: 24, width: '100%', maxWidth: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' },
   label:     { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--c-text-sub)', fontWeight: 500 },
   input:     { padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border)', fontSize: 13, outline: 'none', background: 'var(--c-input-bg)', color: 'inherit', width: '100%', boxSizing: 'border-box' },
-  cancelBtn: { padding: '8px 16px', borderRadius: 6, border: '1px solid var(--c-border)', background: 'transparent', cursor: 'pointer', fontSize: 13, color: 'var(--c-text-muted)' },
-  submitBtn: { padding: '8px 20px', borderRadius: 6, border: 'none', background: '#6b46c1', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 },
-  addBtn:    { padding: '7px 16px', borderRadius: 6, border: 'none', background: '#6b46c1', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 },
 }
