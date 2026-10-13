@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
 import client from '../../api/client'
-import { Button } from '../../components/ui'
+import { Button, Input, Textarea } from '../../components/ui'
 
 interface SystemOption { id: number; name: string }
 
@@ -70,8 +70,8 @@ export default function DailyCheckPage() {
       <div className="deploy-header">
         <h2 style={{ margin: 0 }}>일일 점검</h2>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)}
-            style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
+          <Input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)}
+            style={{ width: 'auto' }} />
           <Button size="md" variant={dateFilter ? 'outlined' : 'filled'} onClick={() => setDateFilter('')}>
             전체
           </Button>
@@ -108,8 +108,8 @@ export default function DailyCheckPage() {
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 13 }}>점검일 *</span>
-                <input type="date" value={form.checkDate} onChange={e => setForm(f => ({ ...f, checkDate: e.target.value }))}
-                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input type="date" value={form.checkDate} onChange={e => setForm(f => ({ ...f, checkDate: e.target.value }))}
+                  required />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 13 }}>상태 *</span>
@@ -122,8 +122,8 @@ export default function DailyCheckPage() {
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                 <span style={{ fontSize: 13 }}>비고</span>
-                <textarea value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} rows={3}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)', resize: 'vertical', fontFamily: 'inherit', fontSize: 14 }} />
+                <Textarea value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} rows={3}
+                  style={{ resize: 'vertical' }} />
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

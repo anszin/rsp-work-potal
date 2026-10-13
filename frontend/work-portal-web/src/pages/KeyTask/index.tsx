@@ -8,7 +8,7 @@ import {
 import { weeklyApi, type WeeklyReport } from '../../api/reports'
 import WorkUnitTab from '../WorkUnit'
 import PerformanceTab from './PerformanceTab'
-import { Button, IconButton } from '../../components/ui'
+import { Button, IconButton, Input, Textarea } from '../../components/ui'
 
 interface WorkItem {
   id: string
@@ -220,24 +220,24 @@ export default function KeyTaskPage() {
             <div style={{ display: 'grid', gridTemplateColumns: curLevel === '담당자' ? '1fr 1fr 1fr 2fr' : '1fr 1fr 2fr', gap: 12, marginBottom: 20 }}>
               <div>
                 <label style={s.label}>{teamLabel}</label>
-                <input style={s.input} list="team-list" value={f('teamName')} onChange={e => setF('teamName', e.target.value)}
+                <Input list="team-list" value={f('teamName')} onChange={e => setF('teamName', e.target.value)}
                   placeholder={curLevel === '담당부서' ? '부서명 입력' : curLevel === '담당자' ? '소속 팀/부서' : '팀명 입력'} />
                 <datalist id="team-list">{teamSuggestions.map(t => <option key={t} value={t} />)}</datalist>
               </div>
               {curLevel === '담당자' && (
                 <div>
                   <label style={s.label}>담당자명 *</label>
-                  <input style={s.input} list="assignee-list" value={f('assigneeName')} onChange={e => setF('assigneeName', e.target.value)} placeholder="이름 입력" />
+                  <Input list="assignee-list" value={f('assigneeName')} onChange={e => setF('assigneeName', e.target.value)} placeholder="이름 입력" />
                   <datalist id="assignee-list">{assigneeSuggestions.map(a => <option key={a} value={a} />)}</datalist>
                 </div>
               )}
               <div>
                 <label style={s.label}>KPI</label>
-                <input style={s.input} value={f('kpi')} onChange={e => setF('kpi', e.target.value)} placeholder="KPI 분류" />
+                <Input value={f('kpi')} onChange={e => setF('kpi', e.target.value)} placeholder="KPI 분류" />
               </div>
               <div>
                 <label style={s.label}>과제명 *</label>
-                <textarea rows={3} style={{ ...s.input, resize: 'vertical' }} value={f('taskName')} onChange={e => setF('taskName', e.target.value)} placeholder="과제명을 입력하세요" />
+                <Textarea rows={3} style={{ resize: 'vertical' }} value={f('taskName')} onChange={e => setF('taskName', e.target.value)} placeholder="과제명을 입력하세요" />
               </div>
             </div>
 
@@ -264,9 +264,9 @@ export default function KeyTaskPage() {
                         return (
                           <td key={q} style={s.mtd}>
                             {multiline
-                              ? <textarea style={{ ...s.input, height: 72, resize: 'vertical', fontSize: 12 }} value={f(key)} onChange={e => setF(key, e.target.value)} />
+                              ? <Textarea style={{ height: 72, resize: 'vertical' }} value={f(key)} onChange={e => setF(key, e.target.value)} />
                               : <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <input type="number" min={0} max={100} style={{ ...s.input, fontSize: 12, width: 70 }} value={f(key)} onChange={e => setF(key, e.target.value)} placeholder="0~100" />
+                                  <Input type="number" min={0} max={100} style={{ width: 70 }} value={f(key)} onChange={e => setF(key, e.target.value)} placeholder="0~100" />
                                   <span style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>%</span>
                                 </div>
                             }
@@ -505,7 +505,6 @@ const s: Record<string, React.CSSProperties> = {
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12 },
   label: { display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--c-text-sub)', marginBottom: 6 },
-  input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box', background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   mth: { padding: '8px 10px', fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', textAlign: 'left', borderBottom: '1px solid var(--c-border-in)', whiteSpace: 'nowrap' },
   mtd: { padding: '6px 4px', verticalAlign: 'top' },
   th: { padding: '10px 12px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', whiteSpace: 'nowrap' },

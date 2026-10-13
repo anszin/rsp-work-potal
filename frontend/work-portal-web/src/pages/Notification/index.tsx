@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { getUsers, UserSummary } from '../../api/users'
 import { notificationApi } from '../../api/notifications'
 import { useAuth } from '../../context/useAuth'
-import { Button } from '../../components/ui'
+import { Button, Textarea } from '../../components/ui'
 
 const TEMPLATES = [
   { label: '주간보고 제출 요청', text: '이번 주 주간보고 등록 부탁드립니다. 금일 오후 6시까지 포탈에 등록해 주세요.' },
@@ -139,12 +139,12 @@ export default function NotificationPage() {
         {/* 메시지 */}
         <section>
           <label style={s.sectionLabel}>메시지 *</label>
-          <textarea
+          <Textarea
             value={message}
             onChange={e => setMessage(e.target.value)}
             placeholder="팀원에게 전달할 내용을 입력하세요..."
             rows={6}
-            style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--c-border-in)', fontSize: 14, background: 'var(--c-bg)', color: 'var(--c-text)', resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.7, boxSizing: 'border-box' }}
+            style={{ width: '100%', resize: 'vertical' }}
           />
           <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 6 }}>
             발송 시 앞에 <code style={{ background: 'var(--c-thead)', padding: '1px 4px', borderRadius: 3 }}>📢 [업무 포탈 공지]</code> 헤더가 자동으로 붙습니다.

@@ -4,7 +4,7 @@ import axios from 'axios'
 import { getUsers, createUser, updateUser, deleteUser, resetPassword, getMenuPermissions, updateMenuPermissions, type UserSummary, type UserRole, type MenuPermission } from '../../api/users'
 import { useAuth } from '../../context/useAuth'
 import PageHeader from '../../components/PageHeader'
-import { Button } from '../../components/ui'
+import { Button, Input } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -199,16 +199,16 @@ export default function UserManagementPage() {
               <h3 style={{ margin: '0 0 16px', fontSize: 15 }}>{editing ? '사용자 수정' : '사용자 추가'}</h3>
               <div style={s.grid}>
                 <label style={s.label}>아이디</label>
-                <input style={s.input} value={form.username} disabled={!!editing}
+                <Input value={form.username} disabled={!!editing}
                   onChange={e => setForm({ ...form, username: e.target.value })} placeholder="로그인 아이디" />
                 <label style={s.label}>이름</label>
-                <input style={s.input} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="성명" />
+                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="성명" />
                 <label style={s.label}>부서</label>
-                <input style={s.input} value={form.dept} onChange={e => setForm({ ...form, dept: e.target.value })} placeholder="소속 부서" />
+                <Input value={form.dept} onChange={e => setForm({ ...form, dept: e.target.value })} placeholder="소속 부서" />
                 <label style={s.label}>이메일</label>
-                <input style={s.input} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="이메일 (임시 비밀번호 발송)" />
+                <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="이메일 (임시 비밀번호 발송)" />
                 <label style={s.label}>레드마인 ID</label>
-                <input style={s.input} type="number" value={form.redmineUserId} onChange={e => setForm({ ...form, redmineUserId: e.target.value })} placeholder="레드마인 사용자 ID (숫자)" />
+                <Input type="number" value={form.redmineUserId} onChange={e => setForm({ ...form, redmineUserId: e.target.value })} placeholder="레드마인 사용자 ID (숫자)" />
                 {editing && (
                   <>
                     <label style={s.label}>역할</label>

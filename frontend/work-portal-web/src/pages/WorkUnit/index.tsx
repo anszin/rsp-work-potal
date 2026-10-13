@@ -7,7 +7,7 @@ import {
 } from '../../api/workUnits'
 import { getKeyTasks } from '../../api/keyTasks'
 import { todoApi, type Todo } from '../../api/todos'
-import { Button, IconButton } from '../../components/ui'
+import { Button, IconButton, Input, Textarea } from '../../components/ui'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
@@ -268,7 +268,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
               </label>
               <label style={styles.label}>
                 이름 *
-                <input style={styles.input} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} autoFocus />
+                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} autoFocus />
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={styles.label}>
@@ -286,7 +286,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
               </div>
               <label style={styles.label}>
                 설명
-                <textarea style={{ ...styles.input, height: 72, resize: 'vertical' }} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                <Textarea style={{ height: 72, resize: 'vertical' }} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
               </label>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                 <Button variant="outlined" onClick={closeModal}>취소</Button>

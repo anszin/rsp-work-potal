@@ -424,6 +424,11 @@ input, textarea, select, button {
 [data-portal-icon-size="md"] { width: 34px; height: 34px; }
 [data-portal-icon-size="lg"] { width: 40px; height: 40px; }
 
+/* SDK 입력 필드 보정 — 버튼 md(34px)와 높이를 맞추고 글자 13px
+   textarea 는 SDK 자동 높이(field-sizing: content)를 해제해 rows 가 기존처럼 동작하도록 함 */
+[data-portal-field="input"]    { height: 34px; padding-inline: 10px; font-size: 13px; }
+[data-portal-field="textarea"] { padding: 8px 10px; font-size: 13px; field-sizing: fixed; min-height: 0; }
+
 /* ================================================================
    RSP Design System — UI Components
    ================================================================ */

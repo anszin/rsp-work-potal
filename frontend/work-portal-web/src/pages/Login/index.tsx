@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
-import { Button } from '../../components/ui'
+import { Button, Input } from '../../components/ui'
 
 export default function LoginPage() {
   const { login, token } = useAuth()
@@ -34,12 +34,12 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.field}>
             <label style={styles.label}>아이디</label>
-            <input style={styles.input} type="text" value={username}
+            <Input type="text" value={username}
               onChange={(e) => setUsername(e.target.value)} placeholder="아이디 입력" required autoFocus />
           </div>
           <div style={styles.field}>
             <label style={styles.label}>비밀번호</label>
-            <input style={styles.input} type="password" value={password}
+            <Input type="password" value={password}
               onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호 입력" required />
           </div>
           {error && <p style={styles.error}>{error}</p>}
@@ -59,6 +59,5 @@ const styles: Record<string, React.CSSProperties> = {
   form: { display: 'flex', flexDirection: 'column', gap: 16 },
   field: { display: 'flex', flexDirection: 'column', gap: 6 },
   label: { fontSize: 14, fontWeight: 500, color: 'var(--c-text-sub)' },
-  input: { padding: '10px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 14, outline: 'none' },
   error: { color: 'var(--c-tag-err-t)', fontSize: 13, margin: 0 },
 }

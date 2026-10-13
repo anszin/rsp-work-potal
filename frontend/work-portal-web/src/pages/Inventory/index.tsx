@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi, ItemType, ItemStatus, SaveInventoryRequest, InventoryItem } from '../../api/inventory'
-import { Button } from '../../components/ui'
+import { Button, Input, Textarea } from '../../components/ui'
 
 const TYPE_LABEL: Record<ItemType, string> = { CONTRACT: '수주', PROPOSAL: '제안' }
 const STATUS_LABEL: Record<ItemStatus, string> = {
@@ -118,18 +118,15 @@ export default function InventoryPage() {
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>항목명 *</span>
-                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>고객사</span>
-                <input value={form.client} onChange={e => setForm(f => ({ ...f, client: e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input value={form.client} onChange={e => setForm(f => ({ ...f, client: e.target.value }))} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>금액 (원)</span>
-                <input type="number" value={form.amount ?? ''} onChange={e => setForm(f => ({ ...f, amount: e.target.value ? +e.target.value : undefined }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input type="number" value={form.amount ?? ''} onChange={e => setForm(f => ({ ...f, amount: e.target.value ? +e.target.value : undefined }))} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>상태</span>
@@ -142,18 +139,16 @@ export default function InventoryPage() {
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>시작일</span>
-                <input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>종료일</span>
-                <input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                 <span>비고</span>
-                <textarea value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} rows={2}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)', resize: 'vertical' }} />
+                <Textarea value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} rows={2}
+                  style={{ resize: 'vertical' }} />
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

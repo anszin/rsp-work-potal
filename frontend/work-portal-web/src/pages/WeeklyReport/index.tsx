@@ -8,7 +8,7 @@ import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton } from '../../components/ui'
+import { Button, IconButton, Input, Textarea } from '../../components/ui'
 import { ButtonGroup, ButtonGroupSeparator } from 'rsp-react-design-system/shadcn'
 
 // ── 업무 아이템 ───────────────────────────────────────────────────────────────
@@ -340,11 +340,11 @@ function SortableRow({ item, keyTasks, workUnits, onUpdate, onRemove }: {
           {item.author}
         </span>
       )}
-      <textarea value={item.content}
+      <Textarea value={item.content}
         onChange={e => { onUpdate({ ...item, content: e.target.value }); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
         onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
         placeholder="업무 내용 입력..." rows={1}
-        style={{ flex: 1, padding: '5px 9px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 13, background: 'var(--c-bg)', color: 'var(--c-text)', outline: 'none', resize: 'none', overflow: 'hidden', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 30 }} />
+        style={{ flex: 1, resize: 'none', overflow: 'hidden', minHeight: 30 }} />
       <IconButton variant="text" size="sm" icon="×" label="행 삭제" onClick={onRemove}
         style={{ flexShrink: 0 }} />
     </div>
@@ -471,9 +471,6 @@ function WeekCompareForm({ form, setForm, keyTasks, workUnits }: {
   const setSection = (key: ContentKey, items: WorkItem[]) => setForm(f => ({ ...f, [key]: items }))
   const setThisDates = (s: string, e: string) => setForm(f => ({ ...f, weekStart: s, weekEnd: e }))
   const setNextDates = (s: string, e: string) => setForm(f => ({ ...f, nextWeekStart: s, nextWeekEnd: e }))
-  const dateInput = (color: string): React.CSSProperties => ({
-    padding: '3px 6px', borderRadius: 5, border: `1px solid color-mix(in srgb, ${color} 33%, transparent)`, background: `color-mix(in srgb, ${color} 6%, transparent)`, color, fontSize: 12, width: 110,
-  })
   const pairs: { tw: ContentKey; nw: ContentKey; label: string }[] = [
     { tw: 'thisWeekWork',     nw: 'nextWeekWork',     label: '수행' },
     { tw: 'thisWeekProposal', nw: 'nextWeekProposal', label: '제안' },
@@ -484,15 +481,15 @@ function WeekCompareForm({ form, setForm, keyTasks, workUnits }: {
       {/* 헤더 행 */}
       <div style={{ padding: '8px 14px', background: `color-mix(in srgb, ${TW} 8%, transparent)`, borderBottom: `1px solid color-mix(in srgb, ${TW} 13%, transparent)`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: TW, flexShrink: 0 }}>금주</span>
-        <input type="date" value={form.weekStart} onChange={e => setThisDates(e.target.value, form.weekEnd)} style={dateInput(TW)} />
+        <Input type="date" value={form.weekStart} onChange={e => setThisDates(e.target.value, form.weekEnd)} style={{ width: 130 }} />
         <span style={{ fontSize: 12, color: TW, opacity: 0.5 }}>~</span>
-        <input type="date" value={form.weekEnd} onChange={e => setThisDates(form.weekStart, e.target.value)} style={dateInput(TW)} />
+        <Input type="date" value={form.weekEnd} onChange={e => setThisDates(form.weekStart, e.target.value)} style={{ width: 130 }} />
       </div>
       <div style={{ padding: '8px 14px', background: `color-mix(in srgb, ${NW} 8%, transparent)`, borderBottom: `1px solid color-mix(in srgb, ${NW} 13%, transparent)`, display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: NW, flexShrink: 0 }}>차주</span>
-        <input type="date" value={form.nextWeekStart} onChange={e => setNextDates(e.target.value, form.nextWeekEnd)} style={dateInput(NW)} />
+        <Input type="date" value={form.nextWeekStart} onChange={e => setNextDates(e.target.value, form.nextWeekEnd)} style={{ width: 130 }} />
         <span style={{ fontSize: 12, color: NW, opacity: 0.5 }}>~</span>
-        <input type="date" value={form.nextWeekEnd} onChange={e => setNextDates(form.nextWeekStart, e.target.value)} style={dateInput(NW)} />
+        <Input type="date" value={form.nextWeekEnd} onChange={e => setNextDates(form.nextWeekStart, e.target.value)} style={{ width: 130 }} />
       </div>
       {/* 섹션 행 — 좌우가 같은 grid row를 공유해 라인 대칭 */}
       {pairs.flatMap(({ tw, nw, label }, idx) => {
@@ -587,8 +584,7 @@ function ReportForm({ form, setForm, isConsolidated, isEditing, onSubmit, onCanc
       <form onSubmit={onSubmit}>
         <label style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 16 }}>
           <span style={{ fontSize: 13, fontWeight: 600 }}>제목 *</span>
-          <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required
-            style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, background: 'var(--c-bg)', color: 'var(--c-text)' }} />
+          <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
         </label>
         <WeekCompareForm form={form} setForm={setForm} keyTasks={keyTasks} workUnits={workUnits} />
         <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
@@ -755,8 +751,8 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
         {/* ── 오른쪽: 통합 보고서 ── */}
         <div style={{ overflowY: 'auto', padding: '14px 16px' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--c-tag-pri-t)', marginBottom: 8, letterSpacing: '0.05em' }}>통합 보고서 (편집 중)</div>
-          <input value={conForm.title} onChange={e => setConForm(f => ({ ...f, title: e.target.value }))}
-            style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', fontSize: 14, fontWeight: 600, background: 'var(--c-bg)', color: 'var(--c-text)', marginBottom: 12, boxSizing: 'border-box' }} />
+          <Input value={conForm.title} onChange={e => setConForm(f => ({ ...f, title: e.target.value }))}
+            style={{ width: '100%', fontWeight: 600, marginBottom: 12 }} />
           <WeekCompareForm form={conForm} setForm={setConForm} keyTasks={keyTasks} workUnits={workUnits} />
         </div>
       </div>

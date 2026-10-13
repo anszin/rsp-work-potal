@@ -11,7 +11,7 @@ import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../.
 import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import { Button, IconButton } from '../../components/ui'
+import { Button, IconButton, Input, Textarea } from '../../components/ui'
 
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
   RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치',
@@ -298,12 +298,12 @@ export default function DeployRequestPage() {
               <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--c-text-muted)' }}>
                 {cfg.required ? '사유를 입력하세요 (필수)' : '첨언을 입력하세요 (선택)'}
               </p>
-              <textarea
+              <Textarea
                 value={actionComment}
                 onChange={e => setActionComment(e.target.value)}
                 placeholder={cfg.required ? '사유를 입력하세요' : '첨언 (없으면 비워두세요)'}
                 rows={4}
-                style={{ width: '100%', padding: '8px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, resize: 'vertical', boxSizing: 'border-box', background: 'var(--c-input-bg)', color: 'var(--c-text)' }}
+                style={{ width: '100%', resize: 'vertical' }}
                 autoFocus
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
@@ -354,14 +354,14 @@ export default function DeployRequestPage() {
             )}
             <label style={s.label}>제목 *</label>
             <div>
-              <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="예: [릴리즈] POS v1.2.3 · [핫픽스] 주문 오류 긴급수정" />
               <div style={{ marginTop: 4, fontSize: 11, color: 'var(--c-text-muted)', lineHeight: 1.6 }}>
                 권장 형식: <code style={{ background: 'var(--c-bg)', padding: '1px 5px', borderRadius: 3 }}>[유형] 시스템 버전 · 변경내용</code>
               </div>
             </div>
             <label style={s.label}>버전</label>
-            <input style={s.input} value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} placeholder="예: v1.2.3" />
+            <Input value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} placeholder="예: v1.2.3" />
             <label style={s.label}>배포 유형</label>
             <div>
               <select style={s.input} value={form.deployType} onChange={(e) => setForm({ ...form, deployType: e.target.value as DeployType })}>
@@ -379,11 +379,11 @@ export default function DeployRequestPage() {
                 {Object.entries(DEPLOY_SCOPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
               {form.deployScope === 'PARTIAL' && (
-                <input style={{ ...s.input, flex: 1 }} value={form.deployTarget ?? ''} onChange={(e) => setForm({ ...form, deployTarget: e.target.value })} placeholder="대상 점포 (예: 강남점, 홍대점)" />
+                <Input style={{ flex: 1 }} value={form.deployTarget ?? ''} onChange={(e) => setForm({ ...form, deployTarget: e.target.value })} placeholder="대상 점포 (예: 강남점, 홍대점)" />
               )}
             </div>
             <label style={s.label}>예정일시</label>
-            <input style={{ ...s.input, width: 210 }} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
+            <Input style={{ width: 210 }} type="datetime-local" value={form.scheduledAt?.slice(0, 16) ?? ''} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value ? e.target.value + ':00' : undefined })} />
             <label style={s.label}>레드마인 일감</label>
             <div>
               {selectedSystem?.redmineProjectKey ? (
@@ -411,7 +411,7 @@ export default function DeployRequestPage() {
               )}
             </div>
             <label style={s.label}>내용</label>
-            <textarea style={{ ...s.input, height: 100, resize: 'vertical' }} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="배포 내용 및 변경사항을 입력하세요" />
+            <Textarea style={{ height: 100, resize: 'vertical' }} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="배포 내용 및 변경사항을 입력하세요" />
           </div>
           <div style={s.formActions}>
             <Button variant="outlined" onClick={closeForm}>취소</Button>
@@ -814,11 +814,11 @@ export default function DeployRequestPage() {
                     <option key={st.id} value={String(st.id)}>{st.name}</option>
                   ))}
                 </select>
-                <input
+                <Input
                   value={pickerQuery}
                   onChange={e => setPickerQuery(e.target.value)}
                   placeholder="제목으로 검색..."
-                  style={{ ...s.input, flex: 1, margin: 0 }}
+                  style={{ flex: 1, margin: 0 }}
                 />
               </div>
             </div>

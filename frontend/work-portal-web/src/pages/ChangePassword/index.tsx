@@ -2,7 +2,7 @@ import { useState, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { changePassword } from '../../api/auth'
 import { useAuth } from '../../context/useAuth'
-import { Button } from '../../components/ui'
+import { Button, Input } from '../../components/ui'
 
 export default function ChangePasswordPage() {
   const { refreshMe } = useAuth()
@@ -38,17 +38,17 @@ export default function ChangePasswordPage() {
         <form onSubmit={handleSubmit} style={s.form}>
           <div style={s.field}>
             <label style={s.label}>현재 비밀번호 (임시)</label>
-            <input style={s.input} type="password" value={current}
+            <Input type="password" value={current}
               onChange={e => setCurrent(e.target.value)} required autoFocus />
           </div>
           <div style={s.field}>
             <label style={s.label}>새 비밀번호</label>
-            <input style={s.input} type="password" value={next}
+            <Input type="password" value={next}
               onChange={e => setNext(e.target.value)} placeholder="8자 이상" required />
           </div>
           <div style={s.field}>
             <label style={s.label}>새 비밀번호 확인</label>
-            <input style={s.input} type="password" value={confirm}
+            <Input type="password" value={confirm}
               onChange={e => setConfirm(e.target.value)} required />
           </div>
           {error && <p style={s.error}>{error}</p>}
@@ -69,6 +69,5 @@ const s: Record<string, React.CSSProperties> = {
   form: { display: 'flex', flexDirection: 'column', gap: 16 },
   field: { display: 'flex', flexDirection: 'column', gap: 6 },
   label: { fontSize: 14, fontWeight: 500, color: 'var(--c-text-sub)' },
-  input: { padding: '10px 12px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 14 },
   error: { color: 'var(--c-tag-err-t)', fontSize: 13, margin: 0 },
 }

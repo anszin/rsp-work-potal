@@ -7,7 +7,7 @@ import {
   getSystemServers, addSystemServer, deleteSystemServer,
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
-import { Button } from '../../components/ui'
+import { Button, Input } from '../../components/ui'
 
 const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '', sortOrder: '' })
 const emptySubForm = () => ({ code: '', name: '', description: '' })
@@ -159,25 +159,25 @@ export default function SystemManagementPage() {
               {!editing && (
                 <>
                   <label style={s.label}>시스템 코드 *</label>
-                  <input value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))}
-                    required placeholder="예: SYS003" style={s.input} />
+                  <Input value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))}
+                    required placeholder="예: SYS003" />
                 </>
               )}
               <label style={s.label}>시스템명 *</label>
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                required placeholder="시스템 이름" style={s.input} />
+              <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                required placeholder="시스템 이름" />
               <label style={s.label}>설명</label>
-              <input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                placeholder="시스템 설명" style={s.input} />
+              <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                placeholder="시스템 설명" />
               <label style={s.label}>레드마인 키</label>
-              <input value={form.redmineProjectKey} onChange={e => setForm(f => ({ ...f, redmineProjectKey: e.target.value }))}
-                placeholder="예: retail-platform" style={s.input} />
+              <Input value={form.redmineProjectKey} onChange={e => setForm(f => ({ ...f, redmineProjectKey: e.target.value }))}
+                placeholder="예: retail-platform" />
               <label style={s.label}>Webex Room ID</label>
-              <input value={form.webexRoomId} onChange={e => setForm(f => ({ ...f, webexRoomId: e.target.value }))}
-                placeholder="Webex 스페이스 Room ID" style={s.input} />
+              <Input value={form.webexRoomId} onChange={e => setForm(f => ({ ...f, webexRoomId: e.target.value }))}
+                placeholder="Webex 스페이스 Room ID" />
               <label style={s.label}>노출 순서</label>
-              <input type="number" value={form.sortOrder} onChange={e => setForm(f => ({ ...f, sortOrder: e.target.value }))}
-                placeholder="숫자가 낮을수록 먼저 표시 (기본 0)" style={{ ...s.input, width: 160 }} />
+              <Input type="number" value={form.sortOrder} onChange={e => setForm(f => ({ ...f, sortOrder: e.target.value }))}
+                placeholder="숫자가 낮을수록 먼저 표시 (기본 0)" style={{ width: 160 }} />
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
               <Button type="button" onClick={reset} variant="outlined">취소</Button>
@@ -250,16 +250,16 @@ export default function SystemManagementPage() {
                   {!editingSub && (
                     <>
                       <label style={s.label}>코드 *</label>
-                      <input value={subForm.code} onChange={e => setSubForm(f => ({ ...f, code: e.target.value }))}
-                        required placeholder="예: FRONTEND" style={{ ...s.input, fontSize: 12 }} />
+                      <Input value={subForm.code} onChange={e => setSubForm(f => ({ ...f, code: e.target.value }))}
+                        required placeholder="예: FRONTEND" />
                     </>
                   )}
                   <label style={s.label}>이름 *</label>
-                  <input value={subForm.name} onChange={e => setSubForm(f => ({ ...f, name: e.target.value }))}
-                    required placeholder="하위시스템 이름" style={{ ...s.input, fontSize: 12 }} />
+                  <Input value={subForm.name} onChange={e => setSubForm(f => ({ ...f, name: e.target.value }))}
+                    required placeholder="하위시스템 이름" />
                   <label style={s.label}>설명</label>
-                  <input value={subForm.description} onChange={e => setSubForm(f => ({ ...f, description: e.target.value }))}
-                    placeholder="설명" style={{ ...s.input, fontSize: 12 }} />
+                  <Input value={subForm.description} onChange={e => setSubForm(f => ({ ...f, description: e.target.value }))}
+                    placeholder="설명" />
                 </div>
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                   <Button type="button" onClick={resetSubForm} variant="outlined" size="sm">취소</Button>
@@ -321,12 +321,12 @@ export default function SystemManagementPage() {
             <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--c-text-muted)' }}>배포 승인 후 단계별로 완료 처리할 서버 목록입니다.</p>
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <input
+              <Input
                 value={newServerName}
                 onChange={e => setNewServerName(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && newServerName.trim()) addServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverName: newServerName.trim() }) }}
                 placeholder="서버명 입력 (예: 1번서버)"
-                style={{ ...s.input, flex: 1, fontSize: 13 }}
+                style={{ flex: 1 }}
               />
               <Button variant="filled"
                 onClick={() => { if (newServerName.trim()) addServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverName: newServerName.trim() }) }}
@@ -409,7 +409,6 @@ const s: Record<string, React.CSSProperties> = {
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   grid: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: '12px 16px', alignItems: 'center' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
-  input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   table: { width: '100%', borderCollapse: 'collapse' as const },
   thead: { background: 'var(--c-thead)' },
   th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },

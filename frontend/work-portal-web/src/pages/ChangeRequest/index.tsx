@@ -10,7 +10,7 @@ import { getActiveSystems, getManagedSystemIds, getActiveSubSystems, getSystemMa
 import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import { Button } from '../../components/ui'
+import { Button, Input, Textarea } from '../../components/ui'
 
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
@@ -214,12 +214,12 @@ export default function ChangeRequestPage() {
               <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--c-text-muted)' }}>
                 {cfg.required ? '사유를 입력하세요 (필수)' : '첨언을 입력하세요 (선택)'}
               </p>
-              <textarea
+              <Textarea
                 value={actionComment}
                 onChange={e => setActionComment(e.target.value)}
                 placeholder={cfg.required ? '사유를 입력하세요' : '첨언 (없으면 비워두세요)'}
                 rows={4}
-                style={{ width: '100%', padding: '8px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, resize: 'vertical', boxSizing: 'border-box', background: 'var(--c-input-bg)', color: 'var(--c-text)' }}
+                style={{ width: '100%', resize: 'vertical' }}
                 autoFocus
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
@@ -272,11 +272,11 @@ export default function ChangeRequestPage() {
               </>
             )}
             <label style={s.label}>제목 *</label>
-            <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="변경 요청 제목" />
+            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="변경 요청 제목" />
             <label style={s.label}>요청부서</label>
-            <input style={s.input} value={form.requesterDept ?? ''} onChange={(e) => setForm({ ...form, requesterDept: e.target.value })} placeholder="요청 부서명" />
+            <Input value={form.requesterDept ?? ''} onChange={(e) => setForm({ ...form, requesterDept: e.target.value })} placeholder="요청 부서명" />
             <label style={s.label}>요청자명</label>
-            <input style={s.input} value={form.requesterName ?? ''} onChange={(e) => setForm({ ...form, requesterName: e.target.value })} placeholder="요청자 이름" />
+            <Input value={form.requesterName ?? ''} onChange={(e) => setForm({ ...form, requesterName: e.target.value })} placeholder="요청자 이름" />
             {selectedSystem?.redmineProjectKey && (
               <>
                 <label style={s.label}>요청유형 *</label>
@@ -301,9 +301,9 @@ export default function ChangeRequestPage() {
               </>
             )}
             <label style={s.label}>반영 목표일</label>
-            <input type="date" style={s.input} value={form.targetDate ?? ''} onChange={(e) => setForm({ ...form, targetDate: e.target.value || undefined })} />
+            <Input type="date" value={form.targetDate ?? ''} onChange={(e) => setForm({ ...form, targetDate: e.target.value || undefined })} />
             <label style={s.label}>링크 첨부</label>
-            <input style={s.input} value={form.attachmentLink ?? ''} onChange={(e) => setForm({ ...form, attachmentLink: e.target.value })} placeholder="https://..." />
+            <Input value={form.attachmentLink ?? ''} onChange={(e) => setForm({ ...form, attachmentLink: e.target.value })} placeholder="https://..." />
             <label style={s.label}>파일 첨부</label>
             <div>
               {editing?.hasAttachment && !pendingFile && (
@@ -338,7 +338,7 @@ export default function ChangeRequestPage() {
               )}
             </div>
             <label style={s.label}>내용</label>
-            <textarea style={{ ...s.input, height: 100, resize: 'vertical' }} value={form.content}
+            <Textarea style={{ height: 100, resize: 'vertical' }} value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="변경 내용을 입력하세요" />
           </div>
           <div style={s.formActions}>

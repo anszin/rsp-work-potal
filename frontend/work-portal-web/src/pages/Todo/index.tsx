@@ -5,7 +5,7 @@ import { useAuth } from '../../context/useAuth'
 import { getUsers, type UserSummary } from '../../api/users'
 import { getKeyTasks } from '../../api/keyTasks'
 import { workUnitApi } from '../../api/workUnits'
-import { Button, IconButton } from '../../components/ui'
+import { Button, IconButton, Input, Textarea } from '../../components/ui'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
   { status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },
@@ -264,8 +264,7 @@ export default function TodoPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <label style={styles.label}>
                     제목 <span style={{ color: 'var(--c-tag-err-t)' }}>*</span>
-                    <input
-                      style={styles.input}
+                    <Input
                       value={form.title}
                       onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                       placeholder="Todo 제목"
@@ -276,8 +275,8 @@ export default function TodoPage() {
 
                   <label style={styles.label}>
                     설명
-                    <textarea
-                      style={{ ...styles.input, height: 100, resize: 'vertical' }}
+                    <Textarea
+                      style={{ height: 100, resize: 'vertical' }}
                       value={form.description}
                       onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                       placeholder="상세 내용"
@@ -372,15 +371,15 @@ export default function TodoPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                     <label style={styles.label}>
                       <span>시작일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
-                      <input type="date" style={styles.input} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} disabled={readOnly} />
+                      <Input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} disabled={readOnly} />
                     </label>
                     <label style={styles.label}>
                       목표일
-                      <input type="date" style={styles.input} value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} disabled={readOnly} />
+                      <Input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} disabled={readOnly} />
                     </label>
                     <label style={styles.label}>
                       <span>완료일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
-                      <input type="date" style={styles.input} value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} disabled={readOnly} />
+                      <Input type="date" value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} disabled={readOnly} />
                     </label>
                   </div>
                 </div>
@@ -420,8 +419,8 @@ export default function TodoPage() {
                           disabled={readOnly}
                           style={{ width: 15, height: 15, flexShrink: 0, cursor: readOnly ? 'default' : 'pointer' }}
                         />
-                        <input
-                          style={{ ...styles.input, textDecoration: item.done ? 'line-through' : 'none', color: item.done ? 'var(--c-text-muted)' : 'inherit' }}
+                        <Input
+                          style={{ textDecoration: item.done ? 'line-through' : 'none', color: item.done ? 'var(--c-text-muted)' : undefined }}
                           value={item.text}
                           onChange={e => setForm(f => {
                             const items = [...(f.checkItems ?? [])]
@@ -455,8 +454,8 @@ export default function TodoPage() {
                     )}
                     {(form.links ?? []).map((link, i) => (
                       <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
-                        <input
-                          style={{ ...styles.input, width: 80, flexShrink: 0 }}
+                        <Input
+                          style={{ width: 80, flexShrink: 0 }}
                           value={link.label}
                           onChange={e => setForm(f => {
                             const links = [...(f.links ?? [])]
@@ -466,8 +465,8 @@ export default function TodoPage() {
                           placeholder="이름"
                           disabled={readOnly}
                         />
-                        <input
-                          style={{ ...styles.input, flex: 1 }}
+                        <Input
+                          style={{ flex: 1 }}
                           value={link.url}
                           onChange={e => setForm(f => {
                             const links = [...(f.links ?? [])]
@@ -516,8 +515,8 @@ export default function TodoPage() {
                               onClick={() => setForm(f => ({ ...f, workLogs: (f.workLogs ?? []).filter((_, idx) => idx !== i) }))} />
                           )}
                         </div>
-                        <textarea
-                          style={{ ...styles.input, height: 60, resize: 'vertical', background: 'var(--c-card)' }}
+                        <Textarea
+                          style={{ height: 60, resize: 'vertical' }}
                           value={log.content}
                           onChange={e => setForm(f => {
                             const logs = [...(f.workLogs ?? [])]
@@ -565,8 +564,7 @@ export default function TodoPage() {
                   {/* 이미지 URL */}
                   <label style={styles.label}>
                     이미지 URL
-                    <input
-                      style={styles.input}
+                    <Input
                       value={form.imageUrl ?? ''}
                       onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
                       placeholder="https://... (이미지 직접 링크)"

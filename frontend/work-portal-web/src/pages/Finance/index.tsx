@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { financeApi, FinanceCategory, SaveFinanceRequest, FinanceRecord } from '../../api/finance'
-import { Button } from '../../components/ui'
+import { Button, Input } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -176,18 +176,17 @@ export default function FinancePage() {
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>항목명 *</span>
-                <input value={form.itemName} onChange={e => setForm(f => ({ ...f, itemName: e.target.value }))}
-                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input value={form.itemName} onChange={e => setForm(f => ({ ...f, itemName: e.target.value }))}
+                  required />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>금액 (원) *</span>
-                <input type="number" min={0} step={1} value={form.amount || ''} onChange={e => setForm(f => ({ ...f, amount: Math.floor(+e.target.value) }))}
-                  required style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input type="number" min={0} step={1} value={form.amount || ''} onChange={e => setForm(f => ({ ...f, amount: Math.floor(+e.target.value) }))}
+                  required />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span>비고</span>
-                <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
-                  style={{ padding: '8px', borderRadius: 4, border: '1px solid var(--c-border-in)' }} />
+                <Input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

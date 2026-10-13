@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { meetingApi, MeetingMinute, SaveMeetingRequest } from '../../api/reports'
-import { Button } from '../../components/ui'
+import { Button, Input, Textarea } from '../../components/ui'
 
 const emptyForm = (): SaveMeetingRequest => ({
   title: '', meetingDate: new Date().toISOString().slice(0, 10),
@@ -101,33 +101,32 @@ export default function MeetingMinutesPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>제목 *</span>
-                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
+                  <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                    required />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>회의일 *</span>
-                  <input type="date" value={form.meetingDate} onChange={e => setForm(f => ({ ...f, meetingDate: e.target.value }))}
-                    required style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
+                  <Input type="date" value={form.meetingDate} onChange={e => setForm(f => ({ ...f, meetingDate: e.target.value }))}
+                    required />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>장소</span>
-                  <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-                    style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
+                  <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>참석자</span>
-                  <input value={form.attendees} onChange={e => setForm(f => ({ ...f, attendees: e.target.value }))}
-                    placeholder="홍길동, 김철수, ..." style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14 }} />
+                  <Input value={form.attendees} onChange={e => setForm(f => ({ ...f, attendees: e.target.value }))}
+                    placeholder="홍길동, 김철수, ..." />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>회의 내용</span>
-                  <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-                    rows={8} style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+                  <Textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
+                    rows={8} style={{ resize: 'vertical' }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 4, gridColumn: '1 / -1' }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>액션 아이템</span>
-                  <textarea value={form.actionItems} onChange={e => setForm(f => ({ ...f, actionItems: e.target.value }))}
-                    rows={4} placeholder="- [ ] 담당자 | 내용 | 기한" style={{ padding: '8px 10px', borderRadius: 4, border: '1px solid var(--c-border-in)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+                  <Textarea value={form.actionItems} onChange={e => setForm(f => ({ ...f, actionItems: e.target.value }))}
+                    rows={4} placeholder="- [ ] 담당자 | 내용 | 기한" style={{ resize: 'vertical' }} />
                 </label>
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
