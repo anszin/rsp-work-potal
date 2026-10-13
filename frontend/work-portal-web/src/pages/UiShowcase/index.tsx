@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, TextField, Checkbox, Radio, IconButton } from '../../components/ui'
+import { Button, Checkbox, IconButton, Input, RadioGroup, Select, Textarea } from '../../components/ui'
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section style={{ marginBottom: 48 }}>
@@ -21,6 +21,7 @@ export default function UiShowcase() {
   const [checked, setChecked] = useState(false)
   const [radio, setRadio] = useState('a')
   const [textVal, setTextVal] = useState('')
+  const [selectVal, setSelectVal] = useState('')
 
   return (
     <div style={{ maxWidth: 860, margin: '0 auto', padding: '48px 32px', color: 'var(--c-text)' }}>
@@ -100,38 +101,22 @@ export default function UiShowcase() {
         </Row>
       </Section>
 
-      {/* ── TextField ── */}
-      <Section title="TextField">
+      {/* ── Input / Textarea / Select ── */}
+      <Section title="Input · Textarea · Select">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 600 }}>
-          <TextField
-            label="기본"
-            placeholder="입력하세요"
-            value={textVal}
-            onChange={e => setTextVal(e.target.value)}
-          />
-          <TextField
-            label="Supporting text"
-            placeholder="입력하세요"
-            supportingText="최대 100자까지 입력 가능합니다"
-          />
-          <TextField
-            label="Trailing icon"
-            placeholder="검색"
-            trailingIcon="🔍"
-          />
-          <TextField
-            label="Error 상태"
-            placeholder="입력하세요"
-            error
-            supportingText="필수 항목입니다"
-            defaultValue="잘못된 입력"
-          />
-          <TextField
-            label="Disabled"
-            placeholder="비활성화"
-            disabled
-            defaultValue="수정 불가"
-          />
+          <Input placeholder="입력하세요" value={textVal} onChange={e => setTextVal(e.target.value)} />
+          <Input type="date" />
+          <Input placeholder="비활성화" disabled defaultValue="수정 불가" />
+          <Input placeholder="오류 상태" aria-invalid defaultValue="잘못된 입력" />
+          <Select value={selectVal} onValueChange={setSelectVal} style={{ width: '100%' }}>
+            <option value="">전체</option>
+            <option value="a">옵션 A</option>
+            <option value="b">옵션 B</option>
+          </Select>
+          <Select disabled value="" style={{ width: '100%' }}>
+            <option value="">비활성화</option>
+          </Select>
+          <Textarea placeholder="여러 줄 입력" rows={3} style={{ gridColumn: '1 / -1' }} />
         </div>
       </Section>
 
@@ -140,32 +125,26 @@ export default function UiShowcase() {
         <Row label="state=enabled">
           <Checkbox />
           <Checkbox label="Label" />
-          <Checkbox label="Checked" checked onChange={() => {}} />
+          <Checkbox label="Checked" checked />
         </Row>
         <Row label="interactive">
-          <Checkbox
-            label={checked ? '선택됨' : '선택 안 됨'}
-            checked={checked}
-            onChange={e => setChecked(e.target.checked)}
-          />
+          <Checkbox label={checked ? '선택됨' : '선택 안 됨'} checked={checked} onCheckedChange={setChecked} />
         </Row>
         <Row label="state=disabled">
           <Checkbox disabled />
           <Checkbox label="Label" disabled />
-          <Checkbox label="Checked" disabled checked onChange={() => {}} />
+          <Checkbox label="Checked" disabled checked />
         </Row>
       </Section>
 
-      {/* ── Radio ── */}
-      <Section title="Radio Button">
+      {/* ── RadioGroup ── */}
+      <Section title="Radio Group">
         <Row label="state=enabled">
-          <Radio name="demo-r" label="Label A" value="a" checked={radio === 'a'} onChange={() => setRadio('a')} />
-          <Radio name="demo-r" label="Label B" value="b" checked={radio === 'b'} onChange={() => setRadio('b')} />
-          <Radio name="demo-r" label="Label C" value="c" checked={radio === 'c'} onChange={() => setRadio('c')} />
+          <RadioGroup value={radio} onValueChange={setRadio}
+            options={[{ value: 'a', label: 'Label A' }, { value: 'b', label: 'Label B' }, { value: 'c', label: 'Label C' }]} />
         </Row>
         <Row label="state=disabled">
-          <Radio name="demo-rd" label="Label" value="x" disabled />
-          <Radio name="demo-rd" label="Selected" value="y" disabled checked onChange={() => {}} />
+          <RadioGroup disabled defaultValue="y" options={[{ value: 'x', label: 'Label' }, { value: 'y', label: 'Selected' }]} />
         </Row>
       </Section>
 

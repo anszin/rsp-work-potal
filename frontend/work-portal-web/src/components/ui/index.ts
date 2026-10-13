@@ -8,9 +8,8 @@ export { default as Modal } from './Modal'
 export { default as TabBar } from './TabBar'
 // 표: SDK Table 그대로 사용 (밀도 보정은 index.css 의 [data-slot="table-*"])
 export { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell } from 'rsp-react-design-system/shadcn'
-export { default as TextField } from './TextField'
 export { default as Checkbox } from './Checkbox'
-export { default as Radio } from './Radio'
+export { default as RadioGroup } from './RadioGroup'
 
 export { default as IconButton } from './IconButton'
 export type { IconButtonVariant, IconButtonSize } from './IconButton'
