@@ -13,7 +13,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   )
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
+    const root = document.documentElement
+    root.setAttribute('data-theme', theme)
+    // RSP 디자인시스템 SDK 다크모드: rsp 토큰은 data-rsp-theme, shadcn 토큰은 .dark 클래스 기준
+    root.setAttribute('data-rsp-theme', theme)
+    root.classList.toggle('dark', theme === 'dark')
     localStorage.setItem('theme', theme)
   }, [theme])
 

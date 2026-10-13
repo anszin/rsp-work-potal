@@ -1,40 +1,46 @@
 /* ── RSP Design System tokens ───────────────────────────── */
+/*
+ * 포탈 토큰(--c-*)은 RSP 디자인시스템 SDK(rsp-react-design-system) 변수를 참조한다.
+ * - semantic 토큰(--rsp-color-bg-page 등)은 SDK가 data-rsp-theme 값에 따라 라이트/다크를 전환
+ * - SDK에 semantic 이 없는 항목(info/tertiary/draft 태그 등)은 primitive 로 매핑, 다크는 아래에서 재정의
+ * - 액션 색상은 SDK primary(초록) 대신 secondary(파랑)를 사용 (포탈 블루 테마 유지)
+ */
 :root {
   /* surface */
-  --c-bg:           #fafafa;   /* semanticLightBgPage */
-  --c-card:         #ffffff;   /* semanticLightBgSurface */
-  --c-thead:        #f3f4f4;   /* semanticLightBgSurfaceAlt */
-  --c-input-bg:     #ffffff;   /* semanticLightBgSurface */
-  --c-row-sel:      #dbeafe;
+  --c-bg:           var(--rsp-color-bg-page);
+  --c-card:         var(--rsp-color-bg-surface);
+  --c-thead:        var(--rsp-color-bg-surface-alt);
+  --c-input-bg:     var(--rsp-color-bg-surface);
+  --c-row-sel:      var(--rsp-color-secondary-50);
   /* text */
-  --c-text:         #222524;   /* semanticLightTextPrimary */
-  --c-text-sub:     #66706d;   /* semanticLightTextSecondary */
-  --c-text-muted:   #a9b1ae;   /* semanticLightTextMuted */
-  --c-text-accent:  #3b82f6;
+  --c-text:         var(--rsp-color-text-primary);
+  --c-text-sub:     var(--rsp-color-text-secondary);
+  --c-text-muted:   var(--rsp-color-text-muted);
+  --c-text-accent:  var(--rsp-color-secondary-500);
   /* border */
-  --c-border:       #e4e7e6;   /* semanticLightBorderDefault */
-  --c-border-in:    #d1d6d4;   /* semanticLightBorderStrong */
+  --c-border:       var(--rsp-color-border-default);
+  --c-border-in:    var(--rsp-color-border-strong);
   /* scrollbar */
-  --c-scrollbar:    #e4e7e6;
+  --c-scrollbar:    var(--rsp-color-neutral-200);
   /* action */
-  --c-action:       #2563eb;
-  --c-action-hover: #1d4ed8;
+  --c-action:       var(--rsp-color-action-secondary);
+  --c-action-hover: var(--rsp-color-action-secondary-hover);
   /* status tags */
-  --c-tag-done-bg:  #d1ebd5;   /* success50 */
-  --c-tag-done-t:   #236c2c;   /* success700 */
-  --c-tag-sys:      #d7dff1;   /* info50 */
-  --c-tag-sys-t:    #3966d0;   /* info500 */
-  --c-tag-sub:      #d1ebd5;   /* success50 */
-  --c-tag-sub-t:    #236c2c;   /* success700 */
-  --c-tag-draft-bg: #f3f4f4;   /* neutral100 */
-  --c-tag-draft-t:  #66706d;   /* neutral600 */
-  --c-tag-err-bg:   #f3d2d5;   /* error50 */
-  --c-tag-err-t:    #9a1722;   /* error700 */
-  --c-tag-warn-bg:  #f6e9d2;   /* warning50 */
-  --c-tag-warn-t:   #b3750c;   /* warning700 */
-  --c-tag-pri-bg:   #e1d5eb;   /* tertiary50 */
-  --c-tag-pri-t:    #512a73;   /* tertiary700 */
-  /* kanban status */
+  --c-tag-done-bg:  var(--rsp-color-bg-success);
+  --c-tag-done-t:   var(--rsp-color-text-success);
+  --c-tag-sys:      var(--rsp-color-info-50);
+  --c-tag-sys-t:    var(--rsp-color-info-500);
+  --c-tag-sub:      var(--rsp-color-bg-success);
+  --c-tag-sub-t:    var(--rsp-color-text-success);
+  --c-tag-draft-bg: var(--rsp-color-neutral-100);
+  --c-tag-draft-t:  var(--rsp-color-neutral-600);
+  --c-tag-err-bg:   var(--rsp-color-bg-danger);
+  --c-tag-err-t:    var(--rsp-color-text-danger);
+  --c-tag-warn-bg:  var(--rsp-color-bg-warning);
+  --c-tag-warn-t:   var(--rsp-color-text-warning);
+  --c-tag-pri-bg:   var(--rsp-color-tertiary-50);
+  --c-tag-pri-t:    var(--rsp-color-tertiary-700);
+  /* kanban status (SDK 대응 토큰 없음 — 기존 값 유지) */
   --c-status-todo:   #718096;
   --c-status-prog:   #3182ce;
   --c-status-review: #d69e2e;
@@ -42,41 +48,18 @@
   --c-status-hold:   #c05621;
 }
 
+/* 다크모드: semantic 토큰은 SDK가 전환하므로 primitive 매핑 항목만 재정의 */
 [data-theme="dark"] {
-  /* surface */
-  --c-bg:           #161817;   /* semanticDarkBgPage */
-  --c-card:         #222524;   /* semanticDarkBgSurface */
-  --c-thead:        #353b39;   /* semanticDarkBgSurfaceAlt */
-  --c-input-bg:     #222524;   /* semanticDarkBgSurface */
-  --c-row-sel:      #1e3a5f;
-  /* text */
-  --c-text:         #fafafa;   /* semanticDarkTextPrimary */
-  --c-text-sub:     #d1d6d4;   /* semanticDarkTextSecondary */
-  --c-text-muted:   #84908b;   /* semanticDarkTextMuted */
-  --c-text-accent:  #60a5fa;
-  /* border */
-  --c-border:       #353b39;   /* semanticDarkBorderDefault */
-  --c-border-in:    #4e5653;   /* semanticDarkBorderStrong */
-  /* scrollbar */
-  --c-scrollbar:    #4e5653;
-  /* action */
-  --c-action:       #3b82f6;
-  --c-action-hover: #60a5fa;
+  --c-row-sel:      var(--rsp-color-secondary-900);
+  --c-text-accent:  var(--rsp-color-secondary-300);
+  --c-scrollbar:    var(--rsp-color-neutral-700);
   /* status tags */
-  --c-tag-done-bg:  #236c2c;   /* success700 */
-  --c-tag-done-t:   #adddb4;   /* success100 */
-  --c-tag-sys:      #22479c;   /* info700 */
-  --c-tag-sys-t:    #7b98db;   /* secondary300 */
-  --c-tag-sub:      #236c2c;   /* success700 */
-  --c-tag-sub-t:    #adddb4;   /* success100 */
-  --c-tag-draft-bg: #353b39;   /* neutral800 */
-  --c-tag-draft-t:  #84908b;   /* neutral500 */
-  --c-tag-err-bg:   #9a1722;   /* error700 */
-  --c-tag-err-t:    #ebb0b5;   /* error100 */
-  --c-tag-warn-bg:  #b3750c;   /* warning700 */
-  --c-tag-warn-t:   #f2dab1;   /* warning100 */
-  --c-tag-pri-bg:   #42225e;   /* tertiary800 */
-  --c-tag-pri-t:    #cab4dd;   /* tertiary100 */
+  --c-tag-sys:      var(--rsp-color-info-700);
+  --c-tag-sys-t:    var(--rsp-color-secondary-300);
+  --c-tag-draft-bg: var(--rsp-color-neutral-800);
+  --c-tag-draft-t:  var(--rsp-color-neutral-500);
+  --c-tag-pri-bg:   var(--rsp-color-tertiary-800);
+  --c-tag-pri-t:    var(--rsp-color-tertiary-100);
   /* kanban status */
   --c-status-todo:   #a0aec0;
   --c-status-prog:   #63b3ed;
@@ -107,6 +90,51 @@ input, textarea, select {
   background: var(--c-input-bg);
 }
 
+/*
+ * SDK 전역 reset(Tailwind preflight) 보정
+ * - SDK styles.css 가 h1~h6 크기, 기본 폼 컨트롤 테두리/배경, 줄간격 등을 초기화하므로
+ *   기존 포탈 화면은 브라우저 기본값으로 되돌린다(revert).
+ * - SDK 컴포넌트(data-slot 속성 보유)와 Typography(.rsp-text)는 제외 → SDK 스타일 그대로 적용
+ * - 모든 셀렉터는 :where() 로 감싸 우선순위 0 → 포탈 클래스(.ds-btn 등)·inline 스타일이 항상 우선
+ * - 화면을 SDK 컴포넌트로 전환 완료하면 이 블록은 제거 대상
+ */
+:where(html) { line-height: revert; }
+
+:where(:is(h1, h2, h3, h4, h5, h6):not([data-slot], .rsp-text)) {
+  font-size: revert;
+  font-weight: revert;
+}
+
+:where(:is(button, input, select, textarea):not([data-slot])) {
+  border: revert;
+  border-radius: revert;
+  font-size: revert;
+  line-height: revert;
+}
+:where(button:not([data-slot])) {
+  color: revert;
+  background-color: revert;
+}
+:where(:is(input, textarea):not([data-slot]))::placeholder {
+  color: revert;
+  opacity: revert;
+}
+
+:where(table:not([data-slot])) {
+  border-collapse: revert;
+  text-indent: revert;
+}
+
+:where(a:not([data-slot])) {
+  color: revert;
+  text-decoration: revert;
+}
+
+:where(svg:not([class])) {
+  display: revert;
+  vertical-align: revert;
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--c-scrollbar); border-radius: 3px; }
@@ -121,7 +149,7 @@ input, textarea, select {
 
 .layout-sidebar {
   width: 220px;
-  background: #222524;
+  background: var(--rsp-color-neutral-900);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -146,7 +174,7 @@ input, textarea, select {
   position: fixed;
   top: 12px; left: 12px;
   z-index: 300;
-  background: #222524;
+  background: var(--rsp-color-neutral-900);
   border: none;
   border-radius: 6px;
   padding: 8px 11px;
