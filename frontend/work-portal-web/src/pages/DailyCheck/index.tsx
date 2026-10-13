@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
 import client from '../../api/client'
-import { Button, Input, Select, Textarea } from '../../components/ui'
+import { Button, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
 
 interface SystemOption { id: number; name: string }
 
@@ -136,44 +136,44 @@ export default function DailyCheckPage() {
 
       {isLoading ? <p>로딩 중...</p> : (
         <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-          <thead>
-            <tr style={{ background: 'var(--c-thead)' }}>
+        <Table style={{ background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <TableHeader>
+            <TableRow>
               {['점검일', '시스템', '상태', '비고', '점검자', '등록시간', ''].map(h => (
-                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid var(--c-border)' }}>{h}</th>
+                <TableHead key={h} style={{ textAlign: 'left' }}>{h}</TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {reports.length === 0 ? (
-              <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>점검 데이터가 없습니다.</td></tr>
+              <TableRow><TableCell colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>점검 데이터가 없습니다.</TableCell></TableRow>
             ) : reports.map(r => (
-              <tr key={r.id} style={{ borderBottom: '1px solid var(--c-border-in)' }}>
-                <td style={{ padding: '10px 14px', fontSize: 13 }}>{r.checkDate}</td>
-                <td style={{ padding: '10px 14px', fontWeight: 500 }}>{r.systemName}</td>
-                <td style={{ padding: '10px 14px' }}>
+              <TableRow key={r.id}>
+                <TableCell>{r.checkDate}</TableCell>
+                <TableCell style={{ fontWeight: 500 }}>{r.systemName}</TableCell>
+                <TableCell>
                   <span style={{
                     padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600,
                     background: `color-mix(in srgb, ${STATUS_COLOR[r.status]} 13%, transparent)`, color: STATUS_COLOR[r.status],
                   }}>
                     {STATUS_LABEL[r.status]}
                   </span>
-                </td>
-                <td style={{ padding: '10px 14px', fontSize: 13, color: 'var(--c-text-sub)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                </TableCell>
+                <TableCell style={{ color: 'var(--c-text-sub)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.note ?? '-'}
-                </td>
-                <td style={{ padding: '10px 14px', fontSize: 13, color: 'var(--c-text-sub)' }}>{r.reporter}</td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-muted)' }}>
+                </TableCell>
+                <TableCell style={{ color: 'var(--c-text-sub)' }}>{r.reporter}</TableCell>
+                <TableCell style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>
                   {new Date(r.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                </td>
-                <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                </TableCell>
+                <TableCell style={{ whiteSpace: 'nowrap' }}>
                   <Button variant="outlined" size="sm" onClick={() => openEdit(r)}>수정</Button>
                   <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' }}>삭제</Button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
         </div>
       )}
     </div>

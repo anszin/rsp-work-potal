@@ -94,7 +94,15 @@ export default function Select({
       required={required}
       name={name}
     >
-      <SelectTrigger id={id} title={title} style={style} className={className} data-portal-field="select">
+      <SelectTrigger
+        id={id}
+        title={title}
+        style={style}
+        className={className}
+        data-portal-field="select"
+        // 채움 너비(100%)일 때 선택 항목 글자 길이가 grid/flex 열 너비를 밀어내지 않도록 표시 (index.css)
+        data-portal-fill={style?.width === '100%' ? '' : undefined}
+      >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

@@ -430,9 +430,28 @@ input, textarea, select, button {
 [data-portal-field="textarea"] { padding: 8px 10px; font-size: 13px; field-sizing: fixed; min-height: 0; }
 /* select 트리거: 입력창과 동일 높이·글자, 기본 너비는 내용 기준(w-fit) */
 [data-portal-field="select"]   { height: 34px; padding-left: 10px; font-size: 13px; min-width: 96px; }
+/* 채움 너비 select: 내용(선택 항목 글자)이 부모 grid 1fr 열을 넓히지 않도록 크기 격리 + 긴 글자는 말줄임 */
+[data-portal-field="select"][data-portal-fill] { contain: inline-size; min-width: 0; }
+[data-portal-field="select"] [data-slot="select-value"] { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* select 드롭다운: 포탈 모달(z-index 1000~9999) 위에 표시되도록 positioner z-index 상향, 항목 글자 13px */
 div:has(> [data-slot="select-content"]) { z-index: 10000; }
 [data-slot="select-content"] [data-slot="select-item"] { font-size: 13px; }
+
+/* SDK Table 보정 — 포탈 목록 밀도(13px), 헤더 배경, 긴 텍스트 줄바꿈 허용(SDK 기본 nowrap 해제) */
+[data-slot="table"]      { font-size: 13px; }
+[data-slot="table-head"] { height: 38px; padding: 0 10px; background: var(--c-thead); color: var(--c-text-sub); font-size: 12px; font-weight: 600; }
+[data-slot="table-cell"] { padding: 8px 10px; white-space: normal; }
+
+/* SDK Dialog 보정 — 기존 포탈 모달과 같은 z-index(사이드바 200 위), 콘텐츠 13px, 제목 16px */
+[data-slot="dialog-overlay"], [data-slot="dialog-content"] { z-index: 1000; }
+/* gap: SDK 기본 24px 은 포탈 폼 모달에 과해 내용이 넘침 → 12px
+   overscroll-behavior: 모달 내부 스크롤이 끝에 닿아도 뒤 페이지로 스크롤이 이어지지 않게 함 */
+[data-portal-modal] { font-size: 13px; gap: 12px; overscroll-behavior: contain; }
+[data-portal-modal] [data-slot="dialog-title"] { font-size: 16px; font-weight: 600; }
+
+/* SDK Tabs(line) 보정 — 탭 글자 13px, 활성 밑줄은 포탈 강조색 */
+[data-portal-tabs] [data-slot="tabs-trigger"] { font-size: 13px; }
+[data-portal-tabs][data-variant="line"] [data-slot="tabs-trigger"]::after { background: var(--c-action); }
 
 /* ================================================================
    RSP Design System — UI Components

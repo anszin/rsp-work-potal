@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getPrompts, createPrompt, updatePrompt, deletePrompt, RolePrompt } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton } from '../../components/ui'
+import { Button, IconButton, Modal } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -66,19 +66,16 @@ function ConfirmDialog({ roleName, onConfirm, onCancel }: {
   roleName: string; onConfirm: () => void; onCancel: () => void
 }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 12, padding: '24px 28px', maxWidth: 360, width: '90%', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--c-text)' }}>역할 삭제</div>
-        <div style={{ fontSize: 13, color: 'var(--c-text-sub)', marginBottom: 20, lineHeight: 1.6 }}>
-          <strong style={{ color: 'var(--c-text)' }}>{roleName}</strong> 역할과 시스템 프롬프트를 삭제합니다.<br />
-          이 작업은 되돌릴 수 없습니다.
-        </div>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" size="sm" onClick={onCancel}>취소</Button>
-          <Button variant="outlined" size="sm" onClick={onConfirm} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>삭제</Button>
-        </div>
+    <Modal open onClose={onCancel} title="역할 삭제" width={360}>
+      <div style={{ fontSize: 13, color: 'var(--c-text-sub)', marginBottom: 20, lineHeight: 1.6 }}>
+        <strong style={{ color: 'var(--c-text)' }}>{roleName}</strong> 역할과 시스템 프롬프트를 삭제합니다.<br />
+        이 작업은 되돌릴 수 없습니다.
       </div>
-    </div>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Button variant="outlined" size="sm" onClick={onCancel}>취소</Button>
+        <Button variant="outlined" size="sm" onClick={onConfirm} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>삭제</Button>
+      </div>
+    </Modal>
   )
 }
 
@@ -122,10 +119,7 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 12, padding: '24px 28px', width: 480, maxWidth: '95vw', boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 18, color: 'var(--c-text)' }}>새 역할 추가</div>
-
+    <Modal open onClose={onClose} title="새 역할 추가" width={480}>
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 12, color: 'var(--c-text-muted)', display: 'block', marginBottom: 5 }}>
             역할 ID <span style={{ color: 'var(--c-tag-err-t)' }}>*</span>
@@ -224,8 +218,7 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
             {saving ? '추가 중...' : '추가'}
           </Button>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

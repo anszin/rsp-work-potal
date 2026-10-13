@@ -7,7 +7,7 @@ import {
   getSystemServers, addSystemServer, deleteSystemServer,
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
-import { Button, Input, Select } from '../../components/ui'
+import { Button, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
 
 const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '', sortOrder: '' })
 const emptySubForm = () => ({ code: '', name: '', description: '' })
@@ -190,24 +190,24 @@ export default function SystemManagementPage() {
       {isLoading ? <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p> : (
         <div style={s.card}>
           <div className="table-scroll">
-          <table style={s.table}>
-            <thead>
-              <tr style={s.thead}>
+          <Table>
+            <TableHeader>
+              <TableRow>
                 {['순서', '코드', '시스템명', '설명', '상태', '등록일', ''].map(h => (
-                  <th key={h} style={s.th}>{h}</th>
+                  <TableHead key={h} style={{ textAlign: 'left' }}>{h}</TableHead>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {systems.length === 0 ? (
-                <tr><td colSpan={7} style={s.empty}>등록된 시스템이 없습니다.</td></tr>
+                <TableRow><TableCell colSpan={7} style={s.empty}>등록된 시스템이 없습니다.</TableCell></TableRow>
               ) : systems.map(sys => (
-                <tr key={sys.id} style={s.tr}>
-                  <td style={{ ...s.td, color: 'var(--c-text-muted)', textAlign: 'center' }}>{sys.sortOrder}</td>
-                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-action)' }}>{sys.code}</td>
-                  <td style={{ ...s.td, fontWeight: 500 }}>{sys.name}</td>
-                  <td style={{ ...s.td, color: 'var(--c-text-sub)' }}>{sys.description ?? '-'}</td>
-                  <td style={s.td}>
+                <TableRow key={sys.id}>
+                  <TableCell style={{ color: 'var(--c-text-muted)', textAlign: 'center' }}>{sys.sortOrder}</TableCell>
+                  <TableCell style={{ fontWeight: 600, color: 'var(--c-action)' }}>{sys.code}</TableCell>
+                  <TableCell style={{ fontWeight: 500 }}>{sys.name}</TableCell>
+                  <TableCell style={{ color: 'var(--c-text-sub)' }}>{sys.description ?? '-'}</TableCell>
+                  <TableCell>
                     <span onClick={() => toggleActive(sys)} style={{
                       padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                       background: sys.active ? 'var(--c-tag-done-bg)' : 'var(--c-thead)',
@@ -216,29 +216,29 @@ export default function SystemManagementPage() {
                     }}>
                       {sys.active ? '운영중' : '비활성'}
                     </span>
-                  </td>
-                  <td style={{ ...s.td, color: 'var(--c-text-muted)' }}>
+                  </TableCell>
+                  <TableCell style={{ color: 'var(--c-text-muted)' }}>
                     {new Date(sys.createdAt).toLocaleDateString('ko-KR')}
-                  </td>
-                  <td style={s.td}>
+                  </TableCell>
+                  <TableCell>
                     <Button variant="outlined" size="sm" onClick={() => { setSubPanel(sys); resetSubForm() }} style={{ color: 'var(--c-tag-teal-t)', borderColor: 'var(--c-tag-teal-t)' }}>하위시스템</Button>
                     <Button variant="outlined" size="sm" onClick={() => setManagerPanel(sys)} style={{ color: 'var(--c-tag-pri-t)', borderColor: 'var(--c-tag-pri-t)' }}>담당자</Button>
                     <Button variant="outlined" size="sm" onClick={() => openEdit(sys)}>수정</Button>
                     <Button variant="outlined" size="sm" onClick={() => { if (confirm(`[${sys.code}] ${sys.name}을 삭제하시겠습니까?`)) deleteMut.mutate(sys.id) }} style={{ color: 'var(--c-tag-err-t)' }}>삭제</Button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           </div>
         </div>
       )}
 
       {/* 하위시스템 패널 */}
       {subPanel && (
-        <div style={s.overlay}>
-          <div style={s.modal}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <Modal open onClose={() => { setSubPanel(null); resetSubForm() }} width={560}>
+            {/* 헤더에 추가 버튼이 있어 커스텀 헤더 유지 — SDK X 버튼과 겹치지 않도록 우측 여백 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, paddingRight: 32 }}>
               <h3 style={{ margin: 0, fontSize: 15 }}>{subPanel.name} 하위시스템 관리</h3>
               <Button variant="filled" size="sm" onClick={() => { setShowSubForm(true); setEditingSub(null); setSubForm(emptySubForm()) }}>+ 추가</Button>
             </div>
@@ -271,21 +271,21 @@ export default function SystemManagementPage() {
             {subSystems.length === 0 ? (
               <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 하위시스템이 없습니다.</p>
             ) : (
-              <table style={s.table}>
-                <thead>
-                  <tr style={s.thead}>
+              <Table>
+                <TableHeader>
+                  <TableRow>
                     {['코드', '이름', '설명', '상태', ''].map(h => (
-                      <th key={h} style={{ ...s.th, fontSize: 12 }}>{h}</th>
+                      <TableHead key={h} style={{ textAlign: 'left' }}>{h}</TableHead>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {subSystems.map(sub => (
-                    <tr key={sub.id} style={s.tr}>
-                      <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-action)', fontSize: 12 }}>{sub.code}</td>
-                      <td style={{ ...s.td, fontSize: 12 }}>{sub.name}</td>
-                      <td style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{sub.description ?? '-'}</td>
-                      <td style={s.td}>
+                    <TableRow key={sub.id}>
+                      <TableCell style={{ fontWeight: 600, color: 'var(--c-action)', fontSize: 12 }}>{sub.code}</TableCell>
+                      <TableCell style={{ fontSize: 12 }}>{sub.name}</TableCell>
+                      <TableCell style={{ color: 'var(--c-text-sub)', fontSize: 12 }}>{sub.description ?? '-'}</TableCell>
+                      <TableCell>
                         <span onClick={() => toggleSubActive(sub)} style={{
                           padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                           background: sub.active ? 'var(--c-tag-done-bg)' : 'var(--c-thead)',
@@ -294,30 +294,27 @@ export default function SystemManagementPage() {
                         }}>
                           {sub.active ? '활성' : '비활성'}
                         </span>
-                      </td>
-                      <td style={s.td}>
+                      </TableCell>
+                      <TableCell>
                         <Button variant="outlined" size="sm" onClick={() => { setServerSubPanel(sub); setNewServerName('') }} style={{ color: 'var(--c-tag-warn-t)', borderColor: 'var(--c-tag-warn-t)' }}>서버</Button>
                         <Button variant="outlined" size="sm" onClick={() => openSubEdit(sub)}>수정</Button>
                         <Button variant="outlined" size="sm" onClick={() => { if (confirm(`[${sub.code}] ${sub.name}을 삭제하시겠습니까?`)) deleteSubMut.mutate({ systemId: subPanel.id, subId: sub.id }) }} style={{ color: 'var(--c-tag-err-t)' }}>삭제</Button>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
               <Button variant="outlined" onClick={() => { setSubPanel(null); resetSubForm() }}>닫기</Button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* 서버 패널 */}
       {serverSubPanel && subPanel && (
-        <div style={s.overlay}>
-          <div style={{ ...s.modal, width: 460 }}>
-            <h3 style={{ margin: '0 0 4px', fontSize: 15 }}>{serverSubPanel.name} 배포 서버 관리</h3>
+        <Modal open onClose={() => setServerSubPanel(null)} title={`${serverSubPanel.name} 배포 서버 관리`} width={460}>
             <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--c-text-muted)' }}>배포 승인 후 단계별로 완료 처리할 서버 목록입니다.</p>
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -351,15 +348,12 @@ export default function SystemManagementPage() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
               <Button variant="outlined" onClick={() => setServerSubPanel(null)}>닫기</Button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* 담당자 패널 */}
       {managerPanel && (
-        <div style={s.overlay}>
-          <div style={{ ...s.modal, width: 460 }}>
-            <h3 style={{ margin: '0 0 4px', fontSize: 15 }}>{managerPanel.name} 담당자 관리</h3>
+        <Modal open onClose={() => { setManagerPanel(null); setSelectedUserId(0) }} title={`${managerPanel.name} 담당자 관리`} width={460}>
             <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--c-text-muted)' }}>시스템 담당자는 배포 요청 제출/완료 권한을 갖습니다.</p>
 
             <div style={{ marginBottom: 16 }}>
@@ -395,8 +389,7 @@ export default function SystemManagementPage() {
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button variant="outlined" onClick={() => { setManagerPanel(null); setSelectedUserId(0) }}>닫기</Button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   )
@@ -409,12 +402,5 @@ const s: Record<string, React.CSSProperties> = {
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   grid: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: '12px 16px', alignItems: 'center' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
-  table: { width: '100%', borderCollapse: 'collapse' as const },
-  thead: { background: 'var(--c-thead)' },
-  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },
-  tr: { borderBottom: '1px solid var(--c-border-in)' },
-  td: { padding: '10px 14px', fontSize: 13 },
-  empty: { padding: 32, textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
-  overlay: { position: 'fixed' as const, inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: 'var(--c-card)', borderRadius: 10, padding: 28, width: 560, maxHeight: '80vh', overflowY: 'auto' as const, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' },
+  empty: { textAlign: 'center' as const, color: 'var(--c-text-muted)' },
 }

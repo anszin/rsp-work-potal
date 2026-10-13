@@ -8,7 +8,10 @@ import {
 import { weeklyApi, type WeeklyReport } from '../../api/reports'
 import WorkUnitTab from '../WorkUnit'
 import PerformanceTab from './PerformanceTab'
-import { Button, IconButton, Input, Textarea } from '../../components/ui'
+import {
+  Button, Input, Textarea, Modal, TabBar,
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+} from '../../components/ui'
 
 interface WorkItem {
   id: string
@@ -170,14 +173,6 @@ export default function KeyTaskPage() {
   // 컬럼 수: 구분(1) + 소속/담당자(1) + KPI(1) + 과제명(1) + quarters*4 + 액션(1)
   const totalCols = 5 + visibleQs.length * 4
 
-  const tabStyle = (active: boolean): React.CSSProperties => ({
-    padding: '6px 0', border: 'none',
-    borderBottom: `2px solid ${active ? 'var(--c-text)' : 'transparent'}`,
-    background: 'none', cursor: 'pointer', fontSize: 13,
-    fontWeight: active ? 600 : 400,
-    color: active ? 'var(--c-text)' : 'var(--c-text-muted)',
-  })
-
   // 모달에서 현재 레벨에 따라 레이블 표시
   const teamLabel = curLevel === '담당자' ? '소속 팀/부서' : curLevel === '담당부서' ? '부서명 *' : '팀명 *'
 
@@ -189,15 +184,7 @@ export default function KeyTaskPage() {
     <div className="page-wrap">
       {/* 모달 */}
       {showModal && (
-        <div style={s.overlay}>
-          <div style={s.modal}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
-                {editing ? '중점과제 수정' : '중점과제 추가'} — {selYear}년
-              </h3>
-              <IconButton variant="text" icon="✕" label="닫기" onClick={closeModal} />
-            </div>
-
+        <Modal open onClose={closeModal} title={`${editing ? '중점과제 수정' : '중점과제 추가'} — ${selYear}년`} width={920}>
             {/* 구분 선택 */}
             <div style={{ marginBottom: 16 }}>
               <label style={s.label}>구분 *</label>
@@ -243,26 +230,26 @@ export default function KeyTaskPage() {
 
             {/* 분기별 내용 */}
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
-                <thead>
-                  <tr>
-                    <th style={s.mth} />
-                    {QUARTERS.map(q => <th key={q} style={{ ...s.mth, textAlign: 'center', width: '22%' }}>{q}분기</th>)}
-                  </tr>
-                </thead>
-                <tbody>
+              <Table style={{ minWidth: 700 }}>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead style={s.mth} />
+                    {QUARTERS.map(q => <TableHead key={q} style={{ ...s.mth, textAlign: 'center', width: '22%' }}>{q}분기</TableHead>)}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {([
                     { label: '목표/계획', suffix: 'Plan', multiline: true },
                     { label: '수행내역', suffix: 'Result', multiline: true },
                     { label: '달성도', suffix: 'Achievement', multiline: false },
                     { label: '미진사유', suffix: 'Reason', multiline: true },
                   ] as const).map(({ label, suffix, multiline }) => (
-                    <tr key={suffix}>
-                      <td style={{ ...s.mtd, fontWeight: 500, fontSize: 12, color: 'var(--c-text-sub)', whiteSpace: 'nowrap', paddingRight: 12 }}>{label}</td>
+                    <TableRow key={suffix}>
+                      <TableCell style={{ ...s.mtd, fontWeight: 500, fontSize: 12, color: 'var(--c-text-sub)', whiteSpace: 'nowrap' }}>{label}</TableCell>
                       {QUARTERS.map(q => {
                         const key = `q${q}${suffix}` as keyof FormData
                         return (
-                          <td key={q} style={s.mtd}>
+                          <TableCell key={q} style={s.mtd}>
                             {multiline
                               ? <Textarea style={{ height: 72, resize: 'vertical' }} value={f(key)} onChange={e => setF(key, e.target.value)} />
                               : <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -270,13 +257,13 @@ export default function KeyTaskPage() {
                                   <span style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>%</span>
                                 </div>
                             }
-                          </td>
+                          </TableCell>
                         )
                       })}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 20 }}>
               <Button variant="outlined" onClick={closeModal} disabled={isPending}>취소</Button>
@@ -284,8 +271,7 @@ export default function KeyTaskPage() {
                 {isPending ? '저장 중...' : '저장'}
               </Button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
 
@@ -310,15 +296,14 @@ export default function KeyTaskPage() {
         }
         const weeks = Array.from(weekMap.keys()).sort((a, b) => b.localeCompare(a))
         return (
-          <div style={s.overlay} onClick={() => setProgressTask(null)}>
-            <div style={{ ...s.modal, maxWidth: 680 }} onClick={e => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
-                <div>
-                  <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 4 }}>주간 실적 — {progressTask.kpi || progressTask.taskLevel}</div>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{progressTask.taskName}</h3>
-                </div>
-                <IconButton variant="text" icon="✕" label="닫기" onClick={() => setProgressTask(null)} />
-              </div>
+          <Modal
+            open
+            onClose={() => setProgressTask(null)}
+            title={progressTask.taskName}
+            description={`주간 실적 — ${progressTask.kpi || progressTask.taskLevel}`}
+            width={680}
+            dismissible
+          >
               {linked.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--c-text-muted)', fontSize: 14 }}>
                   연결된 주간 실적이 없습니다.
@@ -345,8 +330,7 @@ export default function KeyTaskPage() {
                   ))}
                 </div>
               )}
-            </div>
-          </div>
+          </Modal>
         )
       })()}
 
@@ -388,70 +372,71 @@ export default function KeyTaskPage() {
 
       {pageTab === 'keytasks' && <>
       {/* 분기 탭 */}
-      <div style={{ display: 'flex', gap: 20, marginBottom: 16, borderBottom: '1px solid var(--c-border)' }}>
-        <button onClick={() => setSelQuarter('all')} style={tabStyle(selQuarter === 'all')}>전체</button>
-        {QUARTERS.map(q => (
-          <button key={q} onClick={() => setSelQuarter(q)} style={tabStyle(selQuarter === q)}>
-            {q}분기{q === currentQuarter() ? ' ●' : ''}
-          </button>
-        ))}
-      </div>
+      <TabBar
+        style={{ marginBottom: 16 }}
+        value={String(selQuarter)}
+        onChange={v => setSelQuarter(v === 'all' ? 'all' : (Number(v) as Quarter))}
+        items={[
+          { value: 'all', label: '전체' },
+          ...QUARTERS.map(q => ({ value: String(q), label: `${q}분기${q === currentQuarter() ? ' ●' : ''}` })),
+        ]}
+      />
 
       {/* 테이블 */}
       <div style={{ overflowX: 'auto', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: selQuarter === 'all' ? 1500 : 800 }}>
-          <thead>
+        <Table style={{ minWidth: selQuarter === 'all' ? 1500 : 800 }}>
+          <TableHeader>
             {selQuarter === 'all' ? (
               <>
-                <tr style={{ background: 'var(--c-thead)' }}>
-                  <th style={s.th} rowSpan={2}>구분</th>
-                  <th style={s.th} rowSpan={2}>소속/담당자</th>
-                  <th style={s.th} rowSpan={2}>KPI</th>
-                  <th style={{ ...s.th, minWidth: 260 }} rowSpan={2}>과제명</th>
-                  <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>목표/계획</th>
-                  <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>수행내역</th>
-                  <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>달성도</th>
-                  <th style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>미진사유</th>
-                  <th style={s.th} rowSpan={2}>액션</th>
-                </tr>
-                <tr style={{ background: 'var(--c-thead)' }}>
+                <TableRow>
+                  <TableHead style={s.th} rowSpan={2}>구분</TableHead>
+                  <TableHead style={s.th} rowSpan={2}>소속/담당자</TableHead>
+                  <TableHead style={s.th} rowSpan={2}>KPI</TableHead>
+                  <TableHead style={{ ...s.th, minWidth: 260 }} rowSpan={2}>과제명</TableHead>
+                  <TableHead style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>목표/계획</TableHead>
+                  <TableHead style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>수행내역</TableHead>
+                  <TableHead style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>달성도</TableHead>
+                  <TableHead style={{ ...s.th, textAlign: 'center', borderLeft: s.sep.borderLeft }} colSpan={4}>미진사유</TableHead>
+                  <TableHead style={s.th} rowSpan={2}>액션</TableHead>
+                </TableRow>
+                <TableRow>
                   {[...QUARTERS, ...QUARTERS, ...QUARTERS, ...QUARTERS].map((q, i) => (
-                    <th key={i} style={{ ...s.th, fontWeight: 400, fontSize: 11, color: 'var(--c-text-muted)', minWidth: 110, ...(q === 1 ? { borderLeft: s.sep.borderLeft } : {}) }}>{q}분기</th>
+                    <TableHead key={i} style={{ ...s.th, fontWeight: 400, fontSize: 11, color: 'var(--c-text-muted)', minWidth: 110, ...(q === 1 ? { borderLeft: s.sep.borderLeft } : {}) }}>{q}분기</TableHead>
                   ))}
-                </tr>
+                </TableRow>
               </>
             ) : (
-              <tr style={{ background: 'var(--c-thead)' }}>
-                <th style={s.th}>구분</th>
-                <th style={s.th}>소속/담당자</th>
-                <th style={s.th}>KPI</th>
-                <th style={{ ...s.th, minWidth: 260 }}>과제명</th>
-                <th style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>{selQuarter}분기 목표/계획</th>
-                <th style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>{selQuarter}분기 수행내역</th>
-                <th style={{ ...s.th, minWidth: 80, borderLeft: s.sep.borderLeft }}>달성도</th>
-                <th style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>미진사유</th>
-                <th style={s.th}>액션</th>
-              </tr>
+              <TableRow>
+                <TableHead style={s.th}>구분</TableHead>
+                <TableHead style={s.th}>소속/담당자</TableHead>
+                <TableHead style={s.th}>KPI</TableHead>
+                <TableHead style={{ ...s.th, minWidth: 260 }}>과제명</TableHead>
+                <TableHead style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>{selQuarter}분기 목표/계획</TableHead>
+                <TableHead style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>{selQuarter}분기 수행내역</TableHead>
+                <TableHead style={{ ...s.th, minWidth: 80, borderLeft: s.sep.borderLeft }}>달성도</TableHead>
+                <TableHead style={{ ...s.th, minWidth: 160, borderLeft: s.sep.borderLeft }}>미진사유</TableHead>
+                <TableHead style={s.th}>액션</TableHead>
+              </TableRow>
             )}
-          </thead>
-          <tbody>
-            {isLoading && <tr><td colSpan={totalCols} style={s.empty}>로딩 중...</td></tr>}
+          </TableHeader>
+          <TableBody>
+            {isLoading && <TableRow><TableCell colSpan={totalCols} style={s.empty}>로딩 중...</TableCell></TableRow>}
             {!isLoading && displayTasks.length === 0 && (
-              <tr><td colSpan={totalCols} style={s.empty}>
+              <TableRow><TableCell colSpan={totalCols} style={s.empty}>
                 {tasks.length === 0 ? '등록된 과제가 없습니다.' : `${selLevel} 레벨 과제가 없습니다.`}
-              </td></tr>
+              </TableCell></TableRow>
             )}
             {displayTasks.map(t => {
               const lv = (t.taskLevel ?? '팀') as TaskLevel
               const c = LEVEL_COLOR[lv] ?? LEVEL_COLOR['팀']
               return (
-                <tr key={t.id} style={s.tr}>
-                  <td style={{ ...s.td, whiteSpace: 'nowrap' }}>
+                <TableRow key={t.id}>
+                  <TableCell style={{ ...s.td, whiteSpace: 'nowrap' }}>
                     <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
                       {lv}
                     </span>
-                  </td>
-                  <td style={{ ...s.td, fontSize: 12, minWidth: 90 }}>
+                  </TableCell>
+                  <TableCell style={{ ...s.td, fontSize: 12, minWidth: 90 }}>
                     {lv === '담당자' ? (
                       <>
                         {t.assigneeName && <div style={{ fontWeight: 600 }}>{t.assigneeName}</div>}
@@ -464,20 +449,20 @@ export default function KeyTaskPage() {
                         {!t.teamName && <span style={{ color: 'var(--c-text-muted)' }}>-</span>}
                       </>
                     )}
-                  </td>
-                  <td style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{t.kpi ?? '-'}</td>
-                  <td style={{ ...s.td, fontWeight: 500, minWidth: 260, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</td>
-                  {visibleQs.map((q, i) => <td key={`plan-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Plan')] as string)}</pre></td>)}
-                  {visibleQs.map((q, i) => <td key={`result-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Result')] as string)}</pre></td>)}
+                  </TableCell>
+                  <TableCell style={{ ...s.td, color: 'var(--c-text-sub)', fontSize: 12 }}>{t.kpi ?? '-'}</TableCell>
+                  <TableCell style={{ ...s.td, fontWeight: 500, minWidth: 260, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{t.taskName}</TableCell>
+                  {visibleQs.map((q, i) => <TableCell key={`plan-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Plan')] as string)}</pre></TableCell>)}
+                  {visibleQs.map((q, i) => <TableCell key={`result-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Result')] as string)}</pre></TableCell>)}
                   {visibleQs.map((q, i) => (
-                    <td key={`ach-${q}`} style={{ ...s.td, textAlign: 'center', ...(i === 0 ? s.sep : {}) }}>
+                    <TableCell key={`ach-${q}`} style={{ ...s.td, textAlign: 'center', ...(i === 0 ? s.sep : {}) }}>
                       {t[qKey(q, 'Achievement')]
                         ? <span style={s.achBadge}>{t[qKey(q, 'Achievement')] as string}%</span>
                         : <span style={{ color: 'var(--c-text-muted)', fontSize: 12 }}>-</span>}
-                    </td>
+                    </TableCell>
                   ))}
-                  {visibleQs.map((q, i) => <td key={`reason-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></td>)}
-                  <td style={s.td}>
+                  {visibleQs.map((q, i) => <TableCell key={`reason-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></TableCell>)}
+                  <TableCell style={s.td}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       <Button variant="outlined" size="sm" style={{ color: 'var(--c-action)', borderColor: 'var(--c-tag-sys)' }} onClick={() => setProgressTask(t)}>실적</Button>
                       <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-pri-t)', borderColor: 'var(--c-tag-pri-bg)' }} onClick={() => { setWorkUnitFilterId(t.id); setPageTab('workunits') }}>단위업무</Button>
@@ -485,12 +470,12 @@ export default function KeyTaskPage() {
                       <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
                         onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       </>}
     </div>
@@ -499,19 +484,16 @@ export default function KeyTaskPage() {
 
 
 const s: Record<string, React.CSSProperties> = {
-  overlay: { position: 'fixed', inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: 'var(--c-card)', borderRadius: 10, padding: 28, width: '90vw', maxWidth: 920, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.25)' },
   btn: { padding: '8px 16px', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12 },
   label: { display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--c-text-sub)', marginBottom: 6 },
-  mth: { padding: '8px 10px', fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', textAlign: 'left', borderBottom: '1px solid var(--c-border-in)', whiteSpace: 'nowrap' },
-  mtd: { padding: '6px 4px', verticalAlign: 'top' },
-  th: { padding: '10px 12px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', whiteSpace: 'nowrap' },
-  tr: { borderBottom: '1px solid var(--c-border-in)' },
-  td: { padding: '10px 12px', fontSize: 13, verticalAlign: 'top', borderLeft: '1px solid var(--c-border-in)' },
+  mth: { textAlign: 'left', whiteSpace: 'nowrap' },
+  mtd: { verticalAlign: 'top' },
+  th: { textAlign: 'left', whiteSpace: 'nowrap' },
+  td: { verticalAlign: 'top' },
   cell: { margin: 0, fontFamily: 'inherit', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: 'var(--c-text)' },
   achBadge: { fontSize: 12, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontWeight: 600 },
-  empty: { padding: 40, textAlign: 'center', color: 'var(--c-text-muted)', fontSize: 13 },
+  empty: { padding: 40, textAlign: 'center', color: 'var(--c-text-muted)' },
   sep: { borderLeft: '1px solid var(--c-border)' },
 }

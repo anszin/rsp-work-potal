@@ -4,7 +4,7 @@ import axios from 'axios'
 import { getUsers, createUser, updateUser, deleteUser, resetPassword, getMenuPermissions, updateMenuPermissions, type UserSummary, type UserRole, type MenuPermission } from '../../api/users'
 import { useAuth } from '../../context/useAuth'
 import PageHeader from '../../components/PageHeader'
-import { Button, Input, Select } from '../../components/ui'
+import { Button, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -124,17 +124,14 @@ export default function UserManagementPage() {
   return (
     <div className="page-wrap">
       {createdInfo && (
-        <div style={s.overlay}>
-          <div style={s.modal}>
-            <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>계정 생성 완료</h3>
+        <Modal open onClose={() => setCreatedInfo(null)} title="계정 생성 완료" width={400} closeOnEscape={false} showCloseButton={false}>
             <p style={{ fontSize: 13, marginBottom: 8 }}>이메일로 임시 비밀번호가 발송되었습니다.</p>
             <div style={s.infoBox}>
               <div>아이디: <strong>{createdInfo.username}</strong></div>
               <div>임시 비밀번호: <strong>{createdInfo.tempPassword}</strong></div>
             </div>
             <Button variant="filled" style={{ marginTop: 16, width: '100%' }} onClick={() => setCreatedInfo(null)}>확인</Button>
-          </div>
-        </div>
+        </Modal>
       )}
 
       <PageHeader
@@ -165,31 +162,31 @@ export default function UserManagementPage() {
             </div>
           </div>
           <div className="table-scroll">
-          <table style={s.table}>
-            <thead>
-              <tr style={s.thead}>
-                <th style={s.th}>메뉴</th>
-                {ROLES.map(r => <th key={r} style={s.th}>{ROLE_LABELS[r]}</th>)}
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={s.th}>메뉴</TableHead>
+                {ROLES.map(r => <TableHead key={r} style={s.th}>{ROLE_LABELS[r]}</TableHead>)}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {MENU_KEYS.map(menuKey => (
-                <tr key={menuKey} style={s.tr}>
-                  <td style={s.td}>{MENU_LABELS[menuKey]}</td>
+                <TableRow key={menuKey}>
+                  <TableCell>{MENU_LABELS[menuKey]}</TableCell>
                   {ROLES.map(role => {
                     const key = `${role}__${menuKey}`
                     const val = menuEdits[key] ?? menuPerms.find(p => p.role === role && p.menuKey === menuKey)?.enabled ?? false
                     return (
-                      <td key={role} style={{ ...s.td, textAlign: 'center' }}>
+                      <TableCell key={role} style={{ textAlign: 'center' }}>
                         <input type="checkbox" checked={val}
                           onChange={e => { setMenuEdits(prev => ({ ...prev, [key]: e.target.checked })); setMenuDirty(true) }} />
-                      </td>
+                      </TableCell>
                     )
                   })}
-                </tr>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           </div>
         </div>
       ) : (
@@ -234,39 +231,39 @@ export default function UserManagementPage() {
 
           <div style={s.card}>
             <div className="table-scroll">
-            <table style={s.table}>
-              <thead>
-                <tr style={s.thead}>
-                  <th style={s.th}>아이디</th>
-                  <th style={s.th}>이름</th>
-                  <th style={s.th}>부서</th>
-                  <th style={s.th}>이메일</th>
-                  <th style={s.th}>레드마인ID</th>
-                  <th style={s.th}>역할</th>
-                  <th style={s.th}>상태</th>
-                  <th style={s.th}>가입일</th>
-                  {isAdminOrManager && <th style={s.th}>액션</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {users.length === 0 && <tr><td colSpan={8} style={s.empty}>사용자가 없습니다</td></tr>}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead style={s.th}>아이디</TableHead>
+                  <TableHead style={s.th}>이름</TableHead>
+                  <TableHead style={s.th}>부서</TableHead>
+                  <TableHead style={s.th}>이메일</TableHead>
+                  <TableHead style={s.th}>레드마인ID</TableHead>
+                  <TableHead style={s.th}>역할</TableHead>
+                  <TableHead style={s.th}>상태</TableHead>
+                  <TableHead style={s.th}>가입일</TableHead>
+                  {isAdminOrManager && <TableHead style={s.th}>액션</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.length === 0 && <TableRow><TableCell colSpan={8} style={s.empty}>사용자가 없습니다</TableCell></TableRow>}
                 {users.map(u => (
-                  <tr key={u.id} style={s.tr}>
-                    <td style={{ ...s.td, fontWeight: 600 }}>{u.username}</td>
-                    <td style={s.td}>{u.name ?? '-'}</td>
-                    <td style={s.td}>{u.dept ?? '-'}</td>
-                    <td style={s.td}>{u.email ?? '-'}</td>
-                    <td style={{ ...s.td, color: u.redmineUserId ? 'var(--c-text)' : 'var(--c-text-muted)', fontSize: 12 }}>{u.redmineUserId ?? '-'}</td>
-                    <td style={s.td}><span style={{ ...s.roleTag, ...roleStyle(u.role) }}>{ROLE_LABELS[u.role]}</span></td>
-                    <td style={s.td}>
+                  <TableRow key={u.id}>
+                    <TableCell style={{ fontWeight: 600 }}>{u.username}</TableCell>
+                    <TableCell>{u.name ?? '-'}</TableCell>
+                    <TableCell>{u.dept ?? '-'}</TableCell>
+                    <TableCell>{u.email ?? '-'}</TableCell>
+                    <TableCell style={{ color: u.redmineUserId ? 'var(--c-text)' : 'var(--c-text-muted)', fontSize: 12 }}>{u.redmineUserId ?? '-'}</TableCell>
+                    <TableCell><span style={{ ...s.roleTag, ...roleStyle(u.role) }}>{ROLE_LABELS[u.role]}</span></TableCell>
+                    <TableCell>
                       <span style={{ color: u.active ? 'var(--c-tag-done-t)' : 'var(--c-tag-err-t)', fontSize: 12 }}>
                         {u.active ? '활성' : '비활성'}
                       </span>
                       {u.mustChangePassword && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--c-tag-warn-t)' }}>비번변경필요</span>}
-                    </td>
-                    <td style={s.td}>{u.createdAt?.slice(0, 10)}</td>
+                    </TableCell>
+                    <TableCell>{u.createdAt?.slice(0, 10)}</TableCell>
                     {isAdminOrManager && (
-                      <td style={s.td}>
+                      <TableCell>
                         <Button variant="outlined" size="sm" onClick={() => openEdit(u)}>수정</Button>
                         <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-warn-t)' }}
                           onClick={() => { if (confirm(`${u.username} 비밀번호를 초기화하시겠습니까?`)) resetMut.mutate(u.id) }}>
@@ -276,12 +273,12 @@ export default function UserManagementPage() {
                           onClick={() => { if (confirm(`${u.username} 계정을 삭제하시겠습니까?`)) deleteMut.mutate(u.id) }}>
                           삭제
                         </Button>
-                      </td>
+                      </TableCell>
                     )}
-                  </tr>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
             </div>
           </div>
         </>
@@ -303,16 +300,10 @@ const s: Record<string, React.CSSProperties> = {
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   grid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
-  table: { width: '100%', borderCollapse: 'collapse' as const },
-  thead: { background: 'var(--c-thead)' },
-  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },
-  tr: { borderBottom: '1px solid var(--c-border-in)' },
-  td: { padding: '10px 14px', fontSize: 13 },
+  th: { textAlign: 'left' as const },
   roleTag: { padding: '2px 8px', borderRadius: 4, fontSize: 12 },
-  empty: { padding: 32, textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
+  empty: { textAlign: 'center' as const, color: 'var(--c-text-muted)' },
   progressBar: { height: 3, background: 'var(--c-border)', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
   progressFill: { height: '100%', background: 'var(--c-action)', borderRadius: 2, animation: 'progress 1.2s ease-in-out infinite', width: '40%' },
-  overlay: { position: 'fixed' as const, inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: 'var(--c-card)', borderRadius: 8, padding: 24, width: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
   infoBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 14, display: 'flex', flexDirection: 'column' as const, gap: 6 },
 }

@@ -5,7 +5,7 @@ import { useAuth } from '../../context/useAuth'
 import { getUsers, type UserSummary } from '../../api/users'
 import { getKeyTasks } from '../../api/keyTasks'
 import { workUnitApi } from '../../api/workUnits'
-import { Button, IconButton, Input, Select, Textarea } from '../../components/ui'
+import { Button, IconButton, Input, Modal, Select, Textarea } from '../../components/ui'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
   { status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },
@@ -244,8 +244,7 @@ export default function TodoPage() {
 
       {/* Modal */}
       {modalOpen && (
-        <div style={styles.overlay} onClick={e => e.target === e.currentTarget && closeModal()}>
-          <div style={styles.modal}>
+        <Modal open onClose={closeModal} width={860} dismissible showCloseButton={false}>
             <div style={styles.modalHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? 'To-Do 수정' : 'To-Do 추가'}</span>
@@ -258,7 +257,7 @@ export default function TodoPage() {
               <IconButton variant="text" icon="✕" label="닫기" onClick={closeModal} />
             </div>
             <form onSubmit={handleSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 20, alignItems: 'start' }}>
 
                 {/* ── 왼쪽: 기본 정보 ── */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -601,8 +600,7 @@ export default function TodoPage() {
                 </div>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   )
@@ -730,15 +728,6 @@ const styles: Record<string, React.CSSProperties> = {
   iconBtn: {
     background: 'none', border: 'none', cursor: 'pointer',
     fontSize: 12, padding: '2px 3px', opacity: 0.5, lineHeight: 1,
-  },
-  overlay: {
-    position: 'fixed', inset: 0, background: 'var(--c-overlay)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-  },
-  modal: {
-    background: 'var(--c-card)', borderRadius: 10, padding: 24,
-    width: '100%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
   },
   modalHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,

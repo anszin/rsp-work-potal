@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { financeApi, FinanceCategory, SaveFinanceRequest, FinanceRecord } from '../../api/finance'
-import { Button, Input, Select } from '../../components/ui'
+import { Button, Input, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -91,14 +91,8 @@ export default function FinancePage() {
       <div className="deploy-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ margin: 0 }}>손익 관리</h2>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {(['list', 'dashboard'] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? 'var(--c-action)' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
-                {t === 'list' ? '월별 내역' : '연간 현황'}
-              </button>
-            ))}
-          </div>
+          <TabBar value={tab} onChange={v => setTab(v)}
+            items={[{ value: 'list', label: '월별 내역' }, { value: 'dashboard', label: '연간 현황' }]} />
         </div>
         <Select value={selectedYear} onValueChange={v => setSelectedYear(+v)}>
           {years.map(y => <option key={y} value={y}>{y}년</option>)}
@@ -198,43 +192,43 @@ export default function FinancePage() {
 
       {isLoading ? <p>로딩 중...</p> : (
         <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-          <thead>
-            <tr style={{ background: 'var(--c-thead)' }}>
+        <Table style={{ background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <TableHeader>
+            <TableRow>
               {['구분', '항목명', '금액', '비고', '등록일', ''].map(h => (
-                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid var(--c-border)' }}>{h}</th>
+                <TableHead key={h} style={{ textAlign: 'left' }}>{h}</TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {records.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>데이터가 없습니다.</td></tr>
+              <TableRow><TableCell colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>데이터가 없습니다.</TableCell></TableRow>
             ) : records.map(rec => (
-              <tr key={rec.id} style={{ borderBottom: '1px solid var(--c-border-in)' }}>
-                <td style={{ padding: '10px 14px' }}>
+              <TableRow key={rec.id}>
+                <TableCell>
                   <span style={{
                     padding: '2px 8px', borderRadius: 4, fontSize: 12,
                     background: rec.category === 'REVENUE' ? 'var(--c-tag-sys)' : 'var(--c-tag-err-bg)',
                     color: rec.category === 'REVENUE' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-err-t)',
                   }}>{CATEGORY_LABEL[rec.category]}</span>
-                </td>
-                <td style={{ padding: '10px 14px', fontWeight: 500 }}>{rec.itemName}</td>
-                <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 600,
+                </TableCell>
+                <TableCell style={{ fontWeight: 500 }}>{rec.itemName}</TableCell>
+                <TableCell style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 600,
                   color: rec.category === 'REVENUE' ? 'var(--c-action)' : 'var(--c-tag-err-t)' }}>
                   {rec.category === 'REVENUE' ? '+' : '-'}{fmt(rec.amount)}원
-                </td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-sub)' }}>{rec.note ?? '-'}</td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-muted)' }}>
+                </TableCell>
+                <TableCell style={{ fontSize: 12, color: 'var(--c-text-sub)' }}>{rec.note ?? '-'}</TableCell>
+                <TableCell style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>
                   {new Date(rec.createdAt).toLocaleDateString('ko-KR')}
-                </td>
-                <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                </TableCell>
+                <TableCell style={{ whiteSpace: 'nowrap' }}>
                   <Button variant="outlined" size="sm" onClick={() => openEdit(rec)}>수정</Button>
                   <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(rec.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' }}>삭제</Button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
         </div>
       )}
       </>}

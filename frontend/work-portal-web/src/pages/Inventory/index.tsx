@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi, ItemType, ItemStatus, SaveInventoryRequest, InventoryItem } from '../../api/inventory'
-import { Button, Input, Select, Textarea } from '../../components/ui'
+import { Button, Input, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
 
 const TYPE_LABEL: Record<ItemType, string> = { CONTRACT: '수주', PROPOSAL: '제안' }
 const STATUS_LABEL: Record<ItemStatus, string> = {
@@ -80,14 +80,8 @@ export default function InventoryPage() {
       <div className="deploy-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ margin: 0 }}>인벤토리 (수주/제안)</h2>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {(['list', 'dashboard'] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? 'var(--c-action)' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
-                {t === 'list' ? '목록' : '현황'}
-              </button>
-            ))}
-          </div>
+          <TabBar value={tab} onChange={v => setTab(v)}
+            items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />
         </div>
         {tab === 'list' && <div style={{ display: 'flex', gap: 8 }}>
           {(['', 'CONTRACT', 'PROPOSAL'] as const).map(t => (
@@ -163,44 +157,44 @@ export default function InventoryPage() {
         <p>로딩 중...</p>
       ) : (
         <div className="table-scroll">
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-          <thead>
-            <tr style={{ background: 'var(--c-thead)' }}>
+        <Table style={{ background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <TableHeader>
+            <TableRow>
               {['구분', '항목명', '고객사', '금액', '상태', '기간', '비고', ''].map(h => (
-                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 600, fontSize: 13, borderBottom: '1px solid var(--c-border)' }}>{h}</th>
+                <TableHead key={h} style={{ textAlign: 'left' }}>{h}</TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {items.length === 0 ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>데이터가 없습니다.</td></tr>
+              <TableRow><TableCell colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>데이터가 없습니다.</TableCell></TableRow>
             ) : items.map(item => (
-              <tr key={item.id} style={{ borderBottom: '1px solid var(--c-border-in)' }}>
-                <td style={{ padding: '10px 14px', fontSize: 13 }}>
+              <TableRow key={item.id}>
+                <TableCell>
                   <span style={{ padding: '2px 8px', borderRadius: 4, background: item.type === 'CONTRACT' ? 'var(--c-tag-sys)' : 'var(--c-tag-warn-bg)', color: item.type === 'CONTRACT' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-warn-t)', fontSize: 12 }}>
                     {TYPE_LABEL[item.type]}
                   </span>
-                </td>
-                <td style={{ padding: '10px 14px', fontWeight: 500 }}>{item.name}</td>
-                <td style={{ padding: '10px 14px', color: 'var(--c-text-sub)' }}>{item.client ?? '-'}</td>
-                <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace' }}>{fmt(item.amount)}</td>
-                <td style={{ padding: '10px 14px' }}>
+                </TableCell>
+                <TableCell style={{ fontWeight: 500 }}>{item.name}</TableCell>
+                <TableCell style={{ color: 'var(--c-text-sub)' }}>{item.client ?? '-'}</TableCell>
+                <TableCell style={{ textAlign: 'right', fontFamily: 'monospace' }}>{fmt(item.amount)}</TableCell>
+                <TableCell>
                   <span style={{ padding: '2px 8px', borderRadius: 4, background: `color-mix(in srgb, ${STATUS_COLOR[item.status]} 13%, transparent)`, color: STATUS_COLOR[item.status], fontSize: 12 }}>
                     {STATUS_LABEL[item.status]}
                   </span>
-                </td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-sub)' }}>
+                </TableCell>
+                <TableCell style={{ fontSize: 12, color: 'var(--c-text-sub)' }}>
                   {item.startDate ?? '-'} ~ {item.endDate ?? '-'}
-                </td>
-                <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--c-text-sub)', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.note ?? '-'}</td>
-                <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                </TableCell>
+                <TableCell style={{ fontSize: 12, color: 'var(--c-text-sub)', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.note ?? '-'}</TableCell>
+                <TableCell style={{ whiteSpace: 'nowrap' }}>
                   <Button variant="outlined" size="sm" onClick={() => openEdit(item)}>수정</Button>
                   <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(item.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' }}>삭제</Button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
         </div>
       )}
       </>}

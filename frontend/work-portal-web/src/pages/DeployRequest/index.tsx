@@ -11,7 +11,7 @@ import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../.
 import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import { Button, IconButton, Input, Select, Textarea } from '../../components/ui'
+import { Button, Input, Modal, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
 
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
   RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치',
@@ -292,9 +292,7 @@ export default function DeployRequestPage() {
       {actionModal && (() => {
         const cfg = ACTION_MODAL_CONFIG[actionModal.next]!
         return (
-          <div style={s.overlay} onClick={() => setActionModal(null)}>
-            <div style={s.modal} onClick={e => e.stopPropagation()}>
-              <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>{cfg.title}</h3>
+          <Modal open onClose={() => setActionModal(null)} title={cfg.title} width={440} dismissible>
               <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--c-text-muted)' }}>
                 {cfg.required ? '사유를 입력하세요 (필수)' : '첨언을 입력하세요 (선택)'}
               </p>
@@ -310,22 +308,15 @@ export default function DeployRequestPage() {
                 <Button variant="outlined" onClick={() => setActionModal(null)}>취소</Button>
                 <Button variant="filled" style={{ background: cfg.btnColor }} onClick={submitActionModal}>{cfg.btnLabel}</Button>
               </div>
-            </div>
-          </div>
+          </Modal>
         )
       })()}
 
       <div className="deploy-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>배포 관리</h2>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {(['list', 'dashboard'] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? 'var(--c-action)' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
-                {t === 'list' ? '목록' : '현황'}
-              </button>
-            ))}
-          </div>
+          <TabBar value={tab} onChange={v => setTab(v)}
+            items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />
         </div>
         {tab === 'list' && <Button variant="filled" onClick={() => openCreate()}>+ 새 배포 요청</Button>}
       </div>
@@ -442,59 +433,60 @@ export default function DeployRequestPage() {
       ) : (
         <div style={s.tableWrap}>
           <div className="table-scroll">
-          <table style={s.table}>
-            <thead>
-              <tr style={s.thead}>
-                <th style={{ ...s.th, paddingLeft: 20 }}>번호</th>
-                <th style={{ ...s.th, minWidth: 80, whiteSpace: 'nowrap' }}>시스템</th>
-                <th style={{ ...s.th, width: '20%' }}>제목</th>
-                <th style={s.th}>버전</th>
-                <th style={{ ...s.th, minWidth: 56, whiteSpace: 'nowrap' }}>유형</th>
-                <th style={{ ...s.th, minWidth: 56, whiteSpace: 'nowrap' }}>범위</th>
-                <th style={s.th}>요청자</th>
-                <th style={s.th}>승인자</th>
-                <th style={{ ...s.th, whiteSpace: 'nowrap' }}>상태</th>
-                <th style={s.th}>예정일</th>
-                <th style={s.th}>액션</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={{ ...s.th, paddingLeft: 20 }}>번호</TableHead>
+                <TableHead style={{ ...s.th, minWidth: 80, whiteSpace: 'nowrap' }}>시스템</TableHead>
+                <TableHead style={{ ...s.th, width: '20%' }}>제목</TableHead>
+                <TableHead style={s.th}>버전</TableHead>
+                <TableHead style={{ ...s.th, minWidth: 56, whiteSpace: 'nowrap' }}>유형</TableHead>
+                <TableHead style={{ ...s.th, minWidth: 56, whiteSpace: 'nowrap' }}>범위</TableHead>
+                <TableHead style={s.th}>요청자</TableHead>
+                <TableHead style={s.th}>승인자</TableHead>
+                <TableHead style={{ ...s.th, whiteSpace: 'nowrap' }}>상태</TableHead>
+                <TableHead style={s.th}>예정일</TableHead>
+                <TableHead style={s.th}>액션</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {pagedTopLevel.length === 0 && (
-                <tr><td colSpan={11} style={s.empty}>등록된 배포 요청이 없습니다</td></tr>
+                <TableRow><TableCell colSpan={11} style={s.empty}>등록된 배포 요청이 없습니다</TableCell></TableRow>
               )}
               {pagedTopLevel.map((r) => {
                 const children = childrenOf(r.id)
                 const renderRow = (row: DeployRequest, isChild: boolean) => (
-                  <tr key={row.id}
-                    style={{ ...s.tr, cursor: 'pointer', background: detail?.id === row.id ? 'var(--c-row-sel)' : isChild ? 'var(--c-bg)' : undefined }}
+                  <TableRow key={row.id}
+                    style={{ cursor: 'pointer', background: detail?.id === row.id ? 'var(--c-row-sel)' : isChild ? 'var(--c-bg)' : undefined }}
                     onClick={() => setDetail(detail?.id === row.id ? null : row)}>
-                    <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap', paddingLeft: isChild ? 36 : 20 }}>
+                    {/* 하위(전점) 배포 행은 들여쓰기로 계층 표시 */}
+                    <TableCell style={{ fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap', paddingLeft: isChild ? 36 : 20 }}>
                       {isChild && <span style={{ color: 'var(--c-text-muted)', marginRight: 4 }}>↳</span>}
                       {row.deployNo ?? '-'}
-                    </td>
-                    <td style={s.td}>
+                    </TableCell>
+                    <TableCell>
                       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
                         <span style={{ ...s.sysTag, whiteSpace: 'nowrap' }}>{row.systemName}</span>
                         {row.subSystemName && <span style={{ ...subTagStyle(row.subSystemName), whiteSpace: 'nowrap' }}>{row.subSystemName}</span>}
                       </div>
-                    </td>
-                    <td style={s.td}>{row.title}</td>
-                    <td style={s.td}>{row.version ?? '-'}</td>
-                    <td style={s.td}>
+                    </TableCell>
+                    <TableCell>{row.title}</TableCell>
+                    <TableCell>{row.version ?? '-'}</TableCell>
+                    <TableCell>
                       {row.deployType ? (
                         <span style={{ ...pillStyle, ...DEPLOY_TYPE_BADGE[row.deployType] }}>{DEPLOY_TYPE_LABELS[row.deployType]}</span>
                       ) : '-'}
-                    </td>
-                    <td style={s.td}>
+                    </TableCell>
+                    <TableCell>
                       {row.deployScope ? (
                         <span style={{ ...pillStyle, ...DEPLOY_SCOPE_BADGE[row.deployScope] }}>{DEPLOY_SCOPE_LABELS[row.deployScope]}</span>
                       ) : '-'}
-                    </td>
-                    <td style={s.td}>{row.requesterUsername}</td>
-                    <td style={s.td}>{row.approverUsername ?? '-'}</td>
-                    <td style={{ ...s.td, whiteSpace: 'nowrap' }}><StatusBadge status={row.status} /></td>
-                    <td style={s.td}><ScheduledCell scheduledAt={row.scheduledAt} rowStatus={row.status} /></td>
-                    <td style={s.td} onClick={e => e.stopPropagation()}>
+                    </TableCell>
+                    <TableCell>{row.requesterUsername}</TableCell>
+                    <TableCell>{row.approverUsername ?? '-'}</TableCell>
+                    <TableCell style={{ whiteSpace: 'nowrap' }}><StatusBadge status={row.status} /></TableCell>
+                    <TableCell><ScheduledCell scheduledAt={row.scheduledAt} rowStatus={row.status} /></TableCell>
+                    <TableCell onClick={e => e.stopPropagation()}>
                       <div style={s.actions}>
                         {(row.status === 'DRAFT' || (row.status === 'COMPLETED' && isAdmin)) && (
                           <Button variant="outlined" size="xs" onClick={() => openEdit(row)}>수정</Button>
@@ -526,8 +518,8 @@ export default function DeployRequestPage() {
                           </Button>
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )
                 return (
                   <Fragment key={r.id}>
@@ -536,8 +528,8 @@ export default function DeployRequestPage() {
                   </Fragment>
                 )
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           </div>
 
         {/* 페이지네이션 바 */}
@@ -779,12 +771,8 @@ export default function DeployRequestPage() {
 
       {/* 일감 선택 모달 */}
       {showPicker && (
-        <div style={s.overlay} onClick={() => setShowPicker(false)}>
-          <div style={s.modal} onClick={e => e.stopPropagation()}>
-            <div style={s.modalHeader}>
-              <span style={{ fontWeight: 600, fontSize: 15 }}>레드마인 일감 선택</span>
-              <IconButton variant="text" icon="✕" label="닫기" onClick={() => setShowPicker(false)} />
-            </div>
+        <Modal open onClose={() => setShowPicker(false)} title="레드마인 일감 선택" width={720} dismissible>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ ...s.modalFilter, flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <Select
@@ -878,7 +866,7 @@ export default function DeployRequestPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   )
@@ -981,23 +969,15 @@ const s: Record<string, React.CSSProperties> = {
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
-  table: { width: '100%', borderCollapse: 'collapse' as const },
-  thead: { background: 'var(--c-thead)' },
-  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },
-  tr: { borderBottom: '1px solid var(--c-thead)' },
-  td: { padding: '10px 14px', fontSize: 13 },
+  th: { textAlign: 'left' as const },
   sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   actions: { display: 'flex', alignItems: 'center' },
-  empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
+  empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)' },
   detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
   detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
   infoSection: { background: 'var(--c-bg)', borderRadius: 8, padding: '14px 16px' },
   infoSectionTitle: { fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 10 },
   contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
-  overlay: { position: 'fixed', inset: 0, background: 'var(--c-overlay)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  modal: { background: 'var(--c-card)', borderRadius: 12, width: 720, maxWidth: '90vw', maxHeight: '85vh', display: 'flex', flexDirection: 'column' as const, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' },
-  modalHeader: { padding: '16px 20px', borderBottom: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  modalClose: { border: 'none', background: 'none', fontSize: 18, cursor: 'pointer', color: 'var(--c-text-muted)', lineHeight: 1, padding: 4 },
   modalFilter: { padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', display: 'flex', gap: 10, alignItems: 'center' },
   tabBtn: { padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: 'var(--c-card)', color: 'var(--c-text-sub)' },
   tabBtnActive: { background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', borderColor: 'var(--c-action)' },

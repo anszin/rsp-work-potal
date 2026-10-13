@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, DragEvent } from 'react'
 import { uploadDocument, getDocuments, deleteDocument, AiDocument, DocScope } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
-import { Button } from '../../components/ui'
+import { Button, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -67,27 +67,16 @@ function ConfirmDialog({
   filename, onConfirm, onCancel,
 }: { filename: string; onConfirm: () => void; onCancel: () => void }) {
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 500,
-      background: 'var(--c-overlay)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        background: 'var(--c-card)', border: '1px solid var(--c-border)',
-        borderRadius: 12, padding: '24px 28px', maxWidth: 360, width: '90%',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-      }}>
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--c-text)' }}>문서 삭제</div>
-        <div style={{ fontSize: 13, color: 'var(--c-text-sub)', marginBottom: 20, lineHeight: 1.6 }}>
-          <strong style={{ color: 'var(--c-text)' }}>{filename}</strong>을(를) 삭제하면<br />
-          RAG 인덱스에서도 제거됩니다. 계속하시겠습니까?
-        </div>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" size="sm" onClick={onCancel}>취소</Button>
-          <Button variant="outlined" size="sm" onClick={onConfirm} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>삭제</Button>
-        </div>
+    <Modal open onClose={onCancel} title="문서 삭제" width={360}>
+      <div style={{ fontSize: 13, color: 'var(--c-text-sub)', marginBottom: 20, lineHeight: 1.6 }}>
+        <strong style={{ color: 'var(--c-text)' }}>{filename}</strong>을(를) 삭제하면<br />
+        RAG 인덱스에서도 제거됩니다. 계속하시겠습니까?
       </div>
-    </div>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <Button variant="outlined" size="sm" onClick={onCancel}>취소</Button>
+        <Button variant="outlined" size="sm" onClick={onConfirm} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>삭제</Button>
+      </div>
+    </Modal>
   )
 }
 
@@ -366,27 +355,18 @@ export default function AiDocumentsPage() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: 'var(--c-thead)' }}>
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {['파일명', '범위', '크기', '청크', '업로더', '날짜', ''].map(h => (
-                    <th key={h} style={{
-                      padding: '9px 14px', textAlign: 'left', fontSize: 12,
-                      color: 'var(--c-text-muted)', fontWeight: 600,
-                      borderBottom: '1px solid var(--c-border)', whiteSpace: 'nowrap',
-                    }}>{h}</th>
+                    <TableHead key={h} style={{ textAlign: 'left', whiteSpace: 'nowrap' }}>{h}</TableHead>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {docs.map(doc => (
-                  <tr
-                    key={doc.id}
-                    style={{ borderBottom: '1px solid var(--c-border)', transition: 'background 0.1s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-bg)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '')}
-                  >
-                    <td style={{ padding: '10px 14px', maxWidth: 220 }}>
+                  <TableRow key={doc.id}>
+                    <TableCell style={{ maxWidth: 220 }}>
                       <div style={{
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         color: 'var(--c-text)', fontWeight: 500,
@@ -396,21 +376,21 @@ export default function AiDocumentsPage() {
                       {doc.status !== 'DONE' && doc.status !== 'done' && (
                         <div style={{ fontSize: 10, color: 'var(--c-tag-warn-t)', marginTop: 2 }}>{doc.status}</div>
                       )}
-                    </td>
-                    <td style={{ padding: '10px 14px' }}><ScopeBadge scope={doc.scope} /></td>
-                    <td style={{ padding: '10px 14px', color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
+                    </TableCell>
+                    <TableCell><ScopeBadge scope={doc.scope} /></TableCell>
+                    <TableCell style={{ color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
                       {formatFileSize(doc.fileSize)}
-                    </td>
-                    <td style={{ padding: '10px 14px', color: 'var(--c-text-muted)', textAlign: 'center' }}>
+                    </TableCell>
+                    <TableCell style={{ color: 'var(--c-text-muted)', textAlign: 'center' }}>
                       {doc.chunkCount}
-                    </td>
-                    <td style={{ padding: '10px 14px', color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
+                    </TableCell>
+                    <TableCell style={{ color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
                       {doc.uploaderId}
-                    </td>
-                    <td style={{ padding: '10px 14px', color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
+                    </TableCell>
+                    <TableCell style={{ color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
                       {formatDate(doc.createdAt)}
-                    </td>
-                    <td style={{ padding: '10px 14px' }}>
+                    </TableCell>
+                    <TableCell>
                       <div style={{ display: 'flex', gap: 5 }}>
                         <a
                           href={`/api/documents/${doc.id}/download`}
@@ -429,11 +409,11 @@ export default function AiDocumentsPage() {
                           style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
                         >삭제</Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>

@@ -7,7 +7,7 @@ import {
 } from '../../api/workUnits'
 import { getKeyTasks } from '../../api/keyTasks'
 import { todoApi, type Todo } from '../../api/todos'
-import { Button, IconButton, Input, Select, Textarea } from '../../components/ui'
+import { Button, Input, Modal, Select, Textarea } from '../../components/ui'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
@@ -252,12 +252,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
 
       {/* 추가/수정 모달 */}
       {modalOpen && (
-        <div style={styles.overlay} onClick={e => e.target === e.currentTarget && closeModal()}>
-          <div style={styles.modal}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? '단위업무 수정' : '단위업무 추가'}</span>
-              <IconButton variant="text" size="sm" icon="✕" label="닫기" onClick={closeModal} />
-            </div>
+        <Modal open onClose={closeModal} title={editing ? '단위업무 수정' : '단위업무 추가'} width={440} dismissible>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <label style={styles.label}>
                 중점과제 *
@@ -293,8 +288,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                 <Button type="submit" disabled={createMut.isPending || updateMut.isPending}>저장</Button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   )
@@ -307,7 +301,5 @@ function emptyForm(): SaveWorkUnitRequest {
 const styles: Record<string, React.CSSProperties> = {
   card:      { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '12px 16px' },
   badge:     { fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' },
-  overlay:   { position: 'fixed', inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal:     { background: 'var(--c-card)', borderRadius: 10, padding: 24, width: '100%', maxWidth: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' },
   label:     { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--c-text-sub)', fontWeight: 500 },
 }

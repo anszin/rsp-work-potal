@@ -8,7 +8,7 @@ import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton, Input, Select, Textarea } from '../../components/ui'
+import { Button, IconButton, Input, Select, TabBar, Textarea } from '../../components/ui'
 import { ButtonGroup, ButtonGroupSeparator } from 'rsp-react-design-system/shadcn'
 
 // ── 업무 아이템 ───────────────────────────────────────────────────────────────
@@ -994,14 +994,12 @@ export default function WeeklyReportPage() {
 
         {/* 탭 (관리자만) */}
         {isManager && (
-          <div style={{ display: 'flex', gap: 0, marginBottom: 14, borderBottom: '1px solid var(--c-border)' }}>
-            {(['mine', 'overview'] as const).map(tab => (
-              <button key={tab} onClick={() => setMasterTab(tab)}
-                style={{ flex: 1, padding: '7px 0', border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: masterTab === tab ? 700 : 400, color: masterTab === tab ? 'var(--c-action)' : 'var(--c-text-muted)', borderBottom: masterTab === tab ? '2px solid var(--c-action)' : '2px solid transparent', marginBottom: -1 }}>
-                {tab === 'mine' ? '내 보고서' : '전체 현황'}
-              </button>
-            ))}
-          </div>
+          <TabBar
+            style={{ marginBottom: 14 }}
+            value={masterTab}
+            onChange={v => setMasterTab(v)}
+            items={[{ value: 'mine', label: '내 보고서' }, { value: 'overview', label: '전체 현황' }]}
+          />
         )}
 
         {isLoading ? <p>로딩 중...</p> : (

@@ -3,6 +3,7 @@ import {
   getKnowledgeStats, getKnowledgeFiles,
   KnowledgeStats, KnowledgeSource, KnowledgeFile, SourceType,
 } from '../../api/aiApi'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -95,8 +96,8 @@ function FileRows({ repo, sourceType }: FileRowsParams) {
     const sorted = [...files].sort((a, b) => b.chunkCount - a.chunkCount)
 
     return (
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <tbody>
+      <Table>
+        <TableBody>
           {sorted.map((f, i) => {
             // repo 소스: 접두어 제거 / UPLOAD: 경로 그대로
             const relPath = repoPrefix && f.sourcePath.startsWith(repoPrefix)
@@ -105,8 +106,8 @@ function FileRows({ repo, sourceType }: FileRowsParams) {
             const fileName = relPath.split('/').pop() || relPath
             const dir = relPath.includes('/') ? relPath.slice(0, relPath.lastIndexOf('/')) : ''
             return (
-              <tr key={i} style={{ borderBottom: '1px solid var(--c-border)' }}>
-                <td style={{ padding: '6px 14px 6px 48px' }}>
+              <TableRow key={i}>
+                <TableCell style={{ paddingLeft: 48 }}>
                   <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginRight: 6 }}>└</span>
                   {dir && (
                     <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginRight: 4 }}>
@@ -119,27 +120,27 @@ function FileRows({ repo, sourceType }: FileRowsParams) {
                   >
                     {fileName}
                   </span>
-                </td>
-                <td style={{ padding: '6px 14px', fontSize: 12, color: 'var(--c-text-muted)', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                </TableCell>
+                <TableCell style={{ fontSize: 12, color: 'var(--c-text-muted)', textAlign: 'right', whiteSpace: 'nowrap' }}>
                   {fmtNum(f.chunkCount)} 청크
-                </td>
-                <td style={{ width: 32 }} />
-              </tr>
+                </TableCell>
+                <TableCell style={{ width: 32 }} />
+              </TableRow>
             )
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     )
   })()
 
   return (
-    <tr>
-      <td colSpan={5} style={{ padding: 0, background: 'var(--c-bg)', borderBottom: '1px solid var(--c-border)' }}>
+    <TableRow>
+      <TableCell colSpan={5} style={{ padding: 0, background: 'var(--c-bg)' }}>
         <div style={{ maxHeight: 320, overflowY: 'auto' }}>
           {inner}
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 
@@ -155,34 +156,28 @@ function SourceRow({ source }: { source: KnowledgeSource }) {
 
   return (
     <>
-      <tr
+      <TableRow
         onClick={() => canExpand && setExpanded(v => !v)}
-        style={{
-          borderBottom: expanded ? 'none' : '1px solid var(--c-border)',
-          cursor: canExpand ? 'pointer' : 'default',
-          transition: 'background 0.1s',
-        }}
-        onMouseEnter={e => { if (canExpand) e.currentTarget.style.background = 'var(--c-bg)' }}
-        onMouseLeave={e => (e.currentTarget.style.background = '')}
+        style={{ cursor: canExpand ? 'pointer' : 'default' }}
       >
-        <td style={{ padding: '11px 14px' }}>
+        <TableCell>
           {sourceType && <SourceBadge type={sourceType} />}
-        </td>
-        <td style={{ padding: '11px 14px' }}>
+        </TableCell>
+        <TableCell>
           <span style={{ fontSize: 13, color: 'var(--c-text)', fontWeight: 500 }}>
             {source.repo ?? '업로드 문서'}
           </span>
-        </td>
-        <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 13, color: 'var(--c-text)', fontWeight: 600 }}>
+        </TableCell>
+        <TableCell style={{ textAlign: 'right', fontWeight: 600 }}>
           {fmtNum(chunkCount)}
-        </td>
-        <td style={{ padding: '11px 14px', fontSize: 12, color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
+        </TableCell>
+        <TableCell style={{ fontSize: 12, color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
           {fmtDate(lastUpdated)}
-        </td>
-        <td style={{ padding: '11px 14px', textAlign: 'center', fontSize: 12, color: 'var(--c-text-muted)' }}>
+        </TableCell>
+        <TableCell style={{ textAlign: 'center', fontSize: 12, color: 'var(--c-text-muted)' }}>
           {canExpand ? (expanded ? '▲' : '▼') : ''}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
       {expanded && (
         source.repo
           ? <FileRows repo={source.repo} />
@@ -269,26 +264,22 @@ export default function AiKnowledgePage() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: 'var(--c-thead)' }}>
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {['타입', '저장소', '청크 수', '마지막 업데이트', ''].map((h, i) => (
-                    <th key={i} style={{
-                      padding: '9px 14px', textAlign: i === 2 ? 'right' : 'left',
-                      fontSize: 12, color: 'var(--c-text-muted)', fontWeight: 600,
-                      borderBottom: '1px solid var(--c-border)', whiteSpace: 'nowrap',
-                    }}>
+                    <TableHead key={i} style={{ textAlign: i === 2 ? 'right' : 'left', whiteSpace: 'nowrap' }}>
                       {h}
-                    </th>
+                    </TableHead>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {stats.sources.map((src, i) => (
                   <SourceRow key={`${src.sourceType}-${src.repo}-${i}`} source={src} />
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>

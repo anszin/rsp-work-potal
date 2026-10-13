@@ -10,7 +10,7 @@ import { getActiveSystems, getManagedSystemIds, getActiveSubSystems, getSystemMa
 import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import { Button, Input, Select, Textarea } from '../../components/ui'
+import { Button, Input, Modal, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
 
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
@@ -208,9 +208,7 @@ export default function ChangeRequestPage() {
       {actionModal && (() => {
         const cfg = ACTION_MODAL_CONFIG[actionModal.next]!
         return (
-          <div style={s.overlay}>
-            <div style={s.modal}>
-              <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>{cfg.title}</h3>
+          <Modal open onClose={() => setActionModal(null)} title={cfg.title} width={440}>
               <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--c-text-muted)' }}>
                 {cfg.required ? '사유를 입력하세요 (필수)' : '첨언을 입력하세요 (선택)'}
               </p>
@@ -226,22 +224,15 @@ export default function ChangeRequestPage() {
                 <Button variant="outlined" onClick={() => setActionModal(null)}>취소</Button>
                 <Button variant="filled" onClick={submitActionModal} style={{ background: cfg.btnColor }}>{cfg.btnLabel}</Button>
               </div>
-            </div>
-          </div>
+          </Modal>
         )
       })()}
 
       <div className="deploy-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>변경 관리</h2>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {(['list', 'dashboard'] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                style={{ padding: '4px 0', border: 'none', borderBottom: `2px solid ${tab === t ? 'var(--c-text)' : 'transparent'}`, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
-                {t === 'list' ? '목록' : '현황'}
-              </button>
-            ))}
-          </div>
+          <TabBar value={tab} onChange={v => setTab(v)}
+            items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />
         </div>
         {tab === 'list' && <Button variant="filled" onClick={openCreate}>+ 새 요청</Button>}
       </div>
@@ -369,46 +360,46 @@ export default function ChangeRequestPage() {
       ) : (
         <div style={s.tableWrap}>
           <div className="table-scroll">
-          <table style={s.table}>
-            <thead>
-              <tr style={s.thead}>
-                <th style={s.th}>요청번호</th>
-                <th style={s.th}>시스템</th>
-                <th style={s.th}>요청부서</th>
-                <th style={s.th}>요청자</th>
-                <th style={{ ...s.th, width: '22%' }}>제목</th>
-                <th style={s.th}>상태</th>
-                <th style={s.th}>반영 목표일</th>
-                <th style={s.th}>첨부</th>
-                <th style={s.th}>생성일</th>
-                <th style={s.th}>액션</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={s.th}>요청번호</TableHead>
+                <TableHead style={s.th}>시스템</TableHead>
+                <TableHead style={s.th}>요청부서</TableHead>
+                <TableHead style={s.th}>요청자</TableHead>
+                <TableHead style={{ ...s.th, width: '22%' }}>제목</TableHead>
+                <TableHead style={s.th}>상태</TableHead>
+                <TableHead style={s.th}>반영 목표일</TableHead>
+                <TableHead style={s.th}>첨부</TableHead>
+                <TableHead style={s.th}>생성일</TableHead>
+                <TableHead style={s.th}>액션</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filtered.length === 0 && (
-                <tr><td colSpan={10} style={s.empty}>등록된 요청이 없습니다</td></tr>
+                <TableRow><TableCell colSpan={10} style={s.empty}>등록된 요청이 없습니다</TableCell></TableRow>
               )}
               {filtered.map((r) => (
-                <tr key={r.id} style={{ ...s.tr, cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
+                <TableRow key={r.id} style={{ cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
-                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>{r.requestNo ?? '-'}</td>
-                  <td style={s.td}>
+                  <TableCell style={{ fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>{r.requestNo ?? '-'}</TableCell>
+                  <TableCell>
                     <span style={s.sysTag}>{r.systemName}</span>
                     {r.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{r.subSystemName}</span>}
-                  </td>
-                  <td style={s.td}>{r.requesterDept ?? '-'}</td>
-                  <td style={s.td}>{r.requesterName ?? r.requesterUsername}</td>
-                  <td style={s.td}>{r.title}</td>
-                  <td style={s.td}>
+                  </TableCell>
+                  <TableCell>{r.requesterDept ?? '-'}</TableCell>
+                  <TableCell>{r.requesterName ?? r.requesterUsername}</TableCell>
+                  <TableCell>{r.title}</TableCell>
+                  <TableCell>
                     <StatusBadge status={r.status} />
                     {r.status === 'REJECTED' && r.rejectionReason && (
                       <div style={{ fontSize: 11, color: 'var(--c-tag-err-t)', marginTop: 2 }}>
                         사유: {r.rejectionReason.length > 20 ? r.rejectionReason.slice(0, 20) + '…' : r.rejectionReason}
                       </div>
                     )}
-                  </td>
-                  <td style={s.td}>{r.targetDate ?? '-'}</td>
-                  <td style={s.td} onClick={e => e.stopPropagation()}>
+                  </TableCell>
+                  <TableCell>{r.targetDate ?? '-'}</TableCell>
+                  <TableCell onClick={e => e.stopPropagation()}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {r.hasAttachment && (
                         <button onClick={() => downloadAttachment(r.id, r.attachmentOriginalName ?? '파일')}
@@ -421,9 +412,9 @@ export default function ChangeRequestPage() {
                       )}
                       {!r.hasAttachment && !r.attachmentLink && <span style={{ color: 'var(--c-text-muted)', fontSize: 12 }}>-</span>}
                     </div>
-                  </td>
-                  <td style={s.td}>{r.createdAt?.slice(0, 10)}</td>
-                  <td style={s.td} onClick={e => e.stopPropagation()}>
+                  </TableCell>
+                  <TableCell>{r.createdAt?.slice(0, 10)}</TableCell>
+                  <TableCell onClick={e => e.stopPropagation()}>
                     <div style={s.actions}>
                       {r.status === 'DRAFT' && (
                         <Button variant="outlined" size="sm" onClick={() => openEdit(r)}>수정</Button>
@@ -446,11 +437,11 @@ export default function ChangeRequestPage() {
                         </Button>
                       )}
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           </div>
         </div>
       )}
@@ -611,16 +602,10 @@ const s: Record<string, React.CSSProperties> = {
   filterRow: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
-  table: { width: '100%', borderCollapse: 'collapse' as const },
-  thead: { background: 'var(--c-thead)' },
-  th: { padding: '10px 14px', textAlign: 'left' as const, fontSize: 12, fontWeight: 600, color: 'var(--c-text-sub)', borderBottom: '1px solid var(--c-border)' },
-  tr: { borderBottom: '1px solid var(--c-thead)' },
-  td: { padding: '10px 14px', fontSize: 13 },
+  th: { textAlign: 'left' as const },
   sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   actions: { display: 'flex', alignItems: 'center' },
-  empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
-  overlay: { position: 'fixed' as const, inset: 0, background: 'var(--c-overlay)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: 'var(--c-card)', borderRadius: 8, padding: 24, width: 440, boxShadow: '0 8px 32px rgba(0,0,0,0.2)' },
+  empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)' },
   detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
   contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
 }
