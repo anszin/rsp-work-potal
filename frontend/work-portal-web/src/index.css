@@ -213,60 +213,48 @@ input, textarea, select, button {
   100% { transform: translateX(350%); }
 }
 
-/* ===== Layout ===== */
-.layout-container { display: flex; min-height: 100vh; }
-
-.layout-sidebar {
-  width: 220px;
-  background: var(--rsp-color-neutral-900);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0; left: 0;
-  height: 100vh;
-  z-index: 200;
-  transition: transform 0.25s ease;
+/* ===== Layout (RSP 디자인시스템 SDK Sidebar) ===== */
+/* 사이드바는 테마와 무관하게 항상 어두운 배경 — SDK sidebar 색 변수를 neutral 고정값으로 지정 */
+:root, .dark {
+  --shadcn-color-sidebar:                    var(--rsp-color-neutral-900);
+  --shadcn-color-sidebar-foreground:         var(--rsp-color-neutral-500);
+  --shadcn-color-sidebar-accent:             var(--rsp-color-neutral-800);
+  --shadcn-color-sidebar-accent-foreground:  var(--rsp-color-neutral-50);
+  --shadcn-color-sidebar-border:             var(--rsp-color-neutral-800);
+  --shadcn-color-sidebar-primary:            var(--rsp-color-secondary-400);
+  --shadcn-color-sidebar-primary-foreground: var(--rsp-color-neutral-0);
+  --shadcn-color-sidebar-ring:               var(--rsp-color-secondary-400);
 }
+/* 사이드바 메뉴 글자 14px 통일 — 링크(a)·그룹 제목(button)이 섞여 있어 버튼만 브라우저 기본 크기로
+   보정(revert)되던 문제 방지. data-sidebar="sidebar" 는 데스크톱·모바일(Sheet) 공통 컨테이너 */
+[data-sidebar="sidebar"] :is(a, button):not([style*="font-size"]) { font-size: 14px; line-height: 1.4; }
+
+/* 사이드바 접기/펼치기 버튼 — 어두운 사이드바용 색 (SDK ghost 버튼 기본은 밝은 테마 기준) */
+.sidebar-collapse-btn { color: var(--rsp-color-neutral-500) !important; flex-shrink: 0; }
+.sidebar-collapse-btn:hover { background: var(--rsp-color-neutral-800) !important; color: var(--rsp-color-neutral-50) !important; }
+
+/* 사이드바는 고정 위치 — 포탈 모달(1000) 아래, 일반 콘텐츠 위 */
+.portal-sidebar { z-index: 200; border-right: none !important; }
 
 .layout-main {
-  flex: 1;
   min-width: 0;
-  margin-left: 220px;
   min-height: 100vh;
   background: var(--c-bg);
   transition: background 0.15s;
   overflow: hidden;
 }
 
-.hamburger-btn {
-  display: none;
-  position: fixed;
+/* 모바일(SDK 기준 767px 이하) 메뉴 열기 버튼 */
+.sidebar-mobile-trigger {
+  display: none !important;
+  position: fixed !important;
   top: 12px; left: 12px;
   z-index: 300;
-  background: var(--rsp-color-neutral-900);
-  border: none;
-  border-radius: 6px;
-  padding: 8px 11px;
-  cursor: pointer;
-  color: #fff;
-  font-size: 18px;
-  line-height: 1;
+  background: var(--rsp-color-neutral-900) !important;
+  color: var(--rsp-color-neutral-50) !important;
 }
-
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 150;
-}
-
-@media (max-width: 768px) {
-  .hamburger-btn { display: block; }
-  .layout-sidebar { transform: translateX(-100%); }
-  .layout-sidebar.open { transform: translateX(0); }
-  .sidebar-overlay.open { display: block; }
-  .layout-main { margin-left: 0; }
+@media (max-width: 767px) {
+  .sidebar-mobile-trigger { display: inline-flex !important; }
 }
 
 /* ===== 반응형 유틸리티 ===== */

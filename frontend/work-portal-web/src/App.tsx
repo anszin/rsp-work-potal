@@ -1,29 +1,33 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { useAuth } from './context/useAuth'
 import { aiConfig } from './config/aiConfig'
 import LoginPage from './pages/Login'
-import ChangePasswordPage from './pages/ChangePassword'
-import DashboardPage from './pages/Dashboard'
-import ChangeRequestPage from './pages/ChangeRequest'
-import DeployRequestPage from './pages/DeployRequest'
-import InventoryPage from './pages/Inventory'
-import FinancePage from './pages/Finance'
-import MeetingMinutesPage from './pages/MeetingMinutes'
-import WeeklyReportPage from './pages/WeeklyReport'
-import DailyCheckPage from './pages/DailyCheck'
-import SystemManagementPage from './pages/SystemManagement'
-import UserManagementPage from './pages/UserManagement'
-import KeyTaskPage from './pages/KeyTask'
-import TodoPage from './pages/Todo'
 import Layout from './components/Layout'
-import NotificationPage from './pages/Notification'
-import AiChatPage from './pages/AiChat'
-import AiDocumentsPage from './pages/AiDocuments'
-import AiPromptsPage from './pages/AiPrompts'
-import AiKnowledgePage from './pages/AiKnowledge'
-import UiShowcase from './pages/UiShowcase'
+import { Loading } from './components/ui'
+// 페이지는 지연 로딩(code splitting) — 해당 화면 진입 시 내려받아 첫 로딩 용량 감소
+// 로그인·레이아웃은 첫 화면에 필요하므로 즉시 로딩
+const ChangePasswordPage = lazy(() => import('./pages/ChangePassword'))
+const DashboardPage = lazy(() => import('./pages/Dashboard'))
+const ChangeRequestPage = lazy(() => import('./pages/ChangeRequest'))
+const DeployRequestPage = lazy(() => import('./pages/DeployRequest'))
+const InventoryPage = lazy(() => import('./pages/Inventory'))
+const FinancePage = lazy(() => import('./pages/Finance'))
+const MeetingMinutesPage = lazy(() => import('./pages/MeetingMinutes'))
+const WeeklyReportPage = lazy(() => import('./pages/WeeklyReport'))
+const DailyCheckPage = lazy(() => import('./pages/DailyCheck'))
+const SystemManagementPage = lazy(() => import('./pages/SystemManagement'))
+const UserManagementPage = lazy(() => import('./pages/UserManagement'))
+const KeyTaskPage = lazy(() => import('./pages/KeyTask'))
+const TodoPage = lazy(() => import('./pages/Todo'))
+const NotificationPage = lazy(() => import('./pages/Notification'))
+const AiChatPage = lazy(() => import('./pages/AiChat'))
+const AiDocumentsPage = lazy(() => import('./pages/AiDocuments'))
+const AiPromptsPage = lazy(() => import('./pages/AiPrompts'))
+const AiKnowledgePage = lazy(() => import('./pages/AiKnowledge'))
+const UiShowcase = lazy(() => import('./pages/UiShowcase'))
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth()
@@ -35,6 +39,7 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
       <AuthProvider>
+        <Suspense fallback={<Loading style={{ minHeight: '60vh' }} />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/ui" element={<UiShowcase />} />
@@ -70,6 +75,7 @@ export default function App() {
             )}
           </Route>
         </Routes>
+        </Suspense>
       </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
