@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, DragEvent } from 'react'
 import { uploadDocument, getDocuments, deleteDocument, AiDocument, DocScope } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
-import { Button, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
+import { Button, Select, Modal, Tag, Panel, Loading, EmptyState, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -40,13 +40,9 @@ function ScopeBadge({ scope }: { scope: DocScope }) {
   const s = SCOPES.find(s => s.value === scope)
   if (!s) return null
   return (
-    <span style={{
-      fontSize: 11, padding: '2px 7px', borderRadius: 10,
-      background: `color-mix(in srgb, ${s.color} 13%, transparent)`, color: s.color, fontWeight: 600,
-      border: `1px solid color-mix(in srgb, ${s.color} 27%, transparent)`, whiteSpace: 'nowrap',
-    }}>
+    <Tag color={s.color} style={{ whiteSpace: 'nowrap' }}>
       {s.label}
-    </span>
+    </Tag>
   )
 }
 
@@ -210,26 +206,18 @@ export default function AiDocumentsPage() {
       </div>
 
       {/* 업로드 영역 */}
-      <div style={{
-        background: 'var(--c-card)', border: '1px solid var(--c-border)',
-        borderRadius: 12, padding: '20px 24px', marginBottom: 20,
-      }}>
+      <Panel style={{ display: 'block', padding: '20px 24px', marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 14 }}>
           <div>
             <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 5 }}>공유 범위</div>
-            <select
+            <Select
               value={scope}
-              onChange={e => setScope(e.target.value as DocScope)}
-              style={{
-                padding: '7px 28px 7px 10px', borderRadius: 7, fontSize: 13,
-                border: '1px solid var(--c-border)', background: 'var(--c-bg)',
-                color: 'var(--c-text)', cursor: 'pointer', appearance: 'auto',
-              }}
+              onValueChange={v => setScope(v as DocScope)}
             >
               {SCOPES.map(s => (
                 <option key={s.value} value={s.value}>{s.label}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div style={{ flex: 1, minWidth: 220 }}>
             <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 5 }}>지원 형식</div>
@@ -310,10 +298,10 @@ export default function AiDocumentsPage() {
             )}
           </div>
         )}
-      </div>
+      </Panel>
 
       {/* 문서 목록 */}
-      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 12, overflow: 'hidden' }}>
+      <Panel style={{ display: 'block', padding: 0, overflow: 'hidden' }}>
         <div style={{
           padding: '14px 20px', borderBottom: '1px solid var(--c-border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
@@ -345,14 +333,9 @@ export default function AiDocumentsPage() {
         </div>
 
         {docsLoading ? (
-          <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--c-text-muted)', fontSize: 13 }}>
-            불러오는 중...
-          </div>
+          <Loading style={{ padding: '40px 20px' }} />
         ) : docs.length === 0 ? (
-          <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--c-text-muted)', fontSize: 13 }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>📭</div>
-            업로드된 문서가 없습니다
-          </div>
+          <EmptyState title="업로드된 문서가 없습니다" style={{ padding: '40px 20px' }} />
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <Table>
@@ -374,7 +357,7 @@ export default function AiDocumentsPage() {
                         {doc.originalFilename}
                       </div>
                       {doc.status !== 'DONE' && doc.status !== 'done' && (
-                        <div style={{ fontSize: 10, color: 'var(--c-tag-warn-t)', marginTop: 2 }}>{doc.status}</div>
+                        <div style={{ fontSize: 11, color: 'var(--c-tag-warn-t)', marginTop: 2 }}>{doc.status}</div>
                       )}
                     </TableCell>
                     <TableCell><ScopeBadge scope={doc.scope} /></TableCell>
@@ -416,7 +399,7 @@ export default function AiDocumentsPage() {
             </Table>
           </div>
         )}
-      </div>
+      </Panel>
     </div>
   )
 }

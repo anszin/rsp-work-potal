@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { getUsers, UserSummary } from '../../api/users'
 import { notificationApi } from '../../api/notifications'
 import { useAuth } from '../../context/useAuth'
-import { Button, Textarea } from '../../components/ui'
+import { Button, Textarea, Checkbox, Panel, Tag } from '../../components/ui'
 
 const TEMPLATES = [
   { label: '주간보고 제출 요청', text: '이번 주 주간보고 등록 부탁드립니다. 금일 오후 6시까지 포탈에 등록해 주세요.' },
@@ -63,7 +63,7 @@ export default function NotificationPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px' }}>
-      <h2 style={{ margin: '0 0 6px', fontSize: 22 }}>공지 발송</h2>
+      <h2 style={{ margin: '0 0 6px', fontSize: 20 }}>공지 발송</h2>
       <p style={{ margin: '0 0 28px', fontSize: 13, color: 'var(--c-text-muted)' }}>
         웹엑스를 통해 팀원에게 공지 또는 리마인더를 발송합니다.
       </p>
@@ -83,11 +83,7 @@ export default function NotificationPage() {
 
           {target === 'ALL' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13 }}>
-                <input type="checkbox" checked={useRoom} onChange={e => setUseRoom(e.target.checked)}
-                  style={{ width: 15, height: 15, cursor: 'pointer' }} />
-                개인 DM 대신 공용 룸에 발송
-              </label>
+              <Checkbox label="개인 DM 대신 공용 룸에 발송" checked={useRoom} onCheckedChange={c => setUseRoom(c)} />
               <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>
                 (룸 발송은 웹엑스 room-id 설정 필요)
               </span>
@@ -95,11 +91,11 @@ export default function NotificationPage() {
           )}
 
           {target === 'SELECTED' && (
-            <div style={{ border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden' }}>
+            <Panel style={{ padding: 0, gap: 0, overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'var(--c-thead)', borderBottom: '1px solid var(--c-border)' }}>
-                <input type="checkbox"
+                <Checkbox
                   checked={selectedUsernames.size === activeMembers.length && activeMembers.length > 0}
-                  onChange={toggleAll} style={{ width: 15, height: 15, cursor: 'pointer' }} />
+                  onCheckedChange={() => toggleAll()} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--c-text-sub)' }}>
                   전체 선택 ({selectedUsernames.size}/{activeMembers.length}명)
                 </span>
@@ -107,8 +103,8 @@ export default function NotificationPage() {
               <div style={{ maxHeight: 220, overflowY: 'auto' }}>
                 {activeMembers.map(u => (
                   <label key={u.username} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', cursor: 'pointer', borderBottom: '1px solid var(--c-border)', background: selectedUsernames.has(u.username) ? 'color-mix(in srgb, var(--c-action) 3%, transparent)' : 'var(--c-card)' }}>
-                    <input type="checkbox" checked={selectedUsernames.has(u.username)} onChange={() => toggleUser(u.username)}
-                      style={{ width: 15, height: 15, cursor: 'pointer', flexShrink: 0 }} />
+                    <Checkbox checked={selectedUsernames.has(u.username)} onCheckedChange={() => toggleUser(u.username)}
+                      style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>{u.name || u.username}</div>
                       <div style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>
@@ -116,11 +112,11 @@ export default function NotificationPage() {
                         {u.email || '이메일 없음'}
                       </div>
                     </div>
-                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 8, background: 'var(--c-thead)', color: 'var(--c-text-muted)', fontWeight: 600 }}>{u.role}</span>
+                    <Tag color="var(--c-text-muted)" bg="var(--c-thead)">{u.role}</Tag>
                   </label>
                 ))}
               </div>
-            </div>
+            </Panel>
           )}
         </section>
 

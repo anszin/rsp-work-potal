@@ -7,7 +7,7 @@ import {
   getSystemServers, addSystemServer, deleteSystemServer,
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
-import { Button, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
+import { Button, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Panel, Loading, EmptyState } from '../../components/ui'
 
 const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '', sortOrder: '' })
 const emptySubForm = () => ({ code: '', name: '', description: '' })
@@ -152,8 +152,8 @@ export default function SystemManagementPage() {
       />
 
       {showForm && (
-        <div style={s.card}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 15 }}>{editing ? '시스템 수정' : '시스템 등록'}</h3>
+        <Panel style={{ display: 'block', padding: 24, marginBottom: 16 }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>{editing ? '시스템 수정' : '시스템 등록'}</h3>
           <form onSubmit={handleSubmit}>
             <div style={s.grid}>
               {!editing && (
@@ -184,11 +184,11 @@ export default function SystemManagementPage() {
               <Button type="submit" variant="filled">{editing ? '수정' : '등록'}</Button>
             </div>
           </form>
-        </div>
+        </Panel>
       )}
 
-      {isLoading ? <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p> : (
-        <div style={s.card}>
+      {isLoading ? <Loading /> : (
+        <Panel style={{ display: 'block', marginBottom: 16 }}>
           <div className="table-scroll">
           <Table>
             <TableHeader>
@@ -200,7 +200,7 @@ export default function SystemManagementPage() {
             </TableHeader>
             <TableBody>
               {systems.length === 0 ? (
-                <TableRow><TableCell colSpan={7} style={s.empty}>등록된 시스템이 없습니다.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7}><EmptyState title="등록된 시스템이 없습니다." /></TableCell></TableRow>
               ) : systems.map(sys => (
                 <TableRow key={sys.id}>
                   <TableCell style={{ color: 'var(--c-text-muted)', textAlign: 'center' }}>{sys.sortOrder}</TableCell>
@@ -231,7 +231,7 @@ export default function SystemManagementPage() {
             </TableBody>
           </Table>
           </div>
-        </div>
+        </Panel>
       )}
 
       {/* 하위시스템 패널 */}
@@ -239,7 +239,7 @@ export default function SystemManagementPage() {
         <Modal open onClose={() => { setSubPanel(null); resetSubForm() }} width={560}>
             {/* 헤더에 추가 버튼이 있어 커스텀 헤더 유지 — SDK X 버튼과 겹치지 않도록 우측 여백 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, paddingRight: 32 }}>
-              <h3 style={{ margin: 0, fontSize: 15 }}>{subPanel.name} 하위시스템 관리</h3>
+              <h3 style={{ margin: 0, fontSize: 16 }}>{subPanel.name} 하위시스템 관리</h3>
               <Button variant="filled" size="sm" onClick={() => { setShowSubForm(true); setEditingSub(null); setSubForm(emptySubForm()) }}>+ 추가</Button>
             </div>
             <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--c-text-muted)' }}>프론트엔드, 백엔드, API 등 구성 컴포넌트를 관리합니다.</p>
@@ -269,7 +269,7 @@ export default function SystemManagementPage() {
             )}
 
             {subSystems.length === 0 ? (
-              <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 하위시스템이 없습니다.</p>
+              <EmptyState title="등록된 하위시스템이 없습니다." />
             ) : (
               <Table>
                 <TableHeader>
@@ -332,7 +332,7 @@ export default function SystemManagementPage() {
             </div>
 
             {servers.length === 0 ? (
-              <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 서버가 없습니다.</p>
+              <EmptyState title="등록된 서버가 없습니다." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {servers.map((sv, idx) => (
@@ -359,7 +359,7 @@ export default function SystemManagementPage() {
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>현재 담당자</div>
               {managers.length === 0 ? (
-                <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 담당자가 없습니다.</p>
+                <EmptyState title="등록된 담당자가 없습니다." />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {managers.map(m => (
@@ -396,11 +396,9 @@ export default function SystemManagementPage() {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
   btn: { padding: '8px 16px', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   grid: { display: 'grid', gridTemplateColumns: '120px 1fr', gap: '12px 16px', alignItems: 'center' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
-  empty: { textAlign: 'center' as const, color: 'var(--c-text-muted)' },
 }

@@ -10,7 +10,7 @@ import { getActiveSystems, getManagedSystemIds, getActiveSubSystems, getSystemMa
 import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import { Button, Input, Modal, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
+import { Button, Input, Modal, Select, TabBar, Tag, Panel, Loading, EmptyState, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
 
 const STATUS_LABELS: Record<RequestStatus, string> = {
   DRAFT: '임시저장', REQUESTED: '요청', APPROVED: '승인', COMPLETED: '완료', REJECTED: '반려',
@@ -242,7 +242,7 @@ export default function ChangeRequestPage() {
       {tab === 'list' && <>
       {/* 등록/수정 폼 */}
       {showForm && (
-        <div style={s.card}>
+        <Panel style={{ display: 'block', padding: 24, marginBottom: 16 }}>
           <h3 style={s.formTitle}>{editing ? '요청 수정' : '새 변경 요청'}</h3>
           <div style={s.formGrid}>
             <label style={s.label}>운영시스템 *</label>
@@ -338,7 +338,7 @@ export default function ChangeRequestPage() {
               {isPending ? '저장 중...' : '저장'}
             </Button>
           </div>
-        </div>
+        </Panel>
       )}
 
       {/* 상태 필터 탭 */}
@@ -356,9 +356,9 @@ export default function ChangeRequestPage() {
 
       {/* 목록 */}
       {isLoading ? (
-        <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p>
+        <Loading />
       ) : (
-        <div style={s.tableWrap}>
+        <Panel style={{ display: 'block', padding: 0, overflow: 'hidden', marginBottom: 16 }}>
           <div className="table-scroll">
           <Table>
             <TableHeader>
@@ -377,15 +377,15 @@ export default function ChangeRequestPage() {
             </TableHeader>
             <TableBody>
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={10} style={s.empty}>등록된 요청이 없습니다</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10}><EmptyState title="등록된 요청이 없습니다" /></TableCell></TableRow>
               )}
               {filtered.map((r) => (
                 <TableRow key={r.id} style={{ cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
                   onClick={() => setDetail(detail?.id === r.id ? null : r)}>
                   <TableCell style={{ fontWeight: 600, color: 'var(--c-text)', whiteSpace: 'nowrap' }}>{r.requestNo ?? '-'}</TableCell>
                   <TableCell>
-                    <span style={s.sysTag}>{r.systemName}</span>
-                    {r.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{r.subSystemName}</span>}
+                    <Tag tone="info">{r.systemName}</Tag>
+                    {r.subSystemName && <Tag color="var(--c-tag-sub-t)" bg="var(--c-tag-sub)" style={{ marginLeft: 4 }}>{r.subSystemName}</Tag>}
                   </TableCell>
                   <TableCell>{r.requesterDept ?? '-'}</TableCell>
                   <TableCell>{r.requesterName ?? r.requesterUsername}</TableCell>
@@ -443,17 +443,17 @@ export default function ChangeRequestPage() {
             </TableBody>
           </Table>
           </div>
-        </div>
+        </Panel>
       )}
 
       {/* 상세 패널 */}
       {detail && tab === 'list' && (
-        <div style={s.card}>
+        <Panel style={{ display: 'block', padding: 24, marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
             <div>
-              <span style={s.sysTag}>{detail.systemCode}</span>
-              {detail.subSystemName && <span style={{ ...s.sysTag, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)', marginLeft: 4 }}>{detail.subSystemName}</span>}
-              <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 15 }}>{detail.title}</span>
+              <Tag tone="info">{detail.systemCode}</Tag>
+              {detail.subSystemName && <Tag color="var(--c-tag-sub-t)" bg="var(--c-tag-sub)" style={{ marginLeft: 4 }}>{detail.subSystemName}</Tag>}
+              <span style={{ marginLeft: 8, fontWeight: 600, fontSize: 16 }}>{detail.title}</span>
               {detail.requestNo && <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--c-text-muted)' }}>{detail.requestNo}</span>}
             </div>
             <Button variant="outlined" size="sm" onClick={() => setDetail(null)}>닫기</Button>
@@ -513,10 +513,10 @@ export default function ChangeRequestPage() {
               )}
               {detail.redmineSyncStatus && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {detail.redmineSyncStatus === 'SYNCED' && <span style={{ fontSize: 12, color: 'var(--c-tag-done-t)', background: 'var(--c-tag-done-bg)', border: '1px solid var(--c-tag-done-bg)', padding: '2px 8px', borderRadius: 4 }}>일감 등록 완료</span>}
+                  {detail.redmineSyncStatus === 'SYNCED' && <Tag tone="success">일감 등록 완료</Tag>}
                   {detail.redmineSyncStatus === 'FAILED' && (
                     <>
-                      <span style={{ fontSize: 12, color: 'var(--c-tag-err-t)', background: 'var(--c-tag-err-bg)', border: '1px solid var(--c-tag-err-bg)', padding: '2px 8px', borderRadius: 4 }}>일감 등록 실패</span>
+                      <Tag tone="danger">일감 등록 실패</Tag>
                       <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-warn-t)', borderColor: 'var(--c-tag-warn-t)' }}
                         onClick={() => syncCRMut.mutate(detail.id)} disabled={syncCRMut.isPending}>
                         {syncCRMut.isPending ? '재시도 중...' : '재시도'}
@@ -528,7 +528,7 @@ export default function ChangeRequestPage() {
               )}
             </div>
           )}
-        </div>
+        </Panel>
       )}
       </>}
     </div>
@@ -550,10 +550,10 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
   return (
     <div>
       <div className="deploy-stat-grid" style={{ marginBottom: 16 }}>
-        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '16px 20px' }}>
+        <Panel style={{ display: 'block', padding: '16px 20px' }}>
           <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 6, fontWeight: 600 }}>전체</div>
           <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-text)' }}>{requests.length}</div>
-        </div>
+        </Panel>
         {byStatus.map(({ status, count }) => (
           <div key={status} style={{ background: statusBg[status], border: `1px solid color-mix(in srgb, ${statusColors[status]} 27%, transparent)`, borderRadius: 8, padding: '16px 20px' }}>
             <div style={{ fontSize: 11, color: statusColors[status], marginBottom: 6, fontWeight: 600 }}>{statusLabels[status]}</div>
@@ -561,9 +561,9 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
           </div>
         ))}
       </div>
-      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+      <Panel style={{ display: 'block', padding: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>시스템별</div>
-        {bySystem.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
+        {bySystem.length === 0 ? <EmptyState title="데이터 없음" /> : (
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
             {bySystem.map(([name, count]) => (
               <div key={name}>
@@ -577,7 +577,7 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
             ))}
           </div>
         )}
-      </div>
+      </Panel>
     </div>
   )
 }
@@ -593,19 +593,15 @@ const s: Record<string, React.CSSProperties> = {
   btn: { padding: '8px 16px', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
-  card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
-  formTitle: { fontSize: 15, fontWeight: 600, marginBottom: 16 },
+  formTitle: { fontSize: 16, fontWeight: 600, marginBottom: 16 },
   formGrid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center', marginBottom: 16 },
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
   input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   filterRow: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
-  tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
   th: { textAlign: 'left' as const },
-  sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   actions: { display: 'flex', alignItems: 'center' },
-  empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)' },
   detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
   contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
 }

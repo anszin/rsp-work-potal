@@ -167,7 +167,7 @@ export default function UiShowcase() {
           ].map(([token, label]) => (
             <div key={token} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <div style={{ width: 56, height: 36, borderRadius: 6, background: `var(${token})`, border: '1px solid var(--c-border)' }} />
-              <span style={{ fontSize: 10, color: 'var(--c-text-muted)', textAlign: 'center', maxWidth: 60 }}>{label}</span>
+              <span style={{ fontSize: 11, color: 'var(--c-text-muted)', textAlign: 'center', maxWidth: 60 }}>{label}</span>
             </div>
           ))}
         </div>

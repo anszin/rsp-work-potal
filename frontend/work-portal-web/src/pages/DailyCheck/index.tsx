@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
 import client from '../../api/client'
-import { Button, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
+import { Button, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea, Panel, Tag, Loading, EmptyState } from '../../components/ui'
 
 interface SystemOption { id: number; name: string }
 
@@ -94,7 +94,7 @@ export default function DailyCheckPage() {
       )}
 
       {showForm && (
-        <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
+        <Panel style={{ display: 'block', marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '점검 수정' : '점검 등록'}</h3>
           <form onSubmit={handleSubmit}>
             <div className="grid-2col">
@@ -131,10 +131,10 @@ export default function DailyCheckPage() {
               <Button variant="outlined" type="button" onClick={resetForm}>취소</Button>
             </div>
           </form>
-        </div>
+        </Panel>
       )}
 
-      {isLoading ? <p>로딩 중...</p> : (
+      {isLoading ? <Loading /> : (
         <div className="table-scroll">
         <Table style={{ background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <TableHeader>
@@ -146,18 +146,15 @@ export default function DailyCheckPage() {
           </TableHeader>
           <TableBody>
             {reports.length === 0 ? (
-              <TableRow><TableCell colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>점검 데이터가 없습니다.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7}><EmptyState title="점검 데이터가 없습니다." /></TableCell></TableRow>
             ) : reports.map(r => (
               <TableRow key={r.id}>
                 <TableCell>{r.checkDate}</TableCell>
                 <TableCell style={{ fontWeight: 500 }}>{r.systemName}</TableCell>
                 <TableCell>
-                  <span style={{
-                    padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600,
-                    background: `color-mix(in srgb, ${STATUS_COLOR[r.status]} 13%, transparent)`, color: STATUS_COLOR[r.status],
-                  }}>
+                  <Tag color={STATUS_COLOR[r.status]}>
                     {STATUS_LABEL[r.status]}
-                  </span>
+                  </Tag>
                 </TableCell>
                 <TableCell style={{ color: 'var(--c-text-sub)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.note ?? '-'}

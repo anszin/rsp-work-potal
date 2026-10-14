@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getPrompts, createPrompt, updatePrompt, deletePrompt, RolePrompt } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton, Modal } from '../../components/ui'
+import { Button, IconButton, Input, Textarea, Modal, Tag, Panel, Loading, EmptyState, toast } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -26,37 +26,9 @@ const ROLE_ID_RE = /^[a-z][a-z0-9_-]{0,29}$/
 function VisibilityBadge({ visibility }: { visibility: 'public' | 'private' }) {
   const isPublic = visibility === 'public'
   return (
-    <span style={{
-      fontSize: 10, padding: '1px 6px', borderRadius: 8, fontWeight: 600,
-      background: isPublic ? 'color-mix(in srgb, var(--c-tag-done-t) 13%, transparent)' : 'color-mix(in srgb, var(--c-text-muted) 13%, transparent)',
-      color: isPublic ? 'var(--c-tag-done-t)' : 'var(--c-text-muted)',
-      border: `1px solid ${isPublic ? 'color-mix(in srgb, var(--c-tag-done-t) 27%, transparent)' : 'color-mix(in srgb, var(--c-text-muted) 27%, transparent)'}`,
-      whiteSpace: 'nowrap', flexShrink: 0,
-    }}>
+    <Tag tone={isPublic ? 'success' : 'neutral'} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
       {isPublic ? '팀 공통' : '개인'}
-    </span>
-  )
-}
-
-// ── 토스트 ────────────────────────────────────────────────────────────────────
-
-interface Toast { id: number; message: string; type: 'success' | 'error' }
-
-function ToastList({ toasts }: { toasts: Toast[] }) {
-  if (!toasts.length) return null
-  return (
-    <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 600, display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {toasts.map(t => (
-        <div key={t.id} style={{
-          padding: '11px 18px', borderRadius: 8, fontSize: 13, fontWeight: 500,
-          background: t.type === 'success' ? 'var(--rsp-color-success-500)' : 'var(--rsp-color-error-500)',
-          color: 'var(--rsp-color-text-on-primary)', boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-          animation: 'ai-toast-in 0.2s ease',
-        }}>
-          {t.type === 'success' ? '✓ ' : '✕ '}{t.message}
-        </div>
-      ))}
-    </div>
+    </Tag>
   )
 }
 
@@ -125,15 +97,12 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
             역할 ID <span style={{ color: 'var(--c-tag-err-t)' }}>*</span>
             <span style={{ fontSize: 11, marginLeft: 6 }}>(영문 소문자, 예: qa, devops)</span>
           </label>
-          <input
+          <Input
             value={role}
             onChange={e => { setRole(e.target.value.toLowerCase()); setErrors(prev => ({ ...prev, role: '' })) }}
             placeholder="qa"
-            style={{
-              width: '100%', padding: '8px 10px', borderRadius: 7, fontSize: 13,
-              border: `1px solid ${errors.role ? 'var(--c-tag-err-t)' : 'var(--c-border)'}`,
-              background: 'var(--c-bg)', color: 'var(--c-text)', boxSizing: 'border-box',
-            }}
+            aria-invalid={!!errors.role}
+            style={{ width: '100%' }}
           />
           {errors.role && <div style={{ fontSize: 11, color: 'var(--c-tag-err-t)', marginTop: 4 }}>{errors.role}</div>}
         </div>
@@ -143,15 +112,12 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
             역할명 <span style={{ color: 'var(--c-tag-err-t)' }}>*</span>
             <span style={{ fontSize: 11, marginLeft: 6 }}>(한글 표시명, 예: QA 엔지니어)</span>
           </label>
-          <input
+          <Input
             value={roleName}
             onChange={e => { setRoleName(e.target.value); setErrors(prev => ({ ...prev, roleName: '' })) }}
             placeholder="QA 엔지니어"
-            style={{
-              width: '100%', padding: '8px 10px', borderRadius: 7, fontSize: 13,
-              border: `1px solid ${errors.roleName ? 'var(--c-tag-err-t)' : 'var(--c-border)'}`,
-              background: 'var(--c-bg)', color: 'var(--c-text)', boxSizing: 'border-box',
-            }}
+            aria-invalid={!!errors.roleName}
+            style={{ width: '100%' }}
           />
           {errors.roleName && <div style={{ fontSize: 11, color: 'var(--c-tag-err-t)', marginTop: 4 }}>{errors.roleName}</div>}
         </div>
@@ -196,17 +162,12 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
           <label style={{ fontSize: 12, color: 'var(--c-text-muted)', display: 'block', marginBottom: 5 }}>
             시스템 프롬프트 <span style={{ fontSize: 11 }}>(선택, 나중에 편집 가능)</span>
           </label>
-          <textarea
+          <Textarea
             value={systemPrompt}
             onChange={e => setSystemPrompt(e.target.value)}
             placeholder="이 역할의 AI 행동 지침을 입력하세요..."
             rows={4}
-            style={{
-              width: '100%', padding: '8px 10px', borderRadius: 7, fontSize: 13,
-              border: '1px solid var(--c-border)',
-              background: 'var(--c-bg)', color: 'var(--c-text)',
-              fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box',
-            }}
+            style={{ width: '100%', resize: 'vertical' }}
           />
         </div>
 
@@ -236,15 +197,10 @@ export default function AiPromptsPage() {
   const [saving, setSaving] = useState(false)
   const [showNewModal, setShowNewModal] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<RolePrompt | null>(null)
-  const [toasts, setToasts] = useState<Toast[]>([])
-  const toastSeq = useRef(0)
-
-  // ── 토스트 ─────────────────────────────────────────────────────────────────
+  // ── 토스트 (SDK 토스트 매니저) ─────────────────────────────────────────────
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
-    const id = ++toastSeq.current
-    setToasts(prev => [...prev, { id, message, type }])
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000)
+    toast.add({ title: message, type })
   }, [])
 
   // ── 데이터 로드 ─────────────────────────────────────────────────────────────
@@ -343,7 +299,6 @@ export default function AiPromptsPage() {
 
   return (
     <div style={{ padding: '24px 32px', height: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <ToastList toasts={toasts} />
       {deleteTarget && (
         <ConfirmDialog roleName={deleteTarget.roleName} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />
       )}
@@ -365,11 +320,7 @@ export default function AiPromptsPage() {
       <div style={{ flex: 1, display: 'flex', gap: 16, overflow: 'hidden' }}>
 
         {/* 좌측: 역할 목록 */}
-        <div style={{
-          width: 220, flexShrink: 0,
-          background: 'var(--c-card)', border: '1px solid var(--c-border)',
-          borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        }}>
+        <Panel style={{ width: 220, flexShrink: 0, gap: 0, padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '12px 12px 8px', borderBottom: '1px solid var(--c-border)' }}>
             <Button
               variant="outlined"
@@ -384,7 +335,7 @@ export default function AiPromptsPage() {
 
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {loading && (
-              <div style={{ padding: '20px', fontSize: 12, color: 'var(--c-text-muted)', textAlign: 'center' }}>불러오는 중...</div>
+              <Loading style={{ padding: 20, fontSize: 12 }} />
             )}
             {prompts.map((p, i) => {
               const color = getRoleColor(p.role, i)
@@ -431,17 +382,12 @@ export default function AiPromptsPage() {
               )
             })}
           </div>
-        </div>
+        </Panel>
 
         {/* 우측: 편집 패널 */}
-        <div style={{
-          flex: 1, background: 'var(--c-card)', border: '1px solid var(--c-border)',
-          borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        }}>
+        <Panel style={{ flex: 1, gap: 0, padding: 0, overflow: 'hidden' }}>
           {!activePrompt ? (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-text-muted)', fontSize: 13 }}>
-              좌측에서 역할을 선택하세요
-            </div>
+            <EmptyState title="좌측에서 역할을 선택하세요" style={{ flex: 1 }} />
           ) : (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px 24px', overflow: 'hidden' }}>
 
@@ -459,10 +405,7 @@ export default function AiPromptsPage() {
               {/* 역할명 입력 */}
               <div style={{ marginBottom: 14, flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{
-                    fontSize: 11, padding: '2px 8px', borderRadius: 10,
-                    background: withAlpha(activeColor, 13), color: activeColor, fontWeight: 600,
-                  }}>{activeRole}</span>
+                  <Tag color={activeColor}>{activeRole}</Tag>
                   <VisibilityBadge visibility={activePrompt.visibility} />
                   {activePrompt.updatedAt && (
                     <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>
@@ -470,18 +413,11 @@ export default function AiPromptsPage() {
                     </span>
                   )}
                 </div>
-                <input
+                <Input
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
                   placeholder="역할명"
-                  style={{
-                    width: '100%', padding: '8px 12px', borderRadius: 7, fontSize: 14,
-                    border: '1px solid var(--c-border)', background: 'var(--c-bg)',
-                    color: 'var(--c-text)', fontWeight: 600, boxSizing: 'border-box',
-                    outline: 'none',
-                  }}
-                  onFocus={e => (e.target.style.borderColor = activeColor)}
-                  onBlur={e => (e.target.style.borderColor = 'var(--c-border)')}
+                  style={{ width: '100%', fontWeight: 600 }}
                 />
               </div>
 
@@ -493,20 +429,11 @@ export default function AiPromptsPage() {
                     {charCount.toLocaleString()}자
                   </span>
                 </div>
-                <textarea
+                <Textarea
                   value={editText}
                   onChange={e => setEditText(e.target.value)}
                   placeholder={`${activePrompt.roleName} 역할의 시스템 프롬프트를 입력하세요...`}
-                  style={{
-                    flex: 1, minHeight: 400, padding: '14px 16px',
-                    borderRadius: 8, border: '1px solid var(--c-border)',
-                    background: 'var(--c-bg)', color: 'var(--c-text)',
-                    fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
-                    fontSize: 13, lineHeight: 1.7, resize: 'none',
-                    outline: 'none', boxSizing: 'border-box',
-                  }}
-                  onFocus={e => (e.target.style.borderColor = activeColor)}
-                  onBlur={e => (e.target.style.borderColor = 'var(--c-border)')}
+                  style={{ flex: 1, minHeight: 400, resize: 'none', fontFamily: 'ui-monospace, Consolas, monospace' }}
                 />
               </div>
 
@@ -528,7 +455,7 @@ export default function AiPromptsPage() {
               </div>
             </div>
           )}
-        </div>
+        </Panel>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi, ItemType, ItemStatus, SaveInventoryRequest, InventoryItem } from '../../api/inventory'
-import { Button, Input, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
+import { Button, Input, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea, Panel, Tag, Loading, EmptyState } from '../../components/ui'
 
 const TYPE_LABEL: Record<ItemType, string> = { CONTRACT: '수주', PROPOSAL: '제안' }
 const STATUS_LABEL: Record<ItemStatus, string> = {
@@ -98,7 +98,7 @@ export default function InventoryPage() {
 
       {tab === 'list' && <>
       {showForm && (
-        <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
+        <Panel style={{ display: 'block', marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '항목 수정' : '새 항목 추가'}</h3>
           <form onSubmit={handleSubmit}>
             <div className="grid-2col">
@@ -150,11 +150,11 @@ export default function InventoryPage() {
               <Button variant="outlined" type="button" onClick={resetForm}>취소</Button>
             </div>
           </form>
-        </div>
+        </Panel>
       )}
 
       {isLoading ? (
-        <p>로딩 중...</p>
+        <Loading />
       ) : (
         <div className="table-scroll">
         <Table style={{ background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
@@ -167,21 +167,21 @@ export default function InventoryPage() {
           </TableHeader>
           <TableBody>
             {items.length === 0 ? (
-              <TableRow><TableCell colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>데이터가 없습니다.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8}><EmptyState title="데이터가 없습니다." /></TableCell></TableRow>
             ) : items.map(item => (
               <TableRow key={item.id}>
                 <TableCell>
-                  <span style={{ padding: '2px 8px', borderRadius: 4, background: item.type === 'CONTRACT' ? 'var(--c-tag-sys)' : 'var(--c-tag-warn-bg)', color: item.type === 'CONTRACT' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-warn-t)', fontSize: 12 }}>
+                  <Tag tone={item.type === 'CONTRACT' ? 'info' : 'warning'}>
                     {TYPE_LABEL[item.type]}
-                  </span>
+                  </Tag>
                 </TableCell>
                 <TableCell style={{ fontWeight: 500 }}>{item.name}</TableCell>
                 <TableCell style={{ color: 'var(--c-text-sub)' }}>{item.client ?? '-'}</TableCell>
                 <TableCell style={{ textAlign: 'right', fontFamily: 'monospace' }}>{fmt(item.amount)}</TableCell>
                 <TableCell>
-                  <span style={{ padding: '2px 8px', borderRadius: 4, background: `color-mix(in srgb, ${STATUS_COLOR[item.status]} 13%, transparent)`, color: STATUS_COLOR[item.status], fontSize: 12 }}>
+                  <Tag color={STATUS_COLOR[item.status]}>
                     {STATUS_LABEL[item.status]}
-                  </span>
+                  </Tag>
                 </TableCell>
                 <TableCell style={{ fontSize: 12, color: 'var(--c-text-sub)' }}>
                   {item.startDate ?? '-'} ~ {item.endDate ?? '-'}
@@ -219,11 +219,11 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
         {types.map(t => {
           const typeItems = items.filter(i => i.type === t)
           return (
-            <div key={t} style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+            <Panel key={t} style={{ display: 'block' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                 <div>
-                  <span style={{ fontSize: 11, background: typeBg[t], color: typeColors[t], padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>{TYPE_LABEL[t]}</span>
-                  <div style={{ fontSize: 26, fontWeight: 700, color: typeColors[t], marginTop: 10 }}>{typeItems.length}건</div>
+                  <Tag color={typeColors[t]} bg={typeBg[t]}>{TYPE_LABEL[t]}</Tag>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: typeColors[t], marginTop: 10 }}>{typeItems.length}건</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 4 }}>총 금액</div>
@@ -232,16 +232,16 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
                 {byStatus(t).filter(({ count }) => count > 0).map(({ st, count }) => (
-                  <span key={st} style={{ fontSize: 12, background: `color-mix(in srgb, ${statusColors[st]} 13%, transparent)`, color: statusColors[st], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>
+                  <Tag key={st} color={statusColors[st]}>
                     {STATUS_LABEL[st]} {count}
-                  </span>
+                  </Tag>
                 ))}
               </div>
-            </div>
+            </Panel>
           )
         })}
       </div>
-      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+      <Panel style={{ display: 'block' }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>상태별 현황</div>
         <div className="grid-4col">
           {statuses.map(st => (
@@ -251,7 +251,7 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
             </div>
           ))}
         </div>
-      </div>
+      </Panel>
     </div>
   )
 }

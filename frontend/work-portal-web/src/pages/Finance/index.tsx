@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { financeApi, FinanceCategory, SaveFinanceRequest, FinanceRecord } from '../../api/finance'
-import { Button, Input, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui'
+import { Button, Input, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Panel, Tag, Loading, EmptyState } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -103,7 +103,7 @@ export default function FinancePage() {
 
       {tab === 'list' && <>
       {/* 월별 요약 바 */}
-      <div style={{ background: 'var(--c-card)', borderRadius: 8, padding: 16, marginBottom: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.08)', overflowX: 'auto' }}>
+      <Panel style={{ display: 'block', marginBottom: 20, overflowX: 'auto' }}>
         <div style={{ display: 'flex', gap: 4, minWidth: 700 }}>
           {summary.map(s => (
             <button key={s.month}
@@ -123,7 +123,7 @@ export default function FinancePage() {
             </button>
           ))}
         </div>
-      </div>
+      </Panel>
 
       {/* 선택 월 요약 카드 */}
       {currentSummary && (
@@ -133,12 +133,12 @@ export default function FinancePage() {
             { label: '지출', value: currentSummary.expense, color: 'var(--c-tag-err-t)' },
             { label: '손익', value: currentSummary.profit, color: currentSummary.profit >= 0 ? 'var(--c-tag-done-t)' : 'var(--c-tag-err-t)' },
           ].map(card => (
-            <div key={card.label} style={{ background: 'var(--c-card)', borderRadius: 8, padding: '16px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+            <Panel key={card.label} style={{ display: 'block' }}>
               <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 4 }}>{selectedYear}년 {selectedMonth}월 {card.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: card.color, fontFamily: 'monospace' }}>
+              <div style={{ fontSize: 24, fontWeight: 700, color: card.color, fontFamily: 'monospace' }}>
                 {fmt(card.value)}원
               </div>
-            </div>
+            </Panel>
           ))}
         </div>
       )}
@@ -155,7 +155,7 @@ export default function FinancePage() {
       </div>
 
       {showForm && (
-        <div style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 20, marginBottom: 20 }}>
+        <Panel style={{ display: 'block', marginBottom: 20 }}>
           <h3 style={{ margin: '0 0 16px' }}>{editing ? '내역 수정' : '새 내역 추가'}</h3>
           <form onSubmit={handleSubmit}>
             <div className="grid-2col">
@@ -187,10 +187,10 @@ export default function FinancePage() {
               <Button variant="outlined" type="button" onClick={resetForm}>취소</Button>
             </div>
           </form>
-        </div>
+        </Panel>
       )}
 
-      {isLoading ? <p>로딩 중...</p> : (
+      {isLoading ? <Loading /> : (
         <div className="table-scroll">
         <Table style={{ background: 'var(--c-card)', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
           <TableHeader>
@@ -202,15 +202,11 @@ export default function FinancePage() {
           </TableHeader>
           <TableBody>
             {records.length === 0 ? (
-              <TableRow><TableCell colSpan={6} style={{ textAlign: 'center', padding: 40, color: 'var(--c-text-muted)' }}>데이터가 없습니다.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6}><EmptyState title="데이터가 없습니다." /></TableCell></TableRow>
             ) : records.map(rec => (
               <TableRow key={rec.id}>
                 <TableCell>
-                  <span style={{
-                    padding: '2px 8px', borderRadius: 4, fontSize: 12,
-                    background: rec.category === 'REVENUE' ? 'var(--c-tag-sys)' : 'var(--c-tag-err-bg)',
-                    color: rec.category === 'REVENUE' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-err-t)',
-                  }}>{CATEGORY_LABEL[rec.category]}</span>
+                  <Tag tone={rec.category === 'REVENUE' ? 'info' : 'danger'}>{CATEGORY_LABEL[rec.category]}</Tag>
                 </TableCell>
                 <TableCell style={{ fontWeight: 500 }}>{rec.itemName}</TableCell>
                 <TableCell style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 600,
@@ -251,17 +247,17 @@ function FinanceDashboard({ summary, year }: { summary: import('../../api/financ
           { label: `${year}년 총 지출`, value: totalExpense, color: 'var(--c-tag-err-t)' },
           { label: `${year}년 총 손익`, value: totalProfit,  color: totalProfit >= 0 ? 'var(--c-tag-done-t)' : 'var(--c-tag-err-t)' },
         ].map(card => (
-          <div key={card.label} style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '20px 24px' }}>
+          <Panel key={card.label} style={{ display: 'block' }}>
             <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8 }}>{card.label}</div>
             <div style={{ fontSize: 24, fontWeight: 700, color: card.color, fontFamily: 'monospace' }}>
               {totalProfit < 0 && card.label.includes('손익') ? '-' : ''}{fmt(Math.abs(card.value))}원
             </div>
-          </div>
+          </Panel>
         ))}
       </div>
-      <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+      <Panel style={{ display: 'block' }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>월별 매출 / 지출</div>
-        {summary.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
+        {summary.length === 0 ? <EmptyState title="데이터 없음" /> : (
           <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 14 }}>
             {summary.map(m => (
               <div key={m.month}>
@@ -291,7 +287,7 @@ function FinanceDashboard({ summary, year }: { summary: import('../../api/financ
             ))}
           </div>
         )}
-      </div>
+      </Panel>
     </div>
   )
 }

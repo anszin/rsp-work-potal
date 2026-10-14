@@ -7,7 +7,7 @@ import {
 } from '../../api/workUnits'
 import { getKeyTasks } from '../../api/keyTasks'
 import { todoApi, type Todo } from '../../api/todos'
-import { Button, Input, Modal, Select, Textarea } from '../../components/ui'
+import { Button, Input, Modal, Select, Textarea, Tag, Panel, Loading, EmptyState } from '../../components/ui'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
@@ -121,7 +121,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
     return acc
   }, {} as Record<WorkUnitStatus, WorkUnit[]>)
 
-  if (isLoading) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--c-text-muted)' }}>로딩 중...</div>
+  if (isLoading) return <Loading style={{ padding: 40 }} />
 
   return (
     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -171,17 +171,17 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                 const expanded = expandedIds.has(wu.id)
 
                 return (
-                  <div key={wu.id} style={{ ...styles.card, borderLeft: `3px solid ${WORK_UNIT_STATUS_COLOR[wu.status]}` }}>
+                  <Panel key={wu.id} style={{ display: 'block', padding: '12px 16px', borderLeft: `3px solid ${WORK_UNIT_STATUS_COLOR[wu.status]}` }}>
                     {/* 카드 상단 */}
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: 14, fontWeight: 600 }}>{wu.title}</span>
-                          <span style={styles.badge}>{WORK_UNIT_TYPE_LABELS[wu.type]}</span>
+                          <Tag color="var(--c-tag-sub-t)" bg="var(--c-tag-sub)">{WORK_UNIT_TYPE_LABELS[wu.type]}</Tag>
                           {keyTaskMap[wu.keyTaskId] && (
-                            <span style={{ ...styles.badge, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }}>
+                            <Tag tone="info">
                               {keyTaskMap[wu.keyTaskId]}
-                            </span>
+                            </Tag>
                           )}
                         </div>
                         {wu.description && (
@@ -223,9 +223,9 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                             const s = TODO_STATUS[t.status] ?? TODO_STATUS.TODO
                             return (
                               <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 6px', borderRadius: 5, background: 'var(--c-bg)' }}>
-                                <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 8, background: s.bg, color: s.color, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                <Tag color={s.color} bg={s.bg}>
                                   {s.label}
-                                </span>
+                                </Tag>
                                 <span style={{ fontSize: 13, flex: 1, color: 'var(--c-text)' }}>{t.title}</span>
                                 {t.dueDate && (
                                   <span style={{ fontSize: 11, color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>{t.dueDate.slice(0, 10)}</span>
@@ -236,7 +236,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                         )}
                       </div>
                     )}
-                  </div>
+                  </Panel>
                 )
               })}
             </div>
@@ -245,9 +245,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
       ))}
 
       {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--c-text-muted)', fontSize: 14 }}>
-          단위업무가 없습니다. 우측 상단 "+ 추가" 버튼으로 등록하세요.
-        </div>
+        <EmptyState title='단위업무가 없습니다. 우측 상단 "+ 추가" 버튼으로 등록하세요.' style={{ padding: '48px 0' }} />
       )}
 
       {/* 추가/수정 모달 */}
@@ -299,7 +297,5 @@ function emptyForm(): SaveWorkUnitRequest {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  card:      { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '12px 16px' },
-  badge:     { fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' },
   label:     { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--c-text-sub)', fontWeight: 500 },
 }

@@ -5,7 +5,7 @@ import { useAuth } from '../../context/useAuth'
 import { getUsers, type UserSummary } from '../../api/users'
 import { getKeyTasks } from '../../api/keyTasks'
 import { workUnitApi } from '../../api/workUnits'
-import { Button, IconButton, Input, Modal, Select, Textarea } from '../../components/ui'
+import { Button, IconButton, Input, Modal, Select, Textarea, Tag, Panel, Loading, EmptyState, Checkbox } from '../../components/ui'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
   { status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },
@@ -189,7 +189,7 @@ export default function TodoPage() {
     return acc
   }, {} as Record<TodoStatus, Todo[]>)
 
-  if (isLoading) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--c-text-muted)' }}>로딩 중...</div>
+  if (isLoading) return <Loading style={{ padding: 40 }} />
 
   return (
     <div style={{ padding: 24, height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -235,7 +235,7 @@ export default function TodoPage() {
                 />
               ))}
               {grouped[col.status].length === 0 && (
-                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--c-text-muted)', fontSize: 12 }}>없음</div>
+                <EmptyState title="없음" style={{ padding: '24px 0' }} />
               )}
             </div>
           </div>
@@ -247,11 +247,11 @@ export default function TodoPage() {
         <Modal open onClose={closeModal} width={860} dismissible showCloseButton={false}>
             <div style={styles.modalHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontWeight: 600, fontSize: 15 }}>{editing ? 'To-Do 수정' : 'To-Do 추가'}</span>
+                <span style={{ fontWeight: 600, fontSize: 16 }}>{editing ? 'To-Do 수정' : 'To-Do 추가'}</span>
                 {readOnly && (
-                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'var(--c-tag-draft-bg)', color: 'var(--c-tag-draft-t)', fontWeight: 500 }}>
+                  <Tag tone="neutral">
                     관련자 (읽기 전용)
-                  </span>
+                  </Tag>
                 )}
               </div>
               <IconButton variant="text" icon="✕" label="닫기" onClick={closeModal} />
@@ -369,7 +369,7 @@ export default function TodoPage() {
                   {/* 시작일 · 목표일 · 완료일 */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                     <label style={styles.label}>
-                      <span>시작일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
+                      <span>시작일 <span style={{ fontSize: 11, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
                       <Input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} disabled={readOnly} />
                     </label>
                     <label style={styles.label}>
@@ -377,7 +377,7 @@ export default function TodoPage() {
                       <Input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} disabled={readOnly} />
                     </label>
                     <label style={styles.label}>
-                      <span>완료일 <span style={{ fontSize: 10, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
+                      <span>완료일 <span style={{ fontSize: 11, color: 'var(--c-text-muted)', fontWeight: 400 }}>(실제)</span></span>
                       <Input type="date" value={form.completedDate} onChange={e => setForm(f => ({ ...f, completedDate: e.target.value }))} disabled={readOnly} />
                     </label>
                   </div>
@@ -409,14 +409,14 @@ export default function TodoPage() {
                     )}
                     {(form.checkItems ?? []).map((item, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                        <input type="checkbox" checked={item.done}
-                          onChange={() => setForm(f => {
+                        <Checkbox checked={item.done}
+                          onCheckedChange={() => setForm(f => {
                             const items = [...(f.checkItems ?? [])]
                             items[i] = { ...items[i], done: !items[i].done }
                             return { ...f, checkItems: items }
                           })}
                           disabled={readOnly}
-                          style={{ width: 15, height: 15, flexShrink: 0, cursor: readOnly ? 'default' : 'pointer' }}
+                          style={{ flexShrink: 0 }}
                         />
                         <Input
                           style={{ textDecoration: item.done ? 'line-through' : 'none', color: item.done ? 'var(--c-text-muted)' : undefined }}
@@ -620,7 +620,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
   const [hovered, setHovered] = useState(false)
 
   return (
-    <div
+    <Panel
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
@@ -628,10 +628,11 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        ...styles.card,
+        display: 'block',
+        padding: '10px 12px',
         cursor: 'pointer',
         opacity: faded ? 0.45 : 1,
-        boxShadow: hovered ? '0 4px 12px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.05)',
+        boxShadow: hovered ? '0 4px 12px rgba(0,0,0,0.12)' : undefined,
         transform: hovered ? 'translateY(-1px)' : 'none',
         transition: 'box-shadow 0.15s, transform 0.15s',
       }}
@@ -650,7 +651,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
         const pct = Math.round((done / total) * 100)
         return (
           <div style={{ marginTop: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--c-text-muted)', marginBottom: 3 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 3 }}>
               <span>체크리스트</span>
               <span>{done}/{total}</span>
             </div>
@@ -663,29 +664,24 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
         {overdue && (
-          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-err-bg)', color: 'var(--c-tag-err-t)', fontWeight: 700, border: '1px solid var(--c-tag-err-t)' }}>
+          <Tag tone="danger">
             지연
-          </span>
+          </Tag>
         )}
         {typeBadge && (
-          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: typeBadge.bg, color: typeBadge.color, fontWeight: 700 }}>
+          <Tag color={typeBadge.color} bg={typeBadge.bg}>
             {typeBadge.label}
-          </span>
+          </Tag>
         )}
         {todo.priority && (
-          <span style={{
-            fontSize: 11, padding: '2px 7px', borderRadius: 10, fontWeight: 600,
-            background: todo.priority === 'HIGH' ? 'var(--c-tag-err-bg)' : 'transparent',
-            color: todo.priority === 'HIGH' ? 'var(--c-tag-err-t)' : 'var(--c-text-muted)',
-            border: todo.priority === 'HIGH' ? 'none' : '1px solid var(--c-border)',
-          }}>
+          <Tag tone={todo.priority === 'HIGH' ? 'danger' : 'neutral'}>
             {PRIORITY_LABEL[todo.priority]}
-          </span>
+          </Tag>
         )}
         {todo.sourceType && todo.sourceType !== 'SELF' && (
-          <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }}>
+          <Tag tone="info">
             {SOURCE_LABELS[todo.sourceType]}
-          </span>
+          </Tag>
         )}
         {(todo.workLogs?.length ?? 0) > 0 && (
           <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>📝 {todo.workLogs!.length}</span>
@@ -705,7 +701,7 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
           </span>
         )}
       </div>
-    </div>
+    </Panel>
   )
 }
 
@@ -719,11 +715,6 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '10px 12px', borderRadius: '6px 6px 0 0',
     background: 'var(--c-thead)', borderLeft: '1px solid var(--c-border)',
     borderRight: '1px solid var(--c-border)',
-  },
-  card: {
-    background: 'var(--c-card)', borderRadius: 6,
-    border: '1px solid var(--c-border)', padding: '10px 12px',
-    cursor: 'grab', boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
   },
   iconBtn: {
     background: 'none', border: 'none', cursor: 'pointer',

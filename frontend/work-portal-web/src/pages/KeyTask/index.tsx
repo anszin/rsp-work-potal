@@ -9,7 +9,7 @@ import { weeklyApi, type WeeklyReport } from '../../api/reports'
 import WorkUnitTab from '../WorkUnit'
 import PerformanceTab from './PerformanceTab'
 import {
-  Button, Input, Textarea, Modal, TabBar,
+  Button, Input, Textarea, Select, Modal, TabBar, Tag, Panel, Loading, EmptyState,
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '../../components/ui'
 
@@ -305,9 +305,7 @@ export default function KeyTaskPage() {
             dismissible
           >
               {linked.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--c-text-muted)', fontSize: 14 }}>
-                  연결된 주간 실적이 없습니다.
-                </div>
+                <EmptyState title="연결된 주간 실적이 없습니다." style={{ padding: '40px 0' }} />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {weeks.map(ws => (
@@ -318,7 +316,7 @@ export default function KeyTaskPage() {
                       <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                         {weekMap.get(ws)!.map((e, i) => (
                           <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>
-                            <span style={{ flexShrink: 0, fontSize: 10, padding: '1px 6px', borderRadius: 8, background: 'color-mix(in srgb, var(--c-action) 7%, transparent)', color: 'var(--c-action)', fontWeight: 700, marginTop: 2 }}>{e.section}</span>
+                            <Tag color="var(--c-action)" bg="color-mix(in srgb, var(--c-action) 7%, transparent)" style={{ flexShrink: 0, marginTop: 2 }}>{e.section}</Tag>
                             <div style={{ flex: 1 }}>
                               <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 2 }}>{e.report.author}</div>
                               <div style={{ fontSize: 13, color: 'var(--c-text)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{e.item.content}</div>
@@ -343,13 +341,12 @@ export default function KeyTaskPage() {
             <Button size="md" variant={pageTab === 'workunits' ? 'filled' : 'text'} onClick={() => setPageTab('workunits')}>단위업무</Button>
             <Button size="md" variant={pageTab === 'performance' ? 'filled' : 'text'} onClick={() => setPageTab('performance')}>성과 현황</Button>
           </div>
-          <select
+          <Select
             value={selYear}
-            onChange={e => setSelYear(Number(e.target.value))}
-            style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--c-border-in)', background: 'var(--c-input-bg)', color: 'var(--c-text)', fontSize: 13, cursor: 'pointer' }}
+            onValueChange={v => setSelYear(Number(v))}
           >
             {displayYears.map(y => <option key={y} value={y}>{y}년</option>)}
-          </select>
+          </Select>
         </div>
         {pageTab === 'keytasks' && <Button variant="filled" onClick={openCreate}>+ 과제 추가</Button>}
       </div>
@@ -358,7 +355,7 @@ export default function KeyTaskPage() {
       {pageTab === 'performance' && <PerformanceTab keyTasks={tasks} />}
 
       {/* 레벨 탭 */}
-      {pageTab === 'keytasks' && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, padding: '12px 16px', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
+      {pageTab === 'keytasks' && <Panel style={{ flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 16, padding: '12px 16px' }}>
         <Button size="md" variant={selLevel === 'all' ? 'filled' : 'outlined'} onClick={() => setSelLevel('all')}>
           전체 <span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>{tasks.length}</span>
         </Button>
@@ -368,7 +365,7 @@ export default function KeyTaskPage() {
             {lv} <span style={{ fontSize: 11, marginLeft: 4, opacity: 0.7 }}>{countByLevel(lv)}</span>
           </Button>
         ))}
-      </div>}
+      </Panel>}
 
       {pageTab === 'keytasks' && <>
       {/* 분기 탭 */}
@@ -383,7 +380,7 @@ export default function KeyTaskPage() {
       />
 
       {/* 테이블 */}
-      <div style={{ overflowX: 'auto', background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8 }}>
+      <Panel style={{ display: 'block', padding: 0, overflowX: 'auto' }}>
         <Table style={{ minWidth: selQuarter === 'all' ? 1500 : 800 }}>
           <TableHeader>
             {selQuarter === 'all' ? (
@@ -420,10 +417,10 @@ export default function KeyTaskPage() {
             )}
           </TableHeader>
           <TableBody>
-            {isLoading && <TableRow><TableCell colSpan={totalCols} style={s.empty}>로딩 중...</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={totalCols}><Loading /></TableCell></TableRow>}
             {!isLoading && displayTasks.length === 0 && (
-              <TableRow><TableCell colSpan={totalCols} style={s.empty}>
-                {tasks.length === 0 ? '등록된 과제가 없습니다.' : `${selLevel} 레벨 과제가 없습니다.`}
+              <TableRow><TableCell colSpan={totalCols}>
+                <EmptyState title={tasks.length === 0 ? '등록된 과제가 없습니다.' : `${selLevel} 레벨 과제가 없습니다.`} />
               </TableCell></TableRow>
             )}
             {displayTasks.map(t => {
@@ -432,9 +429,9 @@ export default function KeyTaskPage() {
               return (
                 <TableRow key={t.id}>
                   <TableCell style={{ ...s.td, whiteSpace: 'nowrap' }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
+                    <Tag color={c.color} bg={c.bg}>
                       {lv}
-                    </span>
+                    </Tag>
                   </TableCell>
                   <TableCell style={{ ...s.td, fontSize: 12, minWidth: 90 }}>
                     {lv === '담당자' ? (
@@ -457,7 +454,7 @@ export default function KeyTaskPage() {
                   {visibleQs.map((q, i) => (
                     <TableCell key={`ach-${q}`} style={{ ...s.td, textAlign: 'center', ...(i === 0 ? s.sep : {}) }}>
                       {t[qKey(q, 'Achievement')]
-                        ? <span style={s.achBadge}>{t[qKey(q, 'Achievement')] as string}%</span>
+                        ? <Tag tone="info">{t[qKey(q, 'Achievement')] as string}%</Tag>
                         : <span style={{ color: 'var(--c-text-muted)', fontSize: 12 }}>-</span>}
                     </TableCell>
                   ))}
@@ -476,7 +473,7 @@ export default function KeyTaskPage() {
             })}
           </TableBody>
         </Table>
-      </div>
+      </Panel>
       </>}
     </div>
   )
@@ -493,7 +490,5 @@ const s: Record<string, React.CSSProperties> = {
   th: { textAlign: 'left', whiteSpace: 'nowrap' },
   td: { verticalAlign: 'top' },
   cell: { margin: 0, fontFamily: 'inherit', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: 'var(--c-text)' },
-  achBadge: { fontSize: 12, background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontWeight: 600 },
-  empty: { padding: 40, textAlign: 'center', color: 'var(--c-text-muted)' },
   sep: { borderLeft: '1px solid var(--c-border)' },
 }

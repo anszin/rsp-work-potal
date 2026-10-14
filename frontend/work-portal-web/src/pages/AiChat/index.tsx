@@ -8,7 +8,8 @@ import {
   RagSource, ConversationSummary, ConversationMessage, AgentStep,
 } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton } from '../../components/ui'
+import { Button, IconButton, Tag, Panel, Loading, EmptyState } from '../../components/ui'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from 'rsp-react-design-system/shadcn'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ function StepRow({ step }: { step: AgentStep }) {
           {step.status === 'running' ? step.input : (step.summary ?? '')}
         </span>
         {canExpand && (
-          <span style={{ flexShrink: 0, fontSize: 9, color: 'var(--c-text-muted)', opacity: 0.6 }}>{open ? '▲' : '▼'}</span>
+          <span style={{ flexShrink: 0, fontSize: 11, color: 'var(--c-text-muted)', opacity: 0.6 }}>{open ? '▲' : '▼'}</span>
         )}
         <span style={{ flexShrink: 0, width: 18, textAlign: 'center' }}>
           {step.status === 'running' ? (
@@ -130,7 +131,7 @@ function StepTimeline({ steps }: { steps: AgentStep[] }) {
           <span style={{ color: 'var(--c-tag-done-t)', fontSize: 12 }}>✓</span>
         )}
         <span style={{ flex: 1, textAlign: 'left' }}>⚡ 에이전트 실행 — {headerText}</span>
-        <span style={{ fontSize: 10, opacity: 0.55 }}>{collapsed ? '펼치기 ▼' : '접기 ▲'}</span>
+        <span style={{ fontSize: 11, opacity: 0.55 }}>{collapsed ? '펼치기 ▼' : '접기 ▲'}</span>
       </button>
       {!collapsed && (
         <div style={{ padding: '4px 10px 8px', background: 'var(--c-thead)' }}>
@@ -276,11 +277,11 @@ interface SidebarProps {
 
 function ConversationSidebar({ conversations, current, loading, roleMap, open, onNew, onSelect, onDelete, onClose }: SidebarProps) {
   return (
-    <div className={`ai-conv-drawer${open ? ' open' : ''}`}>
-      <div style={{ padding: '14px 12px 10px', borderBottom: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--c-text)' }}>대화 이력</span>
-        <IconButton variant="text" size="sm" icon="×" label="닫기" onClick={onClose} />
-      </div>
+    <Sheet open={open} onOpenChange={o => { if (!o) onClose() }}>
+    <SheetContent side="left" className="ai-conv-sheet" style={{ width: 260, gap: 0 }}>
+      <SheetHeader style={{ padding: '14px 12px 10px', borderBottom: '1px solid var(--c-border)' }}>
+        <SheetTitle style={{ fontSize: 14, fontWeight: 700, color: 'var(--c-text)' }}>대화 이력</SheetTitle>
+      </SheetHeader>
       <div style={{ padding: '10px', borderBottom: '1px solid var(--c-border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
         <Button
           variant="outlined"
@@ -302,10 +303,10 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {loading && conversations.length === 0 && (
-          <div style={{ padding: '20px 12px', fontSize: 12, color: 'var(--c-text-muted)', textAlign: 'center' }}>불러오는 중...</div>
+          <Loading style={{ padding: '20px 12px', fontSize: 12 }} />
         )}
         {!loading && conversations.length === 0 && (
-          <div style={{ padding: '20px 12px', fontSize: 12, color: 'var(--c-text-muted)', textAlign: 'center' }}>대화 내역 없음</div>
+          <EmptyState title="대화 내역 없음" style={{ padding: '20px 12px' }} />
         )}
         {conversations.map(conv => {
           const selected = conv.id === current
@@ -329,9 +330,7 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
                   {conv.title || '새 대화'}
                 </div>
                 <div style={{ display: 'flex', gap: 5, marginTop: 3, alignItems: 'center' }}>
-                  <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 8, background: withAlpha(color, 13), color, fontWeight: 600 }}>
-                    {label}
-                  </span>
+                  <Tag color={color}>{label}</Tag>
                   <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{formatDate(conv.updatedAt)}</span>
                 </div>
               </div>
@@ -348,7 +347,8 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
           )
         })}
       </div>
-    </div>
+    </SheetContent>
+    </Sheet>
   )
 }
 
@@ -566,10 +566,6 @@ export default function AiChatPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: '24px 32px 0', overflow: 'hidden' }}>
-      {sidebarOpen && (
-        <div className="ai-conv-backdrop" onClick={() => setSidebarOpen(false)} />
-      )}
-
       <ConversationSidebar
         conversations={conversations}
         current={currentConvId}
@@ -637,7 +633,7 @@ export default function AiChatPage() {
               <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                 {publicRoles.length > 0 && (
                   <>
-                    <span style={{ fontSize: 10, color: 'var(--c-text-muted)', marginRight: 2 }}>팀 공통</span>
+                    <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginRight: 2 }}>팀 공통</span>
                     {publicRoles.map(RoleBtn)}
                   </>
                 )}
@@ -646,7 +642,7 @@ export default function AiChatPage() {
                 )}
                 {privateRoles.length > 0 && (
                   <>
-                    <span style={{ fontSize: 10, color: 'var(--c-text-muted)', marginRight: 2 }}>내 역할</span>
+                    <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginRight: 2 }}>내 역할</span>
                     {privateRoles.map(RoleBtn)}
                   </>
                 )}
@@ -656,17 +652,12 @@ export default function AiChatPage() {
         </div>
 
         {/* 메시지 영역 */}
-        <div style={{
-          flex: 1, overflowY: 'auto', marginBottom: 10,
-          background: 'var(--c-card)', borderRadius: 10,
-          border: '1px solid var(--c-border)',
+        <Panel style={{
+          display: 'block', flex: 1, overflowY: 'auto', marginBottom: 10,
           padding: messages.length || messagesLoading ? '16px' : 0,
         }}>
           {messagesLoading ? (
-            <div style={{ height: '100%', minHeight: 180, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: 'var(--c-text-muted)' }}>
-              <div className="ai-spinner" style={{ width: 28, height: 28, border: '3px solid var(--c-border)', borderTopColor: selectedRole.color, borderRadius: '50%', animation: 'ai-spin 0.7s linear infinite' }} />
-              <div style={{ fontSize: 13 }}>이전 대화 불러오는 중...</div>
-            </div>
+            <Loading text="이전 대화 불러오는 중..." style={{ height: '100%', minHeight: 180 }} />
           ) : messages.length === 0 ? (
             <div style={{ height: '100%', minHeight: 180, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, color: 'var(--c-text-muted)', padding: 32 }}>
               <div style={{ fontSize: 36 }}>⚡</div>
@@ -686,7 +677,7 @@ export default function AiChatPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {messages.map(msg => (
                 <div key={msg.id} style={{ display: 'flex', flexDirection: msg.from === 'user' ? 'row-reverse' : 'row', gap: 8, alignItems: 'flex-start' }}>
-                  <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, background: msg.from === 'user' ? selectedRole.color : 'var(--rsp-color-neutral-900)', color: 'var(--rsp-color-text-on-primary)' }}>
+                  <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, background: msg.from === 'user' ? selectedRole.color : 'var(--rsp-color-neutral-900)', color: 'var(--rsp-color-text-on-primary)' }}>
                     {msg.from === 'user' ? 'ME' : 'AI'}
                   </div>
                   <div style={{ maxWidth: '82%', padding: '9px 13px', borderRadius: 10, background: msg.from === 'user' ? withAlpha(selectedRole.color, 9) : 'var(--c-bg)', border: `1px solid ${msg.from === 'user' ? withAlpha(selectedRole.color, 27) : 'var(--c-border)'}`, color: msg.error ? 'var(--c-tag-err-t)' : 'var(--c-text)', fontSize: 14, lineHeight: 1.7, borderTopRightRadius: msg.from === 'user' ? 2 : 10, borderTopLeftRadius: msg.from === 'ai' ? 2 : 10 }}>
@@ -723,7 +714,7 @@ export default function AiChatPage() {
                     )}
                     {msg.sources && <SourceList sources={msg.sources} />}
                     {msg.createdAt && !msg.streaming && (
-                      <div style={{ fontSize: 10, color: 'var(--c-text-muted)', marginTop: 5, textAlign: msg.from === 'user' ? 'left' : 'right', opacity: 0.7 }}>
+                      <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 5, textAlign: msg.from === 'user' ? 'left' : 'right', opacity: 0.7 }}>
                         {formatTime(msg.createdAt)}
                       </div>
                     )}
@@ -733,17 +724,17 @@ export default function AiChatPage() {
               <div ref={bottomRef} />
             </div>
           )}
-        </div>
+        </Panel>
 
         {/* 문서 수 표시 */}
         {docCount !== null && docCount > 0 && (
-          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 12px', marginBottom: 6, background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', fontSize: 12 }}>
+          <Panel style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '5px 12px', marginBottom: 6, fontSize: 12 }}>
             <span style={{ color: 'var(--c-text-muted)' }}>
               <span style={{ marginRight: 5 }}>📄</span>
               참조 가능 문서 <strong style={{ color: 'var(--c-text)' }}>{docCount}개</strong>
             </span>
             <Link to="/ai/documents" style={{ fontSize: 11, color: 'var(--c-action)', textDecoration: 'none' }}>관리 →</Link>
-          </div>
+          </Panel>
         )}
 
         {/* 입력창 */}

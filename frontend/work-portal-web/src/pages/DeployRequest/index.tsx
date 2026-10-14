@@ -11,7 +11,12 @@ import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../.
 import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
-import { Button, Input, Modal, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
+import { Button, EmptyState, Input, Loading, Modal, Panel, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tag, Textarea } from '../../components/ui'
+import {
+  Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext, PaginationEllipsis,
+  ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig,
+} from 'rsp-react-design-system/shadcn'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts'
 
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {
   RELEASE: '릴리즈', HOTFIX: '핫픽스', ROLLBACK: '롤백', PATCH: '패치',
@@ -28,10 +33,6 @@ const DEPLOY_TYPE_BADGE: Record<DeployType, { bg: string; color: string }> = {
 const DEPLOY_SCOPE_BADGE: Record<DeployScope, { bg: string; color: string }> = {
   FULL:    { bg: 'var(--c-tag-done-bg)', color: 'var(--c-tag-done-t)' },
   PARTIAL: { bg: 'var(--c-tag-pri-bg)',  color: 'var(--c-tag-pri-t)' },
-}
-const pillStyle: React.CSSProperties = {
-  display: 'inline-block', padding: '2px 10px', borderRadius: 12,
-  fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
 }
 const DEPLOY_TYPE_GUIDE: Record<DeployType, string> = {
   RELEASE: '정기 계획 배포. 신규 기능·개선사항이 포함된 버전을 배포할 때 사용합니다.',
@@ -326,7 +327,7 @@ export default function DeployRequestPage() {
       {tab === 'list' && <>
       {/* 등록/수정 폼 */}
       {showForm && (
-        <div style={s.card}>
+        <Panel style={s.card}>
           <h3 style={s.formTitle}>{editing ? '배포 요청 수정' : '새 배포 요청'}</h3>
           <div style={s.formGrid}>
             <label style={s.label}>운영시스템 *</label>
@@ -410,7 +411,7 @@ export default function DeployRequestPage() {
               {createMut.isPending || updateMut.isPending ? '저장 중...' : '저장'}
             </Button>
           </div>
-        </div>
+        </Panel>
       )}
 
       {/* 상태 필터 탭 */}
@@ -429,9 +430,9 @@ export default function DeployRequestPage() {
 
       {/* 목록 */}
       {isLoading ? (
-        <p style={{ color: 'var(--c-text-muted)', padding: 16 }}>로딩 중...</p>
+        <Loading text="로딩 중..." />
       ) : (
-        <div style={s.tableWrap}>
+        <Panel style={s.tableWrap}>
           <div className="table-scroll">
           <Table>
             <TableHeader>
@@ -451,7 +452,7 @@ export default function DeployRequestPage() {
             </TableHeader>
             <TableBody>
               {pagedTopLevel.length === 0 && (
-                <TableRow><TableCell colSpan={11} style={s.empty}>등록된 배포 요청이 없습니다</TableCell></TableRow>
+                <TableRow><TableCell colSpan={11}><EmptyState title="등록된 배포 요청이 없습니다" /></TableCell></TableRow>
               )}
               {pagedTopLevel.map((r) => {
                 const children = childrenOf(r.id)
@@ -466,20 +467,20 @@ export default function DeployRequestPage() {
                     </TableCell>
                     <TableCell>
                       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-                        <span style={{ ...s.sysTag, whiteSpace: 'nowrap' }}>{row.systemName}</span>
-                        {row.subSystemName && <span style={{ ...subTagStyle(row.subSystemName), whiteSpace: 'nowrap' }}>{row.subSystemName}</span>}
+                        <Tag tone="info">{row.systemName}</Tag>
+                        {row.subSystemName && <SubTag name={row.subSystemName} />}
                       </div>
                     </TableCell>
                     <TableCell>{row.title}</TableCell>
                     <TableCell>{row.version ?? '-'}</TableCell>
                     <TableCell>
                       {row.deployType ? (
-                        <span style={{ ...pillStyle, ...DEPLOY_TYPE_BADGE[row.deployType] }}>{DEPLOY_TYPE_LABELS[row.deployType]}</span>
+                        <Tag {...DEPLOY_TYPE_BADGE[row.deployType]}>{DEPLOY_TYPE_LABELS[row.deployType]}</Tag>
                       ) : '-'}
                     </TableCell>
                     <TableCell>
                       {row.deployScope ? (
-                        <span style={{ ...pillStyle, ...DEPLOY_SCOPE_BADGE[row.deployScope] }}>{DEPLOY_SCOPE_LABELS[row.deployScope]}</span>
+                        <Tag {...DEPLOY_SCOPE_BADGE[row.deployScope]}>{DEPLOY_SCOPE_LABELS[row.deployScope]}</Tag>
                       ) : '-'}
                     </TableCell>
                     <TableCell>{row.requesterUsername}</TableCell>
@@ -552,43 +553,58 @@ export default function DeployRequestPage() {
               </Select>
             </div>
 
-            {/* 우측: 페이지 버튼 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <PageBtn label="‹" disabled={safePage === 1} onClick={() => setPage(p => p - 1)} />
-              {buildPageNums(safePage, totalPages).map((item, i) =>
-                item === '...' ? (
-                  <span key={`ellipsis-${i}`} style={{ padding: '0 4px', fontSize: 12, color: 'var(--c-text-muted)' }}>…</span>
-                ) : (
-                  <PageBtn key={item} label={String(item)} active={item === safePage} onClick={() => setPage(item as number)} />
-                )
-              )}
-              <PageBtn label="›" disabled={safePage === totalPages} onClick={() => setPage(p => p + 1)} />
-            </div>
+            {/* 우측: 페이지 버튼 (SDK Pagination) */}
+            <Pagination style={{ margin: 0, width: 'auto', justifyContent: 'flex-end' }}>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious href="#" text="이전"
+                    aria-disabled={safePage === 1}
+                    style={safePage === 1 ? disabledLinkStyle : undefined}
+                    onClick={e => { e.preventDefault(); if (safePage > 1) setPage(safePage - 1) }} />
+                </PaginationItem>
+                {buildPageNums(safePage, totalPages).map((item, i) =>
+                  item === '...' ? (
+                    <PaginationItem key={`ellipsis-${i}`}><PaginationEllipsis /></PaginationItem>
+                  ) : (
+                    <PaginationItem key={item}>
+                      <PaginationLink href="#" isActive={item === safePage}
+                        onClick={e => { e.preventDefault(); setPage(item) }}>
+                        {item}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
+                <PaginationItem>
+                  <PaginationNext href="#" text="다음"
+                    aria-disabled={safePage === totalPages}
+                    style={safePage === totalPages ? disabledLinkStyle : undefined}
+                    onClick={e => { e.preventDefault(); if (safePage < totalPages) setPage(safePage + 1) }} />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
-      </div>
+      </Panel>
       )}
 
       {/* 상세 패널 */}
       {detail && (
-        <div style={s.card}>
+        <Panel style={s.card}>
           {/* 헤더 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-                <span style={s.sysTag}>{detail.systemName}</span>
-                {detail.subSystemName && <span style={subTagStyle(detail.subSystemName)}>{detail.subSystemName}</span>}
+                <Tag tone="info">{detail.systemName}</Tag>
+                {detail.subSystemName && <SubTag name={detail.subSystemName} />}
                 {detail.deployNo && <span style={{ fontSize: 12, color: 'var(--c-text-muted)', fontWeight: 500 }}>{detail.deployNo}</span>}
                 {detail.deployType && <span style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>{DEPLOY_TYPE_LABELS[detail.deployType]}</span>}
                 {detail.deployScope && (
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 10,
-                    background: detail.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
-                    color: detail.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)' }}>
+                  <Tag {...SCOPE_TAG[detail.deployScope]}>
                     {DEPLOY_SCOPE_LABELS[detail.deployScope]}{detail.deployScope === 'PARTIAL' && detail.deployTarget ? ` (${detail.deployTarget})` : ''}
-                  </span>
+                  </Tag>
                 )}
               </div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--c-text)' }}>{detail.title}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--c-text)' }}>{detail.title}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
               <StatusBadge status={detail.status} />
@@ -651,17 +667,13 @@ export default function DeployRequestPage() {
                           <span style={{ fontSize: 12, fontWeight: 700, color: isCurrent ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
                             {dr.deployNo ?? `DR#${dr.id}`}
                           </span>
-                          {isCurrent && <span style={{ fontSize: 10, background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', borderRadius: 3, padding: '1px 5px' }}>현재</span>}
+                          {isCurrent && <Tag color="var(--rsp-color-text-on-primary)" bg="var(--c-action)">현재</Tag>}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
                           {dr.deployScope && (
-                            <span style={{
-                              fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 8,
-                              background: dr.deployScope === 'FULL' ? 'var(--c-tag-sys)' : 'var(--c-tag-sub)',
-                              color: dr.deployScope === 'FULL' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-sub-t)',
-                            }}>{DEPLOY_SCOPE_LABELS[dr.deployScope]}</span>
+                            <Tag {...SCOPE_TAG[dr.deployScope]}>{DEPLOY_SCOPE_LABELS[dr.deployScope]}</Tag>
                           )}
-                          {dr.deployTarget && <span style={{ fontSize: 10, color: 'var(--c-text-muted)' }}>{dr.deployTarget}</span>}
+                          {dr.deployTarget && <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{dr.deployTarget}</span>}
                           <StatusBadge status={dr.status} />
                         </div>
                       </div>
@@ -706,10 +718,10 @@ export default function DeployRequestPage() {
               )}
               {detail.redmineSyncStatus && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {detail.redmineSyncStatus === 'SYNCED' && <span style={{ fontSize: 12, color: 'var(--c-tag-done-t)', background: 'var(--c-tag-done-bg)', border: '1px solid var(--c-tag-done-bg)', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 완료</span>}
+                  {detail.redmineSyncStatus === 'SYNCED' && <Tag tone="success">버전 동기화 완료</Tag>}
                   {detail.redmineSyncStatus === 'FAILED' && (
                     <>
-                      <span style={{ fontSize: 12, color: 'var(--c-tag-err-t)', background: 'var(--c-tag-err-bg)', border: '1px solid var(--c-tag-err-bg)', padding: '2px 8px', borderRadius: 4 }}>버전 동기화 실패</span>
+                      <Tag tone="danger">버전 동기화 실패</Tag>
                       <Button variant="outlined" size="xs" style={{ color: 'var(--c-tag-warn-t)', borderColor: 'var(--c-tag-warn-t)' }}
                         onClick={() => syncMut.mutate(detail.id)} disabled={syncMut.isPending}>
                         {syncMut.isPending ? '재시도 중...' : '재시도'}
@@ -764,7 +776,7 @@ export default function DeployRequestPage() {
               </div>
             </div>
           )}
-        </div>
+        </Panel>
       )}
 
       </>}
@@ -808,11 +820,11 @@ export default function DeployRequestPage() {
             </div>
             <div style={s.modalBody}>
               {pickerAllIssues.length === 0 && pickerLoading ? (
-                <div style={s.modalEmpty}>불러오는 중...</div>
+                <Loading />
               ) : pickerFetchError ? (
                 <div style={{ ...s.modalEmpty, color: 'var(--c-tag-err-t)' }}>오류: {pickerFetchError}</div>
               ) : filteredIssues.length === 0 ? (
-                <div style={s.modalEmpty}>일감이 없습니다</div>
+                <EmptyState title="일감이 없습니다" />
               ) : (
                 <>
                   <div style={{ padding: '6px 20px', fontSize: 12, color: 'var(--c-text-muted)', background: 'var(--c-bg)', borderBottom: '1px solid var(--c-thead)' }}>
@@ -832,10 +844,10 @@ export default function DeployRequestPage() {
                         </div>
                         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                           {issue.trackerName && (
-                            <span style={{ fontSize: 11, color: 'var(--c-tag-sys-t)', background: 'var(--c-tag-sys)', padding: '2px 6px', borderRadius: 3 }}>{issue.trackerName}</span>
+                            <Tag tone="info">{issue.trackerName}</Tag>
                           )}
                           {issue.statusName && (
-                            <span style={{ fontSize: 11, color: 'var(--c-text-sub)', background: 'var(--c-thead)', padding: '2px 6px', borderRadius: 3 }}>{issue.statusName}</span>
+                            <Tag color="var(--c-text-sub)" bg="var(--c-thead)">{issue.statusName}</Tag>
                           )}
                           {issue.assignedTo && (
                             <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{issue.assignedTo}</span>
@@ -884,21 +896,8 @@ function buildPageNums(current: number, total: number): (number | '...')[] {
   return pages
 }
 
-function PageBtn({ label, active, disabled, onClick }: {
-  label: string; active?: boolean; disabled?: boolean; onClick: () => void
-}) {
-  return (
-    <Button
-      size="sm"
-      variant={active ? 'filled' : 'outlined'}
-      onClick={onClick}
-      disabled={disabled}
-      style={{ minWidth: 30 }}
-    >
-      {label}
-    </Button>
-  )
-}
+// 페이지 이동 불가(처음/끝) 상태의 이전/다음 링크
+const disabledLinkStyle: React.CSSProperties = { pointerEvents: 'none', opacity: 0.4 }
 
 const SUB_COLORS = [
   { bg: 'var(--c-tag-sys)', text: 'var(--c-tag-sys-t)' },
@@ -910,11 +909,18 @@ const SUB_COLORS = [
   { bg: 'var(--c-tag-draft-bg)', text: 'var(--c-tag-draft-t)' },
   { bg: 'color-mix(in srgb, var(--c-chart-7) 15%, transparent)', text: 'var(--c-chart-7)' },
 ]
-function subTagStyle(name: string): React.CSSProperties {
+// 하위시스템 태그 — 이름 해시로 색상 고정
+function SubTag({ name }: { name: string }) {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
   const { bg, text } = SUB_COLORS[Math.abs(hash) % SUB_COLORS.length]
-  return { background: bg, color: text, padding: '2px 8px', borderRadius: 4, fontSize: 11, marginLeft: 4, fontWeight: 500 }
+  return <Tag color={text} bg={bg} style={{ marginLeft: 4 }}>{name}</Tag>
+}
+
+// 상세/배포경로의 범위 태그 색상 (전점 / 일부점)
+const SCOPE_TAG: Record<DeployScope, { bg: string; color: string }> = {
+  FULL:    { bg: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' },
+  PARTIAL: { bg: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' },
 }
 
 function actionStyle(status: RequestStatus): React.CSSProperties {
@@ -950,7 +956,7 @@ function ScheduledCell({ scheduledAt, rowStatus }: { scheduledAt: string | null 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 3 }}>
       <span style={{ fontSize: 13, whiteSpace: 'nowrap' }}>{mm}/{dd}</span>
-      <span style={{ ...pillStyle, padding: '1px 7px', background: bg, color }}>{label}</span>
+      <Tag color={color} bg={bg}>{label}</Tag>
     </div>
   )
 }
@@ -960,19 +966,17 @@ const s: Record<string, React.CSSProperties> = {
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnOutline: { padding: '6px 14px', background: 'var(--c-card)', color: 'var(--c-action)', border: '1px dashed var(--c-action)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
-  card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
-  formTitle: { fontSize: 15, fontWeight: 600, marginBottom: 16 },
+  card: { display: 'block', padding: 24, marginBottom: 16 },
+  formTitle: { fontSize: 16, fontWeight: 600, marginBottom: 16 },
   formGrid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'start', marginBottom: 16 },
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)', paddingTop: 8 },
   issueBadge: { display: 'flex', alignItems: 'center', gap: 4, background: 'var(--c-tag-done-bg)', border: '1px solid var(--c-tag-done-bg)', borderRadius: 4, padding: '3px 8px', fontSize: 12 },
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
-  tableWrap: { background: 'var(--c-card)', borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden', marginBottom: 16 },
+  tableWrap: { display: 'block', padding: 0, overflow: 'hidden', marginBottom: 16 },
   th: { textAlign: 'left' as const },
-  sysTag: { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)', padding: '2px 8px', borderRadius: 4, fontSize: 12 },
   actions: { display: 'flex', alignItems: 'center' },
-  empty: { padding: '32px', textAlign: 'center' as const, color: 'var(--c-text-muted)' },
   detailGrid: { display: 'grid', gridTemplateColumns: '80px 1fr 80px 1fr', gap: '10px 16px', fontSize: 13 },
   detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
   infoSection: { background: 'var(--c-bg)', borderRadius: 8, padding: '14px 16px' },
@@ -1060,10 +1064,10 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
 
       {/* 상태 카드 */}
       <div className="deploy-stat-grid">
-        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: '16px 20px' }}>
+        <Panel style={{ display: 'block', padding: '16px 20px' }}>
           <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginBottom: 6, fontWeight: 600 }}>전체</div>
           <div style={{ fontSize: 28, fontWeight: 700 }}>{filtered.length}</div>
-        </div>
+        </Panel>
         {STATUSES.map(s => (
           <div key={s} style={{ background: STATUS_BG[s], border: `1px solid color-mix(in srgb, ${STATUS_COLORS[s]} 27%, transparent)`, borderRadius: 8, padding: '16px 20px' }}>
             <div style={{ fontSize: 11, color: STATUS_COLORS[s], marginBottom: 6, fontWeight: 600 }}>{STATUS_LABELS[s]}</div>
@@ -1074,17 +1078,17 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
 
       {/* 월별 시스템별 완료 현황 */}
       {systemMonthlyData.length > 0 && (
-        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20, marginBottom: 16 }}>
+        <Panel style={{ display: 'block', padding: 20, marginBottom: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 14 }}>
             월별 시스템별 배포 완료 현황 ({selYear}년)
           </div>
           <SystemMonthlyLineChart systems={systemMonthlyData} selMonth={selMonth} onClickMonth={m => setSelMonth(selMonth === m ? 'all' : m)} />
-        </div>
+        </Panel>
       )}
 
       {/* 시스템별 + 유형별 */}
       <div className="deploy-chart-grid">
-        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+        <Panel style={{ display: 'block', padding: 20 }}>
           {/* 헤더 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 8, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1109,7 +1113,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
           </div>
 
           {drillData.length === 0 ? (
-            <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p>
+            <EmptyState title="데이터 없음" />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
               {drillData.map(([name, count], i) => {
@@ -1127,7 +1131,7 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 13 }}>
                       <span style={{ color: isClickable ? 'var(--c-text)' : 'var(--c-text-sub)' }}>
                         {name}
-                        {isClickable && <span style={{ fontSize: 10, color: 'var(--c-text-muted)', marginLeft: 5 }}>▶</span>}
+                        {isClickable && <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginLeft: 5 }}>▶</span>}
                       </span>
                       <span style={{ fontWeight: 600 }}>{count}건</span>
                     </div>
@@ -1139,22 +1143,22 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
               })}
             </div>
           )}
-        </div>
-        <div style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 20 }}>
+        </Panel>
+        <Panel style={{ display: 'block', padding: 20 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>
             배포 유형별{selMonth !== 'all' ? ` (${selMonth}월)` : ''}
           </div>
-          {byType.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>데이터 없음</p> : (
+          {byType.length === 0 ? <EmptyState title="데이터 없음" /> : (
             <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
               {byType.map(([type, count]) => (
                 <div key={type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 12, background: `color-mix(in srgb, ${TYPE_COLORS[type]} 13%, transparent)`, color: TYPE_COLORS[type], padding: '3px 10px', borderRadius: 4, fontWeight: 600 }}>{TYPE_LABELS[type] ?? type}</span>
-                  <span style={{ fontWeight: 700, fontSize: 22 }}>{count}</span>
+                  <Tag color={TYPE_COLORS[type]}>{TYPE_LABELS[type] ?? type}</Tag>
+                  <span style={{ fontWeight: 700, fontSize: 24 }}>{count}</span>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </Panel>
       </div>
     </div>
   )
@@ -1168,74 +1172,71 @@ function SystemMonthlyLineChart({
   selMonth: number | 'all'
   onClickMonth: (m: number) => void
 }) {
-  const padL = 34, padR = 16, padT = 20, padB = 24
-  const W = 600, H = 180
-  const plotW = W - padL - padR
-  const plotH = H - padT - padB
-  const maxVal = Math.max(...systems.flatMap(s => s.counts), 1)
-
-  const xOf = (i: number) => padL + (i / 11) * plotW
-  const yOf = (v: number) => padT + plotH - (v / maxVal) * plotH
-
-  const gridVals = maxVal <= 4
-    ? Array.from({ length: maxVal + 1 }, (_, i) => i)
-    : [0, Math.round(maxVal * 0.25), Math.round(maxVal * 0.5), Math.round(maxVal * 0.75), maxVal]
-  const uniqueGridVals = [...new Set(gridVals)]
+  // 시스템명은 CSS 변수명으로 쓸 수 없으므로 sys0, sys1 ... 키 사용 (라벨에 시스템명)
+  const config: ChartConfig = Object.fromEntries(
+    systems.map((sys, i) => [`sys${i}`, { label: sys.name, color: sys.color }])
+  )
+  // 월별 행 데이터: { label: '1월', sys0: n, sys1: n, ... }
+  const data = Array.from({ length: 12 }, (_, i) => {
+    const row: Record<string, string | number> = { label: `${i + 1}월` }
+    systems.forEach((sys, si) => { row[`sys${si}`] = sys.counts[i] })
+    return row
+  })
 
   return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H, display: 'block' }} preserveAspectRatio="xMidYMid meet">
-        {uniqueGridVals.map(v => {
-          const y = yOf(v)
-          return (
-            <g key={v}>
-              <line x1={padL} y1={y} x2={W - padR} y2={y} stroke="var(--c-border)" strokeWidth={0.5} strokeDasharray="3,3" />
-              <text x={padL - 6} y={y + 4} textAnchor="end" fontSize={9} fill="var(--c-text-muted)">{v}</text>
-            </g>
-          )
-        })}
-
-        {systems.map(sys => {
-          const points = sys.counts.map((v, i) => ({ x: xOf(i), y: yOf(v), v }))
-          return (
-            <g key={sys.name}>
-              <polyline
-                points={points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}
-                fill="none" style={{ stroke: sys.color }} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" opacity={0.85}
-              />
-              {points.map((p, i) => p.v > 0 && (
-                <circle key={i} cx={p.x} cy={p.y} r={3.5} style={{ fill: sys.color }} opacity={0.9} />
-              ))}
-            </g>
-          )
-        })}
-
-        {Array.from({ length: 12 }, (_, i) => {
-          const m = i + 1
-          const x = xOf(i)
-          const isSelected = selMonth === m
-          return (
-            <g key={i} style={{ cursor: 'pointer' }} onClick={() => onClickMonth(m)}>
-              <text x={x} y={H - 4} textAnchor="middle" fontSize={10}
-                style={{ fill: isSelected ? 'var(--c-text)' : 'var(--c-text-muted)' }}
+    <ChartContainer config={config} style={{ width: '100%', height: 210, aspectRatio: 'auto' }}>
+      <LineChart
+        data={data}
+        margin={{ top: 12, right: 16, bottom: 0, left: -12 }}
+        cursor="pointer"
+        onClick={state => {
+          // 클릭한 위치의 월 선택/해제
+          if (state?.activeTooltipIndex == null) return
+          const idx = Number(state.activeTooltipIndex)
+          if (!isNaN(idx)) onClickMonth(idx + 1)
+        }}
+      >
+        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+        <XAxis
+          dataKey="label"
+          tickLine={false}
+          axisLine={false}
+          interval={0}
+          tick={p => {
+            // 선택된 월 라벨 강조
+            const isSelected = selMonth === p.index + 1
+            return (
+              <text x={p.x} y={p.y} dy={12} textAnchor="middle" fontSize={10}
+                fill={isSelected ? 'var(--c-text)' : 'var(--c-text-muted)'}
                 fontWeight={isSelected ? 700 : 400}>
-                {m}월
+                {p.payload.value}
               </text>
-              <rect x={x - 14} y={padT} width={28} height={plotH} fill="transparent" />
-              {isSelected && <line x1={x} y1={padT} x2={x} y2={padT + plotH} style={{ stroke: 'var(--c-text)' }} strokeWidth={1} strokeDasharray="3,3" opacity={0.3} />}
-            </g>
-          )
-        })}
-      </svg>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' as const, marginTop: 8 }}>
-        {systems.map(sys => (
-          <span key={sys.name} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
-            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" style={{ stroke: sys.color }} strokeWidth="2.5" strokeLinecap="round" /></svg>
-            {sys.name}
-          </span>
+            )
+          }}
+        />
+        <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={9} width={40} />
+        <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartLegend content={<ChartLegendContent />} />
+        {selMonth !== 'all' && (
+          <ReferenceLine x={`${selMonth}월`} stroke="var(--c-text)" strokeDasharray="3 3" strokeOpacity={0.3} />
+        )}
+        {systems.map((_, i) => (
+          <Line
+            key={i}
+            dataKey={`sys${i}`}
+            type="linear"
+            stroke={`var(--color-sys${i})`}
+            strokeWidth={2}
+            strokeOpacity={0.85}
+            isAnimationActive={false}
+            // 0건인 달은 점 생략 (기존 SVG 차트 동작 유지)
+            dot={p => p.value > 0
+              ? <circle key={p.index} cx={p.cx} cy={p.cy} r={3.5} fill={`var(--color-sys${i})`} fillOpacity={0.9} />
+              : null}
+          />
         ))}
-      </div>
-    </div>
+      </LineChart>
+    </ChartContainer>
   )
 }
 

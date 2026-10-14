@@ -53,7 +53,7 @@ export default function Layout() {
           <AiGate>
             <button style={styles.groupHeader} onClick={() => setAiOpen(o => !o)}>
               <span>AI 기능</span>
-              <span style={{ fontSize: 10, opacity: 0.7 }}>{aiOpen ? '▲' : '▼'}</span>
+              <span style={{ fontSize: 11, opacity: 0.7 }}>{aiOpen ? '▲' : '▼'}</span>
             </button>
             {aiOpen && (
               <>
@@ -68,7 +68,7 @@ export default function Layout() {
             <>
               <button style={styles.groupHeader} onClick={() => setSettingsOpen(o => !o)}>
                 <span>설정</span>
-                <span style={{ fontSize: 10, opacity: 0.7 }}>{settingsOpen ? '▲' : '▼'}</span>
+                <span style={{ fontSize: 11, opacity: 0.7 }}>{settingsOpen ? '▲' : '▼'}</span>
               </button>
               {settingsOpen && visibleSettings.map(({ key, to, label }) => (
                 <NavItem key={key} to={to} indent onClick={closeSidebar}>{label}</NavItem>

@@ -3,7 +3,7 @@ import {
   getKnowledgeStats, getKnowledgeFiles,
   KnowledgeStats, KnowledgeSource, KnowledgeFile, SourceType,
 } from '../../api/aiApi'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
+import { Button, Tag, Panel, Loading, EmptyState, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -36,13 +36,9 @@ function fmtDate(iso: string | null | undefined): string {
 function SourceBadge({ type }: { type: SourceType }) {
   const b = SOURCE_BADGE[type] ?? { label: type, color: 'var(--c-chart-8)' }
   return (
-    <span style={{
-      fontSize: 11, padding: '2px 7px', borderRadius: 10, fontWeight: 600,
-      background: `color-mix(in srgb, ${b.color} 13%, transparent)`, color: b.color, border: `1px solid color-mix(in srgb, ${b.color} 27%, transparent)`,
-      whiteSpace: 'nowrap',
-    }}>
+    <Tag color={b.color} style={{ whiteSpace: 'nowrap' }}>
       {b.label}
-    </span>
+    </Tag>
   )
 }
 
@@ -50,16 +46,13 @@ function SourceBadge({ type }: { type: SourceType }) {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div style={{
-      background: 'var(--c-card)', border: '1px solid var(--c-border)',
-      borderRadius: 10, padding: '16px 20px', minWidth: 140,
-    }}>
+    <Panel style={{ display: 'block', padding: '16px 20px', minWidth: 140 }}>
       <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--c-text)', lineHeight: 1 }}>
+      <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-text)', lineHeight: 1 }}>
         {typeof value === 'number' ? fmtNum(value) : value}
       </div>
       {sub && <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 4 }}>{sub}</div>}
-    </div>
+    </Panel>
   )
 }
 
@@ -85,10 +78,10 @@ function FileRows({ repo, sourceType }: FileRowsParams) {
       <div style={{ padding: '10px 14px 10px 48px', fontSize: 12, color: 'var(--c-tag-err-t)' }}>{error}</div>
     )
     if (!files) return (
-      <div style={{ padding: '10px 14px 10px 48px', fontSize: 12, color: 'var(--c-text-muted)' }}>불러오는 중...</div>
+      <Loading style={{ padding: '10px 14px 10px 48px', fontSize: 12, justifyContent: 'flex-start' }} />
     )
     if (files.length === 0) return (
-      <div style={{ padding: '10px 14px 10px 48px', fontSize: 12, color: 'var(--c-text-muted)' }}>파일 없음</div>
+      <EmptyState title="파일 없음" style={{ padding: '10px 14px' }} />
     )
 
     // 청크 수 내림차순 정렬
@@ -228,40 +221,25 @@ export default function AiKnowledgePage() {
       )}
 
       {/* 테이블 */}
-      <div style={{
-        background: 'var(--c-card)', border: '1px solid var(--c-border)',
-        borderRadius: 12, overflow: 'hidden',
-      }}>
+      <Panel style={{ display: 'block', padding: 0, overflow: 'hidden' }}>
         <div style={{
           padding: '14px 20px', borderBottom: '1px solid var(--c-border)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <span style={{ fontSize: 14, fontWeight: 700 }}>소스별 색인 현황</span>
-          <button
-            onClick={load}
-            style={{
-              fontSize: 11, padding: '4px 10px', borderRadius: 14, cursor: 'pointer',
-              border: '1px solid var(--c-border)', background: 'var(--c-bg)',
-              color: 'var(--c-text-muted)',
-            }}
-          >
+          <Button variant="outlined" size="xs" onClick={load}>
             새로고침
-          </button>
+          </Button>
         </div>
 
         {loading ? (
-          <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--c-text-muted)', fontSize: 13 }}>
-            불러오는 중...
-          </div>
+          <Loading style={{ padding: '48px 20px' }} />
         ) : error ? (
           <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--c-tag-err-t)', fontSize: 13 }}>
             {error}
           </div>
         ) : !stats || stats.sources.length === 0 ? (
-          <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--c-text-muted)', fontSize: 13 }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>📭</div>
-            색인된 소스가 없습니다
-          </div>
+          <EmptyState title="색인된 소스가 없습니다" style={{ padding: '48px 20px' }} />
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <Table>
@@ -282,7 +260,7 @@ export default function AiKnowledgePage() {
             </Table>
           </div>
         )}
-      </div>
+      </Panel>
     </div>
   )
 }

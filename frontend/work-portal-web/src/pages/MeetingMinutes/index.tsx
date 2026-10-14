@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { meetingApi, MeetingMinute, SaveMeetingRequest } from '../../api/reports'
-import { Button, Input, Textarea } from '../../components/ui'
+import { Button, Input, Textarea, Loading, EmptyState } from '../../components/ui'
 
 const emptyForm = (): SaveMeetingRequest => ({
   title: '', meetingDate: new Date().toISOString().slice(0, 10),
@@ -66,12 +66,12 @@ export default function MeetingMinutesPage() {
       {/* 목록 패널 */}
       <div className="master-panel" style={{ width: 320 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>회의록</h2>
+          <h2 style={{ margin: 0, fontSize: 20 }}>회의록</h2>
           <Button variant="filled" onClick={() => { resetForm(); setShowForm(true); setSelected(null) }}>+ 작성</Button>
         </div>
-        {isLoading ? <p>로딩 중...</p> : (
+        {isLoading ? <Loading /> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {items.length === 0 ? <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 회의록이 없습니다.</p>
+            {items.length === 0 ? <EmptyState title="등록된 회의록이 없습니다." />
               : items.map(item => (
                 <div key={item.id}
                   onClick={() => { setSelected(item); setShowForm(false) }}
@@ -171,9 +171,7 @@ export default function MeetingMinutesPage() {
             )}
           </>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60%', color: 'var(--c-text-muted)', fontSize: 15 }}>
-            목록에서 회의록을 선택하거나 새로 작성하세요
-          </div>
+          <EmptyState title="목록에서 회의록을 선택하거나 새로 작성하세요" style={{ height: '60%' }} />
         )}
       </div>
     </div>

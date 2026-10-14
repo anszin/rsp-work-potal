@@ -4,7 +4,7 @@ import { todoApi, type Todo } from '../../api/todos'
 import { workUnitApi, type WorkUnit } from '../../api/workUnits'
 import { getUsers, type UserSummary } from '../../api/users'
 import { type KeyTask } from '../../api/keyTasks'
-import { Button } from '../../components/ui'
+import { Button, Tag, Panel, EmptyState } from '../../components/ui'
 
 const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   DONE:        { bg: 'var(--c-tag-done-bg)',  text: 'var(--c-tag-done-t)',  label: '완료' },
@@ -67,9 +67,7 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
       </div>
 
       {displayAssignees.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--c-text-muted)', fontSize: 14 }}>
-          이 연도에 연결된 Todo가 없습니다.
-        </div>
+        <EmptyState title="이 연도에 연결된 Todo가 없습니다." style={{ padding: '60px 0' }} />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -81,10 +79,10 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
           const personRate = personTotal > 0 ? Math.round(personDone / personTotal * 100) : 0
 
           return (
-            <div key={assignee} style={{ background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 10, overflow: 'hidden' }}>
+            <Panel key={assignee} style={{ display: 'block', padding: 0, overflow: 'hidden' }}>
               {/* 담당자 헤더 */}
               <div style={{ padding: '12px 18px', background: 'var(--c-thead)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 700, fontSize: 15 }}>{nameOf(assignee)}</span>
+                <span style={{ fontWeight: 700, fontSize: 16 }}>{nameOf(assignee)}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12, color: 'var(--c-text-muted)' }}>
                   <span>중점과제 {byKt.size}개</span>
                   <span>Todo {personTotal}개</span>
@@ -138,9 +136,9 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
                               if (!cnt) return null
                               const b = STATUS_BADGE[st]
                               return (
-                                <span key={st} style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: b.bg, color: b.text, fontWeight: 600 }}>
+                                <Tag key={st} color={b.text} bg={b.bg}>
                                   {b.label} {cnt}
-                                </span>
+                                </Tag>
                               )
                             })}
                           </div>
@@ -150,7 +148,7 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
                   </div>
                 )
               })}
-            </div>
+            </Panel>
           )
         })}
       </div>

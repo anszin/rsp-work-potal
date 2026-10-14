@@ -8,6 +8,12 @@ export { default as Modal } from './Modal'
 export { default as TabBar } from './TabBar'
 // 표: SDK Table 그대로 사용 (밀도 보정은 index.css 의 [data-slot="table-*"])
 export { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell } from 'rsp-react-design-system/shadcn'
+export { default as Tag } from './Tag'
+export type { TagTone } from './Tag'
+export { default as Panel } from './Panel'
+export { Loading, EmptyState } from './Feedback'
+// 토스트: 화면 어디서든 toast.add({ title, description, type: 'success' | 'error' | 'info' | 'warning' })
+export { toast } from 'rsp-react-design-system/shadcn'
 export { default as Checkbox } from './Checkbox'
 export { default as RadioGroup } from './RadioGroup'
 

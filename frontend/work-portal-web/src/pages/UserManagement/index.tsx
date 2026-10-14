@@ -4,7 +4,7 @@ import axios from 'axios'
 import { getUsers, createUser, updateUser, deleteUser, resetPassword, getMenuPermissions, updateMenuPermissions, type UserSummary, type UserRole, type MenuPermission } from '../../api/users'
 import { useAuth } from '../../context/useAuth'
 import PageHeader from '../../components/PageHeader'
-import { Button, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
+import { Button, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Panel, Tag, EmptyState, Checkbox } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -150,9 +150,9 @@ export default function UserManagementPage() {
       />
 
       {tab === 'menus' && isAdminOrManager ? (
-        <div style={s.card}>
+        <Panel style={{ display: 'block', padding: 24, marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ margin: 0, fontSize: 15 }}>역할별 메뉴 접근 권한</h3>
+            <h3 style={{ margin: 0, fontSize: 16 }}>역할별 메뉴 접근 권한</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {menuSaved && <span style={{ fontSize: 13, color: 'var(--c-tag-done-t)' }}>저장되었습니다 ✓</span>}
               <Button variant="filled" style={{ opacity: (!menuDirty || menuMut.isPending) ? 0.6 : 1 }}
@@ -178,8 +178,8 @@ export default function UserManagementPage() {
                     const val = menuEdits[key] ?? menuPerms.find(p => p.role === role && p.menuKey === menuKey)?.enabled ?? false
                     return (
                       <TableCell key={role} style={{ textAlign: 'center' }}>
-                        <input type="checkbox" checked={val}
-                          onChange={e => { setMenuEdits(prev => ({ ...prev, [key]: e.target.checked })); setMenuDirty(true) }} />
+                        <Checkbox checked={val}
+                          onCheckedChange={c => { setMenuEdits(prev => ({ ...prev, [key]: c })); setMenuDirty(true) }} />
                       </TableCell>
                     )
                   })}
@@ -188,12 +188,12 @@ export default function UserManagementPage() {
             </TableBody>
           </Table>
           </div>
-        </div>
+        </Panel>
       ) : (
         <>
           {showForm && (
-            <div style={s.card}>
-              <h3 style={{ margin: '0 0 16px', fontSize: 15 }}>{editing ? '사용자 수정' : '사용자 추가'}</h3>
+            <Panel style={{ display: 'block', padding: 24, marginBottom: 16 }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>{editing ? '사용자 수정' : '사용자 추가'}</h3>
               <div style={s.grid}>
                 <label style={s.label}>아이디</label>
                 <Input value={form.username} disabled={!!editing}
@@ -226,10 +226,10 @@ export default function UserManagementPage() {
                   {createMut.isPending || updateMut.isPending ? '처리 중...' : '저장'}
                 </Button>
               </div>
-            </div>
+            </Panel>
           )}
 
-          <div style={s.card}>
+          <Panel style={{ display: 'block', marginBottom: 16 }}>
             <div className="table-scroll">
             <Table>
               <TableHeader>
@@ -246,7 +246,7 @@ export default function UserManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.length === 0 && <TableRow><TableCell colSpan={8} style={s.empty}>사용자가 없습니다</TableCell></TableRow>}
+                {users.length === 0 && <TableRow><TableCell colSpan={8}><EmptyState title="사용자가 없습니다" /></TableCell></TableRow>}
                 {users.map(u => (
                   <TableRow key={u.id}>
                     <TableCell style={{ fontWeight: 600 }}>{u.username}</TableCell>
@@ -254,7 +254,7 @@ export default function UserManagementPage() {
                     <TableCell>{u.dept ?? '-'}</TableCell>
                     <TableCell>{u.email ?? '-'}</TableCell>
                     <TableCell style={{ color: u.redmineUserId ? 'var(--c-text)' : 'var(--c-text-muted)', fontSize: 12 }}>{u.redmineUserId ?? '-'}</TableCell>
-                    <TableCell><span style={{ ...s.roleTag, ...roleStyle(u.role) }}>{ROLE_LABELS[u.role]}</span></TableCell>
+                    <TableCell><Tag {...roleColors(u.role)}>{ROLE_LABELS[u.role]}</Tag></TableCell>
                     <TableCell>
                       <span style={{ color: u.active ? 'var(--c-tag-done-t)' : 'var(--c-tag-err-t)', fontSize: 12 }}>
                         {u.active ? '활성' : '비활성'}
@@ -280,29 +280,27 @@ export default function UserManagementPage() {
               </TableBody>
             </Table>
             </div>
-          </div>
+          </Panel>
         </>
       )}
     </div>
   )
 }
 
-function roleStyle(role: string): React.CSSProperties {
-  if (role === 'ADMIN') return { background: 'var(--c-tag-err-bg)', color: 'var(--c-tag-err-t)' }
-  if (role === 'MANAGER') return { background: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }
-  if (role === 'MEMBER') return { background: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' }
-  return { background: 'var(--c-bg)', color: 'var(--c-text-muted)' }
+// 역할별 태그 색 (글자 / 배경)
+function roleColors(role: string): { color: string; bg: string } {
+  if (role === 'ADMIN') return { bg: 'var(--c-tag-err-bg)', color: 'var(--c-tag-err-t)' }
+  if (role === 'MANAGER') return { bg: 'var(--c-tag-sys)', color: 'var(--c-tag-sys-t)' }
+  if (role === 'MEMBER') return { bg: 'var(--c-tag-sub)', color: 'var(--c-tag-sub-t)' }
+  return { bg: 'var(--c-bg)', color: 'var(--c-text-muted)' }
 }
 
 const s: Record<string, React.CSSProperties> = {
-  card: { background: 'var(--c-card)', border: '1px solid var(--c-border)', borderRadius: 8, padding: 24, marginBottom: 16 },
   btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
   btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   grid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
   th: { textAlign: 'left' as const },
-  roleTag: { padding: '2px 8px', borderRadius: 4, fontSize: 12 },
-  empty: { textAlign: 'center' as const, color: 'var(--c-text-muted)' },
   progressBar: { height: 3, background: 'var(--c-border)', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
   progressFill: { height: '100%', background: 'var(--c-action)', borderRadius: 2, animation: 'progress 1.2s ease-in-out infinite', width: '40%' },
   infoBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 14, display: 'flex', flexDirection: 'column' as const, gap: 6 },

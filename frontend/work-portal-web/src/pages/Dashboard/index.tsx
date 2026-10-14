@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Button } from '../../components/ui'
+import { Button, Panel, Tag, EmptyState } from '../../components/ui'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import client from '../../api/client'
@@ -25,19 +25,14 @@ function StatCard({ label, value, sub, color, onClick }: {
   label: string; value: string | number; sub?: string; color?: string; onClick?: () => void
 }) {
   return (
-    <div onClick={onClick} style={{
-      background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.08)', cursor: onClick ? 'pointer' : 'default',
+    <Panel onClick={onClick} style={{
+      display: 'block', cursor: onClick ? 'pointer' : 'default',
       borderLeft: `4px solid ${color || 'var(--c-action)'}`,
-      transition: 'box-shadow 0.15s',
-    }}
-      onMouseEnter={e => onClick && ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)')}
-      onMouseLeave={e => onClick && ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)')}
-    >
+    }}>
       <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 6 }}>{label}</div>
       <div style={{ fontSize: 24, fontWeight: 700, color: color || 'var(--c-action)', fontFamily: 'monospace' }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 4 }}>{sub}</div>}
-    </div>
+    </Panel>
   )
 }
 
@@ -55,7 +50,7 @@ function BarChart({ data }: { data: MonthlySummary[] }) {
               <div style={{ flex: 1, height: revH + '%', background: isCurrent ? 'var(--rsp-color-secondary-500)' : 'color-mix(in srgb, var(--rsp-color-secondary-500) 40%, transparent)', borderRadius: '2px 2px 0 0', minHeight: d.revenue > 0 ? 2 : 0 }} title={`매출 ${(d.revenue/10000).toLocaleString()}만`} />
               <div style={{ flex: 1, height: expH + '%', background: isCurrent ? 'var(--rsp-color-error-500)' : 'color-mix(in srgb, var(--rsp-color-error-500) 40%, transparent)', borderRadius: '2px 2px 0 0', minHeight: d.expense > 0 ? 2 : 0 }} title={`지출 ${(d.expense/10000).toLocaleString()}만`} />
             </div>
-            <div style={{ fontSize: 10, color: isCurrent ? 'var(--c-action)' : 'var(--c-text-muted)', fontWeight: isCurrent ? 700 : 400 }}>
+            <div style={{ fontSize: 11, color: isCurrent ? 'var(--c-action)' : 'var(--c-text-muted)', fontWeight: isCurrent ? 700 : 400 }}>
               {MONTHS[d.month - 1].replace('월', '')}
             </div>
           </div>
@@ -119,7 +114,7 @@ export default function DashboardPage() {
   return (
     <div className="page-wrap" style={{ background: 'var(--c-bg)', minHeight: '100vh' }}>
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>종합 대시보드</h2>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>종합 대시보드</h2>
         <div style={{ fontSize: 13, color: 'var(--c-text-muted)', marginTop: 4 }}>
           안녕하세요, {user?.username}님 · {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
         </div>
@@ -171,7 +166,7 @@ export default function DashboardPage() {
       <div className={`dash-mid-grid${can('finance') && can('daily_check') ? ' both' : ''}`}>
         {/* 월별 손익 차트 */}
         {can('finance') && (
-          <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <Panel style={{ display: 'block' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <div style={{ fontWeight: 600, fontSize: 14 }}>{currentYear}년 월별 손익</div>
               <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--c-text-muted)' }}>
@@ -194,10 +189,10 @@ export default function DashboardPage() {
                 )
               })}
             </div>
-          </div>
+          </Panel>
         )}
         {can('daily_check') && (
-          <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          <Panel style={{ display: 'block' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div style={{ fontWeight: 600, fontSize: 14 }}>오늘 점검 현황</div>
               <Button variant="text" onClick={() => navigate('/reports/daily')} style={{ fontSize: 12, padding: 0 }}>
@@ -205,7 +200,7 @@ export default function DashboardPage() {
               </Button>
             </div>
             {systems.length === 0 ? (
-              <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 시스템이 없습니다.</p>
+              <EmptyState title="등록된 시스템이 없습니다." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {systems.map((sys: any) => {
@@ -222,10 +217,7 @@ export default function DashboardPage() {
                         {check?.note && <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{check.note}</div>}
                       </div>
                       {check ? (
-                        <span style={{
-                          padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600,
-                          background: `color-mix(in srgb, ${STATUS_COLOR[check.status]} 13%, transparent)`, color: STATUS_COLOR[check.status],
-                        }}>{STATUS_LABEL[check.status]}</span>
+                        <Tag color={STATUS_COLOR[check.status]}>{STATUS_LABEL[check.status]}</Tag>
                       ) : (
                         <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>미점검</span>
                       )}
@@ -239,7 +231,7 @@ export default function DashboardPage() {
                 ✓ 모든 시스템 정상 운영 중
               </div>
             )}
-          </div>
+          </Panel>
         )}
       </div>
       )}
@@ -269,22 +261,17 @@ export default function DashboardPage() {
               const trendIcon = thisMonthCount > lastMonthCount ? '↑' : thisMonthCount < lastMonthCount ? '↓' : '━'
               const trendColor = thisMonthCount > lastMonthCount ? 'var(--c-tag-done-t)' : thisMonthCount < lastMonthCount ? 'var(--c-tag-err-t)' : 'var(--c-text-muted)'
               return (
-                <div key={sys.id} onClick={() => navigate('/deploys')} style={{
-                  background: 'var(--c-card)', borderRadius: 10, padding: '16px 20px',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.08)', cursor: 'pointer',
+                <Panel key={sys.id} onClick={() => navigate('/deploys')} style={{
+                  display: 'block', cursor: 'pointer',
                   borderTop: `3px solid ${pendingCount > 0 ? 'var(--rsp-color-tertiary-500)' : 'var(--c-border)'}`,
-                  transition: 'box-shadow 0.15s',
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)')}
-                  onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)')}
-                >
+                }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 14 }}>{sys.name}</div>
                       <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{sys.code}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--c-tag-pri-t)' }}>{thisMonthCount}건</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--c-tag-pri-t)' }}>{thisMonthCount}건</div>
                       <div style={{ fontSize: 11, color: trendColor, marginTop: 2 }}>
                         전달 {lastMonthCount}건 {trendIcon}
                       </div>
@@ -300,12 +287,9 @@ export default function DashboardPage() {
                       { key: 'REJECTED',  label: '반려', color: 'var(--c-tag-err-t)' },
                     ] as const).map(({ key, label, color }) =>
                       statusCounts[key] > 0 && (
-                        <span key={key} style={{
-                          fontSize: 11, padding: '2px 8px', borderRadius: 10,
-                          background: `color-mix(in srgb, ${color} 13%, transparent)`, color,
-                        }}>
+                        <Tag key={key} color={color}>
                           {label} {statusCounts[key]}
-                        </span>
+                        </Tag>
                       )
                     )}
                     {sysDeploys.length === 0 && (
@@ -325,7 +309,7 @@ export default function DashboardPage() {
                       <span style={{ flexShrink: 0, color: 'var(--c-text-muted)' }}>{recent.createdAt?.slice(0, 10)}</span>
                     </div>
                   )}
-                </div>
+                </Panel>
               )
             })}
           </div>
@@ -336,7 +320,7 @@ export default function DashboardPage() {
       {(can('change_requests') || can('deploys') || can('meeting_minutes') || can('inventory')) && (
       <div className="dash-bottom-grid">
         {/* 최근 변경/배포 요청 */}
-        {(can('change_requests') || can('deploys')) && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        {(can('change_requests') || can('deploys')) && <Panel style={{ display: 'block' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ fontWeight: 600, fontSize: 14 }}>최근 요청</div>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -345,7 +329,7 @@ export default function DashboardPage() {
             </div>
           </div>
           {changeRequests.length === 0 && deployRequests.length === 0 ? (
-            <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 요청이 없습니다.</p>
+            <EmptyState title="등록된 요청이 없습니다." />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {[
@@ -360,27 +344,20 @@ export default function DashboardPage() {
                     padding: '7px 10px', borderRadius: 6, background: 'var(--c-bg)', border: '1px solid var(--c-thead)',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-                      <span style={{
-                        padding: '1px 6px', borderRadius: 4, fontSize: 11,
-                        background: r._type === '변경' ? 'var(--c-tag-sys)' : 'var(--c-tag-pri-bg)',
-                        color: r._type === '변경' ? 'var(--c-tag-sys-t)' : 'var(--c-tag-pri-t)',
-                        flexShrink: 0,
-                      }}>{r._type}</span>
+                      <Tag tone={r._type === '변경' ? 'info' : 'purple'} style={{ flexShrink: 0 }}>{r._type}</Tag>
                       <span style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
                     </div>
-                    <span style={{
-                      padding: '2px 8px', borderRadius: 10, fontSize: 11, flexShrink: 0, marginLeft: 8,
-                      background: `color-mix(in srgb, ${REQ_STATUS_COLOR[r.status] || 'var(--c-text-muted)'} 13%, transparent)`,
-                      color: REQ_STATUS_COLOR[r.status] || 'var(--c-text-muted)',
-                    }}>{REQ_STATUS_LABEL[r.status] || r.status}</span>
+                    <Tag color={REQ_STATUS_COLOR[r.status] || 'var(--c-text-muted)'} style={{ flexShrink: 0, marginLeft: 8 }}>
+                      {REQ_STATUS_LABEL[r.status] || r.status}
+                    </Tag>
                   </div>
                 ))}
             </div>
           )}
-        </div>}
+        </Panel>}
 
         {/* 최근 회의록 + 인벤토리 */}
-        {(can('meeting_minutes') || can('inventory')) && <div style={{ background: 'var(--c-card)', borderRadius: 10, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+        {(can('meeting_minutes') || can('inventory')) && <Panel style={{ display: 'block' }}>
           {can('meeting_minutes') && <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <div style={{ fontWeight: 600, fontSize: 14 }}>최근 회의록</div>
@@ -389,7 +366,7 @@ export default function DashboardPage() {
               </Button>
             </div>
             {meetings.length === 0 ? (
-              <p style={{ color: 'var(--c-text-muted)', fontSize: 13 }}>등록된 회의록이 없습니다.</p>
+              <EmptyState title="등록된 회의록이 없습니다." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {meetings.slice(0, 5).map((m: any) => (
@@ -432,7 +409,7 @@ export default function DashboardPage() {
               })}
             </div>
           </div>}
-        </div>}
+        </Panel>}
       </div>
       )}
     </div>
