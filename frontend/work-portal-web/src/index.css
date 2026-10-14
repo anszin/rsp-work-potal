@@ -12,6 +12,10 @@
  * - 액션 색상은 SDK primary(초록) 대신 secondary(파랑)를 사용 (포탈 블루 테마 유지)
  */
 :root {
+  /* font — Pretendard 가변 폰트(npm 자체 제공, main.tsx import) 우선, SDK 폰트 변수도 동일하게 지정 */
+  --portal-font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --rsp-font-family: var(--portal-font);
+  --shadcn-font-family: var(--portal-font);
   /* surface */
   --c-bg:           var(--rsp-color-bg-page);
   --c-card:         var(--rsp-color-bg-surface);
@@ -134,7 +138,7 @@
  */
 
 body {
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--portal-font);
   color: var(--c-text);
   background: var(--c-bg);
   transition: background 0.15s, color 0.15s;
