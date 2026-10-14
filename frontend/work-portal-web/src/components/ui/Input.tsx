@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { Input as SdkInput } from 'rsp-react-design-system/shadcn'
+import { Input as SdkInput } from '@lotte/rsp-react-design-system/shadcn'
 
 type InputProps = ComponentProps<typeof SdkInput>
 

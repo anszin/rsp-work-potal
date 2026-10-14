@@ -20,7 +20,7 @@
 
 | 영역 | 스택 |
 |---|---|
-| Frontend | React 18, TypeScript, Vite 5, **RSP 디자인시스템 SDK**(`rsp-react-design-system`, shadcn/base-ui 기반), recharts |
+| Frontend | React 18, TypeScript, Vite 5, **RSP 디자인시스템 SDK**(`@lotte/rsp-react-design-system`, shadcn/base-ui 기반), recharts |
 | Backend | Spring Boot 3, Java 17, JPA, REST API |
 | DB | PostgreSQL |
 | Infra | Docker, Ubuntu, AWS EC2 |
@@ -62,15 +62,18 @@ rsp-work-potal/
 
 ### 설치 (Nexus)
 
-- 패키지: `rsp-react-design-system` (사내 Nexus, 버전 `0.1.0-snapshot.N`)
-- `package.json` 에 **Nexus tarball URL** 로 지정 (나머지 패키지는 npmjs 에서 설치)
+- 패키지: **`@lotte/rsp-react-design-system`** (사내 Nexus 스코프 패키지, 버전 `0.1.0-snapshot.N`)
+- 프로젝트 `.npmrc` 에 스코프 registry 지정 → **@lotte 패키지만 Nexus**, 나머지는 npmjs 에서 설치
   ```
-  "rsp-react-design-system": "http://193.122.117.148:36099/repository/npm-group/rsp-react-design-system/-/rsp-react-design-system-0.1.0-snapshot.10.tgz"
+  @lotte:registry=http://193.122.117.148:36099/repository/npm-group/
   ```
-  - 버전 올릴 때는 URL 의 `snapshot.N` 만 변경
-  - 비스코프 패키지라 registry 를 Nexus 로 바꾸면 **모든 패키지가 Nexus 경유** → 매우 느림(최초 설치 14시간). SDK 팀에 스코프 배포(`@rsp/...`) 요청 권장
-- Nexus 는 익명 접근 불가(401). 로컬은 `~/.npmrc` 의 `//193.122.117.148:36099/repository/npm-group/:_authToken=...` 사용
+- Nexus 는 익명 접근 불가(401). 인증 토큰은 각자 `~/.npmrc` 에 설정 (프로젝트 .npmrc 에 넣지 말 것)
+  ```
+  //193.122.117.148:36099/repository/npm-group/:_authToken=<Nexus 토큰>
+  ```
+- 업데이트: `npm install @lotte/rsp-react-design-system@snapshot`
 - **Vercel 빌드**: 환경변수 `NPM_RC` 에 위 authToken 라인 설정 필요 (아직 미설정 — push 전 필수)
+- import 경로: `@lotte/rsp-react-design-system`, `@lotte/rsp-react-design-system/shadcn`, `@lotte/rsp-react-design-system/styles.css`
 
 ### 포탈 래퍼 (`src/components/ui`)
 
@@ -196,7 +199,7 @@ SDK 기본은 포탈 대비 커서 `data-portal-*` 속성 + index.css 로 보정
    - 주간보고는 매핑/코멘트 위주, 실제 업무 진행은 Todo로 관리
 3. **레드마인 base-url 내부 주소로 변경** (Docker 네트워크 구성 확인 필요)
 4. **백엔드 빌드 및 배포** (로컬 빌드 후 서버 수동 배포)
-5. SDK 팀 요청 사항: 스코프 패키지 배포, 컴포넌트별 진입점(번들 크기), README 갱신(Button 등이 `/shadcn` 경로로 이동)
+5. SDK 팀 요청 사항: 컴포넌트별 진입점(번들 크기), README 갱신(Button 등이 `/shadcn` 경로로 이동)
 6. SDK 미적용으로 남긴 것: 클릭형 칩, 링크형 버튼, 강조 박스(알림·상태 타일), 주간보고 인쇄 화면, ref 사용 입력(AI 채팅 입력창 등)
 
 ---

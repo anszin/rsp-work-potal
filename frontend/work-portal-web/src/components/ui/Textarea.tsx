@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { Textarea as SdkTextarea } from 'rsp-react-design-system/shadcn'
+import { Textarea as SdkTextarea } from '@lotte/rsp-react-design-system/shadcn'
 
 type TextareaProps = ComponentProps<typeof SdkTextarea>
 

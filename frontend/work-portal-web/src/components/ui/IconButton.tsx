@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { buttonVariants, Tooltip, TooltipContent, TooltipTrigger } from 'rsp-react-design-system/shadcn'
+import { buttonVariants, Tooltip, TooltipContent, TooltipTrigger } from '@lotte/rsp-react-design-system/shadcn'
 
 export type IconButtonVariant = 'filled' | 'outlined' | 'text'
 export type IconButtonSize = 'sm' | 'md' | 'lg'

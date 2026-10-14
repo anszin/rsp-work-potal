@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { RadioGroup as SdkRadioGroup, RadioGroupItem } from 'rsp-react-design-system/shadcn'
+import { RadioGroup as SdkRadioGroup, RadioGroupItem } from '@lotte/rsp-react-design-system/shadcn'
 
 interface RadioOption {
   value: string

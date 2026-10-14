@@ -15,7 +15,7 @@ import { Button, EmptyState, Input, Loading, Modal, Panel, Select, TabBar, Table
 import {
   Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext, PaginationEllipsis,
   ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig,
-} from 'rsp-react-design-system/shadcn'
+} from '@lotte/rsp-react-design-system/shadcn'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts'
 
 const DEPLOY_TYPE_LABELS: Record<DeployType, string> = {

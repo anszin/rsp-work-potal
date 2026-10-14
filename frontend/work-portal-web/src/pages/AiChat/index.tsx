@@ -9,7 +9,7 @@ import {
 } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
 import { Button, IconButton, Tag, Panel, Loading, EmptyState } from '../../components/ui'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from 'rsp-react-design-system/shadcn'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@lotte/rsp-react-design-system/shadcn'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 

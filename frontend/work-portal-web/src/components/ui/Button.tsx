@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { Button as SdkButton } from 'rsp-react-design-system/shadcn'
+import { Button as SdkButton } from '@lotte/rsp-react-design-system/shadcn'
 
 export type ButtonVariant = 'filled' | 'outlined' | 'text'
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg'

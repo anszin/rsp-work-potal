@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, Spinner } from 'rsp-react-design-system/shadcn'
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, Spinner } from '@lotte/rsp-react-design-system/shadcn'
 
 // 로딩 표시 — SDK Spinner + 안내 문구
 export function Loading({ text = '불러오는 중...', style }: { text?: ReactNode; style?: CSSProperties }) {

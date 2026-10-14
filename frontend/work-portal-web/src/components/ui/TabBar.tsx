@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { TabsList, TabsRoot, TabsTrigger } from 'rsp-react-design-system/shadcn'
+import { TabsList, TabsRoot, TabsTrigger } from '@lotte/rsp-react-design-system/shadcn'
 
 interface TabItem<T extends string> {
   value: T

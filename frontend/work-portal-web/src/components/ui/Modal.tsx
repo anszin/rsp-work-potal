@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Dialog, DialogContent } from 'rsp-react-design-system/shadcn'
+import { Dialog, DialogContent } from '@lotte/rsp-react-design-system/shadcn'
 
 interface ModalProps {
   open: boolean

@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Badge } from 'rsp-react-design-system/shadcn'
+import { Badge } from '@lotte/rsp-react-design-system/shadcn'
 
 export type TagTone = 'info' | 'success' | 'danger' | 'warning' | 'purple' | 'teal' | 'neutral'
 

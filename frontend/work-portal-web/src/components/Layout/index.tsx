@@ -21,7 +21,7 @@ import {
   SidebarInset,
   SidebarTrigger,
   useSidebar,
-} from 'rsp-react-design-system/shadcn'
+} from '@lotte/rsp-react-design-system/shadcn'
 import { useAuth } from '../../context/useAuth'
 import { useTheme } from '../../context/useTheme'
 import AiGate from '../ai/AiGate'

@@ -6,7 +6,7 @@
  *   — 이 외의 크기(8~10, 15, 17 등)는 쓰지 않는다
  */
 /*
- * 포탈 토큰(--c-*)은 RSP 디자인시스템 SDK(rsp-react-design-system) 변수를 참조한다.
+ * 포탈 토큰(--c-*)은 RSP 디자인시스템 SDK(@lotte/rsp-react-design-system) 변수를 참조한다.
  * - semantic 토큰(--rsp-color-bg-page 등)은 SDK가 data-rsp-theme 값에 따라 라이트/다크를 전환
  * - SDK에 semantic 이 없는 항목(info/tertiary/draft 태그 등)은 primitive 로 매핑, 다크는 아래에서 재정의
  * - 액션 색상은 SDK primary(초록) 대신 secondary(파랑)를 사용 (포탈 블루 테마 유지)

@@ -8,7 +8,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from 'rsp-react-design-system/shadcn'
+} from '@lotte/rsp-react-design-system/shadcn'
 
 type Option = { value: string; label: ReactNode; disabled?: boolean }
 type OptionGroup = { label?: ReactNode; options: Option[] }

@@ -9,7 +9,7 @@ import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
 import { Button, IconButton, Input, Select, TabBar, Textarea, Tag, Panel, Loading, EmptyState } from '../../components/ui'
-import { buttonVariants, ButtonGroup, ButtonGroupSeparator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from 'rsp-react-design-system/shadcn'
+import { buttonVariants, ButtonGroup, ButtonGroupSeparator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@lotte/rsp-react-design-system/shadcn'
 
 // ── 업무 아이템 ───────────────────────────────────────────────────────────────
 

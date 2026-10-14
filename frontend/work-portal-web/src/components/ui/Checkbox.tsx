@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { Checkbox as SdkCheckbox } from 'rsp-react-design-system/shadcn'
+import { Checkbox as SdkCheckbox } from '@lotte/rsp-react-design-system/shadcn'
 
 type CheckboxProps = ComponentProps<typeof SdkCheckbox>
 

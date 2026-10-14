@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { Card } from 'rsp-react-design-system/shadcn'
+import { Card } from '@lotte/rsp-react-design-system/shadcn'
 
 type PanelProps = ComponentProps<'div'>
 
