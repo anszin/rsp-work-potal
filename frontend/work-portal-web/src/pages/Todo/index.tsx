@@ -6,6 +6,7 @@ import { getUsers, type UserSummary } from '../../api/users'
 import { getKeyTasks } from '../../api/keyTasks'
 import { workUnitApi } from '../../api/workUnits'
 import { Button, IconButton, Input, Modal, Select, Textarea, Tag, Panel, Loading, EmptyState, Checkbox } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
   { status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },
@@ -193,16 +194,15 @@ export default function TodoPage() {
 
   return (
     <div style={{ padding: 24, height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>To-Do</h2>
-          <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 2 }}>
-            총 {todos.length}개 · 완료 {grouped.DONE.length}개
-            {grouped.HOLD.length > 0 && <span style={{ color: 'var(--c-tag-warn-t)', marginLeft: 8 }}>· 보류 {grouped.HOLD.length}개</span>}
-          </div>
-        </div>
-        <Button variant="filled" onClick={openCreate}>+ 추가</Button>
-      </div>
+      <PageHeader
+        title="To-Do"
+        description={<>
+          총 {todos.length}개 · 완료 {grouped.DONE.length}개
+          {grouped.HOLD.length > 0 && <span style={{ color: 'var(--c-tag-warn-t)', marginLeft: 8 }}>· 보류 {grouped.HOLD.length}개</span>}
+        </>}
+        actions={<Button variant="filled" onClick={openCreate}>+ 추가</Button>}
+        style={{ marginBottom: 4 }}
+      />
 
       {/* Kanban Board - 5컬럼 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, flex: 1, minHeight: 0, overflowX: 'auto' }}>

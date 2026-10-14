@@ -9,6 +9,7 @@ import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
 import { Button, IconButton, Input, Select, TabBar, Textarea, Tag, Panel, Loading, EmptyState } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 import { buttonVariants, ButtonGroup, ButtonGroupSeparator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@lotte/rsp-react-design-system/shadcn'
 
 // ── 업무 아이템 ───────────────────────────────────────────────────────────────
@@ -521,7 +522,7 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
             {isConsolidated && (
               <Tag tone="purple">통합</Tag>
             )}
-            <h2 style={{ margin: 0, fontSize: 20 }}>{report.title}</h2>
+            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{report.title}</h2>
           </div>
           <div style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>
             {fmtWeek(report.weekStart, report.weekEnd)}{' · '}<strong>{report.author}</strong>
@@ -959,9 +960,10 @@ export default function WeeklyReportPage() {
 
       {/* ── 마스터 패널 ──────────────────────────────────────────────── */}
       <div className="master-panel" style={{ width: 290 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 20 }}>주간보고</h2>
-          <div style={{ display: 'flex', gap: 6 }}>
+        <PageHeader
+          title="주간보고"
+          style={{ marginBottom: 12 }}
+          actions={<>
             {isManager && (
               <IconButton variant="outlined" size="md" icon="🖨" label="이번 주 전체 보고서 인쇄"
                 title="이번 주 전체 보고서 인쇄" onClick={() => setPrintOpen(true)} />
@@ -984,8 +986,8 @@ export default function WeeklyReportPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </ButtonGroup>
-          </div>
-        </div>
+          </>}
+        />
 
         {/* 탭 (관리자만) */}
         {isManager && (

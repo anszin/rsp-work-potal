@@ -10,6 +10,7 @@ import { getActiveSystems, getManagedSystemIds, getActiveSubSystems, getSystemMa
 import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
+import PageHeader from '../../components/PageHeader'
 import { Button, Input, Modal, Select, TabBar, Tag, Panel, Loading, EmptyState, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
 
 const STATUS_LABELS: Record<RequestStatus, string> = {
@@ -228,14 +229,12 @@ export default function ChangeRequestPage() {
         )
       })()}
 
-      <div className="deploy-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>변경 관리</h2>
-          <TabBar value={tab} onChange={v => setTab(v)}
-            items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />
-        </div>
-        {tab === 'list' && <Button variant="filled" onClick={openCreate}>+ 새 요청</Button>}
-      </div>
+      <PageHeader
+        title="변경 관리"
+        extra={<TabBar value={tab} onChange={v => setTab(v)}
+          items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />}
+        actions={tab === 'list' && <Button variant="filled" onClick={openCreate}>+ 새 요청</Button>}
+      />
 
       {tab === 'dashboard' && <ChangeRequestDashboard requests={requests} />}
 

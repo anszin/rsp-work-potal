@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Button, Panel, Tag, EmptyState } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import client from '../../api/client'
@@ -113,12 +114,10 @@ export default function DashboardPage() {
 
   return (
     <div className="page-wrap" style={{ background: 'var(--c-bg)', minHeight: '100vh' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>종합 대시보드</h2>
-        <div style={{ fontSize: 13, color: 'var(--c-text-muted)', marginTop: 4 }}>
-          안녕하세요, {user?.username}님 · {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
-        </div>
-      </div>
+      <PageHeader
+        title="종합 대시보드"
+        description={<>안녕하세요, {user?.username}님 · {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}</>}
+      />
 
       {/* 요약 카드 */}
       <div className="dash-summary-grid">

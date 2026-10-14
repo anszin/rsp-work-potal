@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { financeApi, FinanceCategory, SaveFinanceRequest, FinanceRecord } from '../../api/finance'
 import { Button, Input, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Panel, Tag, Loading, EmptyState } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -88,16 +89,16 @@ export default function FinancePage() {
 
   return (
     <div className="page-wrap">
-      <div className="deploy-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <h2 style={{ margin: 0 }}>손익 관리</h2>
-          <TabBar value={tab} onChange={v => setTab(v)}
-            items={[{ value: 'list', label: '월별 내역' }, { value: 'dashboard', label: '연간 현황' }]} />
-        </div>
-        <Select value={selectedYear} onValueChange={v => setSelectedYear(+v)}>
-          {years.map(y => <option key={y} value={y}>{y}년</option>)}
-        </Select>
-      </div>
+      <PageHeader
+        title="손익 관리"
+        extra={<TabBar value={tab} onChange={v => setTab(v)}
+          items={[{ value: 'list', label: '월별 내역' }, { value: 'dashboard', label: '연간 현황' }]} />}
+        actions={
+          <Select value={selectedYear} onValueChange={v => setSelectedYear(+v)}>
+            {years.map(y => <option key={y} value={y}>{y}년</option>)}
+          </Select>
+        }
+      />
 
       {tab === 'dashboard' && <FinanceDashboard summary={summary} year={selectedYear} />}
 

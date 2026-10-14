@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { getPrompts, createPrompt, updatePrompt, deletePrompt, RolePrompt } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
 import { Button, IconButton, Input, Textarea, Modal, Tag, Panel, Loading, EmptyState, toast } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -311,10 +312,11 @@ export default function AiPromptsPage() {
       )}
 
       {/* 헤더 */}
-      <div style={{ marginBottom: 16, flexShrink: 0 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>프롬프트 관리</h2>
-        <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 3 }}>역할별 AI 시스템 프롬프트를 편집합니다</div>
-      </div>
+      <PageHeader
+        title="프롬프트 관리"
+        description="역할별 AI 시스템 프롬프트를 편집합니다"
+        style={{ flexShrink: 0 }}
+      />
 
       {/* 2-패널 레이아웃 */}
       <div style={{ flex: 1, display: 'flex', gap: 16, overflow: 'hidden' }}>

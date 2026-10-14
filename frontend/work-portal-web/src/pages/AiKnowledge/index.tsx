@@ -4,6 +4,7 @@ import {
   KnowledgeStats, KnowledgeSource, KnowledgeFile, SourceType,
 } from '../../api/aiApi'
 import { Button, Tag, Panel, Loading, EmptyState, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -205,12 +206,10 @@ export default function AiKnowledgePage() {
     <div style={{ padding: '24px 32px', maxWidth: 960, margin: '0 auto' }}>
 
       {/* 헤더 */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>지식베이스 현황</h2>
-        <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 3 }}>
-          RAG 색인된 소스 및 청크 현황을 확인합니다
-        </div>
-      </div>
+      <PageHeader
+        title="지식베이스 현황"
+        description="RAG 색인된 소스 및 청크 현황을 확인합니다"
+      />
 
       {/* 요약 카드 */}
       {!loading && stats && (

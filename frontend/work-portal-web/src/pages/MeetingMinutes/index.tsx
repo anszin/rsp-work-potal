@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { meetingApi, MeetingMinute, SaveMeetingRequest } from '../../api/reports'
 import { Button, Input, Textarea, Loading, EmptyState } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 const emptyForm = (): SaveMeetingRequest => ({
   title: '', meetingDate: new Date().toISOString().slice(0, 10),
@@ -65,10 +66,11 @@ export default function MeetingMinutesPage() {
     <div className="master-detail page-wrap">
       {/* 목록 패널 */}
       <div className="master-panel" style={{ width: 320 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 20 }}>회의록</h2>
-          <Button variant="filled" onClick={() => { resetForm(); setShowForm(true); setSelected(null) }}>+ 작성</Button>
-        </div>
+        <PageHeader
+          title="회의록"
+          actions={<Button variant="filled" onClick={() => { resetForm(); setShowForm(true); setSelected(null) }}>+ 작성</Button>}
+          style={{ marginBottom: 12 }}
+        />
         {isLoading ? <Loading /> : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {items.length === 0 ? <EmptyState title="등록된 회의록이 없습니다." />
@@ -139,7 +141,7 @@ export default function MeetingMinutesPage() {
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
-                <h2 style={{ margin: '0 0 6px' }}>{selected.title}</h2>
+                <h2 style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 600 }}>{selected.title}</h2>
                 <div style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>
                   {selected.meetingDate}
                   {selected.location && ` · ${selected.location}`}

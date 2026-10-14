@@ -12,6 +12,7 @@ import {
   Button, Input, Textarea, Select, Modal, TabBar, Tag, Panel, Loading, EmptyState,
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 interface WorkItem {
   id: string
@@ -333,9 +334,9 @@ export default function KeyTaskPage() {
       })()}
 
       {/* 헤더 */}
-      <div className="deploy-header" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>중점과제</h2>
+      <PageHeader
+        title="중점과제"
+        extra={<>
           <div style={{ display: 'flex', gap: 4 }}>
             <Button size="md" variant={pageTab === 'keytasks' ? 'filled' : 'text'} onClick={() => setPageTab('keytasks')}>중점과제</Button>
             <Button size="md" variant={pageTab === 'workunits' ? 'filled' : 'text'} onClick={() => setPageTab('workunits')}>단위업무</Button>
@@ -347,9 +348,9 @@ export default function KeyTaskPage() {
           >
             {displayYears.map(y => <option key={y} value={y}>{y}년</option>)}
           </Select>
-        </div>
-        {pageTab === 'keytasks' && <Button variant="filled" onClick={openCreate}>+ 과제 추가</Button>}
-      </div>
+        </>}
+        actions={pageTab === 'keytasks' && <Button variant="filled" onClick={openCreate}>+ 과제 추가</Button>}
+      />
 
       {pageTab === 'workunits' && <WorkUnitTab key={`${workUnitFilterId ?? 'all'}-${selYear}`} initialKeyTaskId={workUnitFilterId} year={selYear} />}
       {pageTab === 'performance' && <PerformanceTab keyTasks={tasks} />}

@@ -148,7 +148,7 @@ export default function SystemManagementPage() {
     <div className="page-wrap">
       <PageHeader
         title="시스템 관리"
-        action={<Button onClick={() => { reset(); setShowForm(true) }} variant="filled">+ 시스템 등록</Button>}
+        actions={<Button onClick={() => { reset(); setShowForm(true) }} variant="filled">+ 시스템 등록</Button>}
       />
 
       {showForm && (

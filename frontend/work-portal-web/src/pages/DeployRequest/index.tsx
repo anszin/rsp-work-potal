@@ -11,6 +11,7 @@ import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../.
 import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
+import PageHeader from '../../components/PageHeader'
 import { Button, EmptyState, Input, Loading, Modal, Panel, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tag, Textarea } from '../../components/ui'
 import {
   Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext, PaginationEllipsis,
@@ -313,14 +314,12 @@ export default function DeployRequestPage() {
         )
       })()}
 
-      <div className="deploy-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>배포 관리</h2>
-          <TabBar value={tab} onChange={v => setTab(v)}
-            items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />
-        </div>
-        {tab === 'list' && <Button variant="filled" onClick={() => openCreate()}>+ 새 배포 요청</Button>}
-      </div>
+      <PageHeader
+        title="배포 관리"
+        extra={<TabBar value={tab} onChange={v => setTab(v)}
+          items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />}
+        actions={tab === 'list' && <Button variant="filled" onClick={() => openCreate()}>+ 새 배포 요청</Button>}
+      />
 
       {tab === 'dashboard' && <DeployDashboard requests={requests.filter(r => !r.parentDrId)} />}
 

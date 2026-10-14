@@ -4,6 +4,7 @@ import { getUsers, UserSummary } from '../../api/users'
 import { notificationApi } from '../../api/notifications'
 import { useAuth } from '../../context/useAuth'
 import { Button, Textarea, Checkbox, Panel, Tag } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 const TEMPLATES = [
   { label: '주간보고 제출 요청', text: '이번 주 주간보고 등록 부탁드립니다. 금일 오후 6시까지 포탈에 등록해 주세요.' },
@@ -63,10 +64,10 @@ export default function NotificationPage() {
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px' }}>
-      <h2 style={{ margin: '0 0 6px', fontSize: 20 }}>공지 발송</h2>
-      <p style={{ margin: '0 0 28px', fontSize: 13, color: 'var(--c-text-muted)' }}>
-        웹엑스를 통해 팀원에게 공지 또는 리마인더를 발송합니다.
-      </p>
+      <PageHeader
+        title="공지 발송"
+        description="웹엑스를 통해 팀원에게 공지 또는 리마인더를 발송합니다."
+      />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, DragEvent } from 'react'
 import { uploadDocument, getDocuments, deleteDocument, AiDocument, DocScope } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
 import { Button, Select, Modal, Tag, Panel, Loading, EmptyState, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -198,12 +199,10 @@ export default function AiDocumentsPage() {
       )}
 
       {/* 헤더 */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>RAG 문서 관리</h2>
-        <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 3 }}>
-          AI가 참조할 문서를 업로드합니다. PDF, Word, Excel, 코드 파일 지원 (최대 50MB)
-        </div>
-      </div>
+      <PageHeader
+        title="RAG 문서 관리"
+        description="AI가 참조할 문서를 업로드합니다. PDF, Word, Excel, 코드 파일 지원 (최대 50MB)"
+      />
 
       {/* 업로드 영역 */}
       <Panel style={{ display: 'block', padding: '20px 24px', marginBottom: 20 }}>

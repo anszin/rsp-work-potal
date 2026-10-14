@@ -136,7 +136,7 @@ export default function UserManagementPage() {
 
       <PageHeader
         title="사용자 관리"
-        action={
+        actions={
           <div style={{ display: 'flex', gap: 8 }}>
             {isAdminOrManager && (
               <Button variant="outlined"

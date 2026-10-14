@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi, ItemType, ItemStatus, SaveInventoryRequest, InventoryItem } from '../../api/inventory'
 import { Button, Input, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea, Panel, Tag, Loading, EmptyState } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 const TYPE_LABEL: Record<ItemType, string> = { CONTRACT: '수주', PROPOSAL: '제안' }
 const STATUS_LABEL: Record<ItemStatus, string> = {
@@ -77,13 +78,11 @@ export default function InventoryPage() {
 
   return (
     <div className="page-wrap">
-      <div className="deploy-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <h2 style={{ margin: 0 }}>인벤토리 (수주/제안)</h2>
-          <TabBar value={tab} onChange={v => setTab(v)}
-            items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />
-        </div>
-        {tab === 'list' && <div style={{ display: 'flex', gap: 8 }}>
+      <PageHeader
+        title="인벤토리 (수주/제안)"
+        extra={<TabBar value={tab} onChange={v => setTab(v)}
+          items={[{ value: 'list', label: '목록' }, { value: 'dashboard', label: '현황' }]} />}
+        actions={tab === 'list' && <>
           {(['', 'CONTRACT', 'PROPOSAL'] as const).map(t => (
             <Button key={t} size="md" variant={typeFilter === t ? 'filled' : 'outlined'}
               onClick={() => setTypeFilter(t)}>
@@ -91,8 +90,8 @@ export default function InventoryPage() {
             </Button>
           ))}
           <Button variant="filled" onClick={() => { resetForm(); setShowForm(true) }}>+ 추가</Button>
-        </div>}
-      </div>
+        </>}
+      />
 
       {tab === 'dashboard' && <InventoryDashboard items={allItems.data ?? []} />}
 

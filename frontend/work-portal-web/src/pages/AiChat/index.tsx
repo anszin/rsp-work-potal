@@ -9,6 +9,7 @@ import {
 } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
 import { Button, IconButton, Tag, Panel, Loading, EmptyState } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@lotte/rsp-react-design-system/shadcn'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
@@ -582,19 +583,15 @@ export default function AiChatPage() {
 
         {/* 헤더 */}
         <div style={{ marginBottom: 14, flexShrink: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>AI 어시스턴트</h2>
-              <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 2 }}>
-                {currentConvId && convIndex && convIndex > 0 ? (
-                  <span>
-                    <span style={{ color: selectedRole.color, fontWeight: 600 }}>{selectedRole.label}</span>
-                    {' · '}{convIndex}번째 대화
-                  </span>
-                ) : '클라우드 POS 플랫폼 도메인 전문 AI'}
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <PageHeader
+            title="AI 어시스턴트"
+            description={currentConvId && convIndex && convIndex > 0 ? (
+              <span>
+                <span style={{ color: selectedRole.color, fontWeight: 600 }}>{selectedRole.label}</span>
+                {' · '}{convIndex}번째 대화
+              </span>
+            ) : '클라우드 POS 플랫폼 도메인 전문 AI'}
+            actions={<>
               {/* 토글 상태: ON이면 filled, OFF면 outlined */}
               <Button
                 variant={agentMode ? 'filled' : 'outlined'}
@@ -610,8 +607,9 @@ export default function AiChatPage() {
               <Button variant="outlined" size="sm" onClick={handleClear}>
                 초기화
               </Button>
-            </div>
-          </div>
+            </>}
+            style={{ marginBottom: 0 }}
+          />
 
           {/* 역할 탭 — 동적 (팀 공통 / 내 역할 그룹 구분) */}
           {(() => {

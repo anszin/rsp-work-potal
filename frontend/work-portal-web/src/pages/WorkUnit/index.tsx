@@ -8,6 +8,7 @@ import {
 import { getKeyTasks } from '../../api/keyTasks'
 import { todoApi, type Todo } from '../../api/todos'
 import { Button, Input, Modal, Select, Textarea, Tag, Panel, Loading, EmptyState } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
@@ -126,15 +127,12 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
   return (
     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>단위업무</h2>
-          <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginTop: 2 }}>
-            전체 {workUnits.length}개 · 진행중 {grouped.IN_PROGRESS.length}개 · 보류 {grouped.ON_HOLD.length}개 · 완료 {grouped.DONE.length}개
-          </div>
-        </div>
-        <Button onClick={openCreate}>+ 추가</Button>
-      </div>
+      <PageHeader
+        title="단위업무"
+        description={<>전체 {workUnits.length}개 · 진행중 {grouped.IN_PROGRESS.length}개 · 보류 {grouped.ON_HOLD.length}개 · 완료 {grouped.DONE.length}개</>}
+        actions={<Button onClick={openCreate}>+ 추가</Button>}
+        style={{ marginBottom: 4 }}
+      />
 
       {/* 필터 */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

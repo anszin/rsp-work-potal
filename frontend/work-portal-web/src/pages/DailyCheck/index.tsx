@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
 import client from '../../api/client'
 import { Button, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea, Panel, Tag, Loading, EmptyState } from '../../components/ui'
+import PageHeader from '../../components/PageHeader'
 
 interface SystemOption { id: number; name: string }
 
@@ -67,17 +68,17 @@ export default function DailyCheckPage() {
 
   return (
     <div className="page-wrap">
-      <div className="deploy-header">
-        <h2 style={{ margin: 0 }}>일일 점검</h2>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+      <PageHeader
+        title="일일 점검"
+        actions={<>
           <Input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)}
             style={{ width: 'auto' }} />
           <Button size="md" variant={dateFilter ? 'outlined' : 'filled'} onClick={() => setDateFilter('')}>
             전체
           </Button>
           <Button variant="filled" onClick={() => { resetForm(); setShowForm(true) }}>+ 점검 등록</Button>
-        </div>
-      </div>
+        </>}
+      />
 
       {/* 오늘 날짜 상태 요약 */}
       {dateFilter === today && reports.length > 0 && (
