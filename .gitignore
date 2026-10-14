@@ -10,6 +10,8 @@ backend/work-portal-api/bin/
 # Node / Vite
 frontend/work-portal-web/node_modules/
 frontend/work-portal-web/dist/
+# TypeScript 증분 빌드 캐시 (빌드할 때마다 변경)
+*.tsbuildinfo
 
 # IDE
 .idea/
