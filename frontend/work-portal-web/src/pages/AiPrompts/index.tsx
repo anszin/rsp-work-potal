@@ -320,7 +320,7 @@ export default function AiPromptsPage() {
             </Button>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto' }}>
+          <div className="portal-list" style={{ flex: 1, overflowY: 'auto' }}>
             {loading && (
               <Loading style={{ padding: 20, fontSize: 12 }} />
             )}

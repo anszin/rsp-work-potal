@@ -972,7 +972,7 @@ export default function WeeklyReportPage() {
 
           // ── 내 보고서 탭 (팀원 + 관리자 공통) ──────────────────────────
           masterTab === 'mine' || !isManager ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="portal-list">
               {weekGroups.length === 0
                 ? <EmptyState title="등록된 주간보고가 없습니다." />
                 : weekGroups.map(group => {
@@ -999,7 +999,7 @@ export default function WeeklyReportPage() {
                           }
                         />
                         {expanded && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 4, marginBottom: 6 }}>
+                          <div className="portal-list" style={{ paddingLeft: 12 }}>
                             {group.reports.map(item => {
                               const isMine = item.author === user?.username
                               const isSelected = detail.type === 'view' && detail.report.id === item.id
@@ -1026,7 +1026,7 @@ export default function WeeklyReportPage() {
               {!isManager && consolidated.length > 0 && (
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--c-border)' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--c-tag-pri-t)', marginBottom: 6, letterSpacing: '0.04em' }}>통합 보고서</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div className="portal-list">
                     {consolidated.map(c => {
                       const isSelected = detail.type === 'view' && detail.report.id === c.id
                       return (
@@ -1061,7 +1061,7 @@ export default function WeeklyReportPage() {
               </div>
 
               {/* 팀원 목록 */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div className="portal-list">
                 {weekReports.length === 0 ? (
                   <EmptyState title="이 주차에 등록된 보고서가 없습니다." style={{ padding: '20px 0' }} />
                 ) : (

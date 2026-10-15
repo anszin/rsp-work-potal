@@ -479,6 +479,13 @@ div:has(> [data-slot="select-content"]) { z-index: 10000; }
 [data-portal-list-item][role="button"]:hover { background: var(--c-thead); }
 [data-portal-list-item][data-selected] { background: var(--c-row-sel); border-color: transparent; }
 [data-portal-list-item] [data-slot="item-description"] { font-size: 12px; }
+/* 목록 컨테이너(.portal-list) — 항목 사이 얇은 구분선 (회의록·주간보고·대화 이력 등 두 줄 항목 목록)
+   - 항목 간격 없이 선으로 구분, 행 모서리는 각지게 (선과 라운드 어긋남 방지)
+   - 그룹 헤더 아래 펼쳐지는 하위 목록(.portal-list 중첩)도 헤더와 선으로 구분 */
+.portal-list { display: flex; flex-direction: column; }
+.portal-list > * + * { border-top: 1px solid var(--c-border); }
+.portal-list [data-portal-list-item] { border-radius: 0; }
+.portal-list [data-portal-list-item] + .portal-list { border-top: 1px solid var(--c-border); }
 
 /* SDK Progress — 값이 없는(진행률 미정) 상태는 흐르는 막대로 표시 */
 [data-slot="progress-indicator"][data-indeterminate] { width: 40% !important; animation: progress 1.2s ease-in-out infinite; }

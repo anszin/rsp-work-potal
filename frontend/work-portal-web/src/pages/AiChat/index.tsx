@@ -307,7 +307,7 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
         </Link>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div className="portal-list" style={{ flex: 1, overflowY: 'auto' }}>
         {loading && conversations.length === 0 && (
           <Loading style={{ padding: '20px 12px', fontSize: 12 }} />
         )}

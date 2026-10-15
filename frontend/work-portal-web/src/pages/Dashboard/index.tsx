@@ -372,7 +372,7 @@ export default function DashboardPage() {
             {meetings.length === 0 ? (
               <EmptyState title="등록된 회의록이 없습니다." />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="portal-list">
                 {meetings.slice(0, 5).map((m: any) => (
                   <ListItem key={m.id} onClick={() => navigate('/reports/meeting')}
                     title={m.title}

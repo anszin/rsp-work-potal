@@ -72,7 +72,7 @@ export default function MeetingMinutesPage() {
           style={{ marginBottom: 12 }}
         />
         {isLoading ? <Loading /> : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="portal-list">
             {items.length === 0 ? <EmptyState title="등록된 회의록이 없습니다." />
               : items.map(item => (
                 <ListItem key={item.id}
