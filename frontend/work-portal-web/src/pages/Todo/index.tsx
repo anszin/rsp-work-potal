@@ -7,6 +7,7 @@ import { getKeyTasks } from '../../api/keyTasks'
 import { workUnitApi } from '../../api/workUnits'
 import { Button, IconButton, Input, Modal, Select, Textarea, Tag, Panel, Loading, EmptyState, Checkbox } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
+import { Progress } from '@lotte/rsp-react-design-system/shadcn'
 
 const COLUMNS: { status: TodoStatus; label: string; color: string; guide: string }[] = [
   { status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },
@@ -506,7 +507,7 @@ export default function TodoPage() {
                       <div style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '6px 0' }}>진행 내용을 기록하세요</div>
                     )}
                     {(form.workLogs ?? []).map((log, i) => (
-                      <div key={i} style={{ marginBottom: 8, background: 'var(--c-thead)', borderRadius: 6, padding: '8px 10px' }}>
+                      <Panel key={i} style={{ display: 'block', marginBottom: 8, padding: '8px 10px', background: 'var(--c-thead)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-sub)' }}>{log.date}</span>
                           {!readOnly && (
@@ -525,7 +526,7 @@ export default function TodoPage() {
                           placeholder="오늘 진행한 내용"
                           disabled={readOnly}
                         />
-                      </div>
+                      </Panel>
                     ))}
                   </div>
 
@@ -584,8 +585,7 @@ export default function TodoPage() {
               {/* ── 버튼 ── */}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--c-border)', alignItems: 'center' }}>
                 {!readOnly && editing && (
-                  <Button type="button" variant="outlined"
-                    style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
+                  <Button type="button" variant="danger"
                     onClick={() => { if (confirm(`"${editing.title}" 삭제할까요?`)) { deleteMut.mutate(editing.id); closeModal() } }}>
                     삭제
                   </Button>
@@ -655,9 +655,9 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
               <span>체크리스트</span>
               <span>{done}/{total}</span>
             </div>
-            <div style={{ height: 4, borderRadius: 2, background: 'var(--c-border)' }}>
-              <div style={{ height: '100%', borderRadius: 2, background: done === total ? 'var(--c-status-done)' : 'var(--c-status-prog)', width: `${pct}%`, transition: 'width 0.2s' }} />
-            </div>
+            {/* SDK Progress — 인디케이터 색은 --primary 로 지정 (완료/진행) */}
+            <Progress value={pct} aria-label="체크리스트 진행률"
+              style={{ '--primary': done === total ? 'var(--c-status-done)' : 'var(--c-status-prog)' } as React.CSSProperties} />
           </div>
         )
       })()}
@@ -707,38 +707,15 @@ function TodoCard({ todo, showAssignee, nameOf, typeBadge, onDetail, onDragStart
 
 
 const styles: Record<string, React.CSSProperties> = {
-  addBtn: {
-    background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none',
-    padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600,
-  },
   colHeader: {
     padding: '10px 12px', borderRadius: '6px 6px 0 0',
     background: 'var(--c-thead)', borderLeft: '1px solid var(--c-border)',
     borderRight: '1px solid var(--c-border)',
   },
-  iconBtn: {
-    background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 12, padding: '2px 3px', opacity: 0.5, lineHeight: 1,
-  },
   modalHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
   },
-  closeBtn: {
-    background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', color: 'var(--c-text-muted)',
-  },
   label: {
     display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: 'var(--c-text-sub)', fontWeight: 500,
-  },
-  cancelBtn: {
-    padding: '8px 16px', borderRadius: 6, border: '1px solid var(--c-border)',
-    background: 'transparent', cursor: 'pointer', fontSize: 13, color: 'var(--c-text-muted)',
-  },
-  submitBtn: {
-    padding: '8px 20px', borderRadius: 6, border: 'none',
-    background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', cursor: 'pointer', fontSize: 13, fontWeight: 600,
-  },
-  deleteBtn: {
-    padding: '8px 14px', borderRadius: 6, border: '1px solid var(--c-tag-err-t)',
-    background: 'transparent', cursor: 'pointer', fontSize: 13, color: 'var(--c-tag-err-t)',
   },
 }

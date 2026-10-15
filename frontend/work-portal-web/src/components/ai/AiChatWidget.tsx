@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { chat, AiRole } from '../../api/aiApi'
 import { aiConfig } from '../../config/aiConfig'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton } from '../ui'
+import { Button, IconButton, Input, ChipGroup } from '../ui'
 
 const ROLES: { value: AiRole; label: string; color: string }[] = [
   { value: 'backend',  label: '백엔드',    color: 'var(--c-chart-1)' },
@@ -11,9 +11,6 @@ const ROLES: { value: AiRole; label: string; color: string }[] = [
   { value: 'frontend', label: '프론트엔드', color: 'var(--c-chart-3)' },
   { value: 'planner',  label: '기획',      color: 'var(--c-chart-5)' },
 ]
-
-// 토큰 색상에 투명도 적용 (CSS 변수는 hex 알파 접미사를 붙일 수 없음)
-const withAlpha = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`
 
 interface WMsg {
   id: number
@@ -33,21 +30,22 @@ export default function AiChatWidget() {
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  // SDK Input 은 ref 전달 불가 → 감싼 div 에서 input 을 찾아 포커스
+  const inputWrapRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
-
-  // AI 비활성화 또는 비로그인 시 렌더링 안 함
-  if (!aiConfig.enabled || !user) return null
-
-  const selectedColor = ROLES.find(r => r.value === role)?.color ?? 'var(--c-chart-1)'
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 100)
+    if (open) setTimeout(() => inputWrapRef.current?.querySelector('input')?.focus(), 100)
   }, [open])
+
+  // AI 비활성화 또는 비로그인 시 렌더링 안 함 (훅 규칙: 모든 훅 호출 이후에 반환)
+  if (!aiConfig.enabled || !user) return null
+
+  const selectedColor = ROLES.find(r => r.value === role)?.color ?? 'var(--c-chart-1)'
 
   const send = () => {
     const text = input.trim()
@@ -129,18 +127,11 @@ export default function AiChatWidget() {
             display: 'flex', padding: '8px 10px', gap: 4,
             borderBottom: '1px solid var(--c-border)', background: 'var(--c-bg)',
           }}>
-            {ROLES.map(r => (
-              <button key={r.value} onClick={() => setRole(r.value)} style={{
-                flex: 1, padding: '4px 0', borderRadius: 4, fontSize: 11, cursor: 'pointer',
-                border: `1px solid ${role === r.value ? r.color : 'transparent'}`,
-                background: role === r.value ? withAlpha(r.color, 9) : 'transparent',
-                color: role === r.value ? r.color : 'var(--c-text-muted)',
-                fontWeight: role === r.value ? 600 : 400,
-                transition: 'all 0.12s',
-              }}>
-                {r.label}
-              </button>
-            ))}
+            <ChipGroup
+              value={role}
+              onChange={setRole}
+              options={ROLES.map(r => ({ value: r.value, label: r.label, color: r.color }))}
+            />
           </div>
 
           {/* 메시지 영역 */}
@@ -183,24 +174,19 @@ export default function AiChatWidget() {
             padding: '10px 12px', borderTop: '1px solid var(--c-border)',
             display: 'flex', gap: 8, alignItems: 'center',
           }}>
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') send() }}
-              placeholder="질문 입력..."
-              style={{
-                flex: 1, border: '1px solid var(--c-border)', borderRadius: 6,
-                padding: '7px 10px', fontSize: 13, outline: 'none',
-                background: 'var(--c-input-bg)', color: 'var(--c-text)',
-              }}
-            />
+            <div ref={inputWrapRef} style={{ flex: 1 }}>
+              <Input
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') send() }}
+                placeholder="질문 입력..."
+              />
+            </div>
             {loading ? (
               <Button
-                variant="outlined"
+                variant="danger"
                 size="sm"
                 onClick={() => { abortRef.current?.abort(); setLoading(false) }}
-                style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
               >
                 중지
               </Button>
@@ -214,22 +200,22 @@ export default function AiChatWidget() {
       )}
 
       {/* 플로팅 버튼 */}
-      <button
+      {/* 어두운 셸 색상은 테마와 무관한 중립 프리미티브 유지 */}
+      <IconButton
+        variant="filled"
+        size="lg"
+        icon={open ? '×' : '⚡'}
+        label={open ? 'AI 닫기' : 'AI 어시스턴트 열기'}
         onClick={() => setOpen(o => !o)}
         style={{
           position: 'fixed', bottom: 24, right: 24, zIndex: 1001,
           width: 52, height: 52, borderRadius: '50%',
           background: open ? 'var(--rsp-color-neutral-700)' : 'var(--rsp-color-neutral-900)',
           border: `2px solid ${open ? 'var(--rsp-color-neutral-500)' : selectedColor}`,
-          color: 'var(--rsp-color-neutral-0)', fontSize: 22, cursor: 'pointer',
+          color: 'var(--rsp-color-neutral-0)', fontSize: 22,
           boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.2s',
         }}
-        title={open ? 'AI 닫기' : 'AI 어시스턴트 열기'}
-      >
-        {open ? '×' : '⚡'}
-      </button>
+      />
     </>
   )
 }

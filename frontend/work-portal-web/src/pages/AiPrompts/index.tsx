@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getPrompts, createPrompt, updatePrompt, deletePrompt, RolePrompt } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton, Input, Textarea, Modal, Tag, Panel, Loading, EmptyState, toast } from '../../components/ui'
+import {
+  Button, IconButton, Input, Textarea, Modal, Tag, Panel, Loading, EmptyState, toast,
+  RadioGroup, Callout, ListItem,
+} from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
@@ -12,9 +15,6 @@ const DEFAULT_COLORS: Record<string, string> = {
   backend: 'var(--c-chart-1)', android: 'var(--c-chart-2)', frontend: 'var(--c-chart-3)', planner: 'var(--c-chart-5)',
 }
 const EXTRA_COLORS = ['var(--c-chart-4)', 'var(--c-chart-6)', 'var(--c-chart-3)', 'var(--c-chart-8)', 'var(--c-chart-2)', 'var(--c-chart-5)', 'var(--c-chart-7)']
-
-// 토큰 색상에 투명도 적용 (CSS 변수는 hex 알파 접미사를 붙일 수 없음)
-const withAlpha = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`
 
 function getRoleColor(role: string, index: number): string {
   return DEFAULT_COLORS[role] ?? EXTRA_COLORS[index % EXTRA_COLORS.length]
@@ -46,7 +46,7 @@ function ConfirmDialog({ roleName, onConfirm, onCancel }: {
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <Button variant="outlined" size="sm" onClick={onCancel}>취소</Button>
-        <Button variant="outlined" size="sm" onClick={onConfirm} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>삭제</Button>
+        <Button variant="danger" size="sm" onClick={onConfirm}>삭제</Button>
       </div>
     </Modal>
   )
@@ -126,37 +126,22 @@ function NewRoleModal({ existingRoles, onAdd, onClose }: NewRoleModalProps) {
         {/* 공개 범위 선택 */}
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8 }}>공개 범위</div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {([
-              { value: 'public',  label: '팀 공통', desc: '모든 구성원이 사용 가능', color: 'var(--c-tag-done-t)' },
-              { value: 'private', label: '나만 사용', desc: '본인만 사용 가능', color: 'var(--c-text-muted)' },
-            ] as const).map(opt => (
-              <label
-                key={opt.value}
-                style={{
-                  flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
-                  border: `1.5px solid ${visibility === opt.value ? opt.color : 'var(--c-border)'}`,
-                  background: visibility === opt.value ? withAlpha(opt.color, 7) : 'var(--c-bg)',
-                  display: 'flex', alignItems: 'flex-start', gap: 8,
-                }}
-              >
-                <input
-                  type="radio"
-                  name="visibility"
-                  value={opt.value}
-                  checked={visibility === opt.value}
-                  onChange={() => setVisibility(opt.value)}
-                  style={{ marginTop: 2, accentColor: opt.color }}
-                />
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: visibility === opt.value ? opt.color : 'var(--c-text)' }}>
-                    {opt.label}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{opt.desc}</div>
-                </div>
-              </label>
-            ))}
-          </div>
+          <RadioGroup
+            value={visibility}
+            onValueChange={v => setVisibility(v as 'public' | 'private')}
+            options={[
+              { value: 'public',  label: '팀 공통', desc: '모든 구성원이 사용 가능' },
+              { value: 'private', label: '나만 사용', desc: '본인만 사용 가능' },
+            ].map(opt => ({
+              value: opt.value,
+              label: (
+                <span>
+                  <span style={{ display: 'block', fontWeight: 600 }}>{opt.label}</span>
+                  <span style={{ display: 'block', fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{opt.desc}</span>
+                </span>
+              ),
+            }))}
+          />
         </div>
 
         <div style={{ marginBottom: 18 }}>
@@ -345,42 +330,28 @@ export default function AiPromptsPage() {
               const isDefault = DEFAULT_ROLES.includes(p.role)
               const canDelete = !isDefault && p.visibility === 'private'
               return (
-                <div
+                <ListItem
                   key={p.role}
+                  selected={isActive}
                   onClick={() => handleSelect(p)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '10px 12px', cursor: 'pointer',
-                    borderLeft: `3px solid ${isActive ? color : 'transparent'}`,
-                    background: isActive ? 'var(--c-bg)' : 'transparent',
-                    transition: 'background 0.1s',
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: 13, fontWeight: isActive ? 600 : 400,
-                      color: isActive ? color : 'var(--c-text)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                      {p.roleName}
-                    </div>
-                    <div style={{ display: 'flex', gap: 5, marginTop: 3, alignItems: 'center' }}>
-                      <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{p.role}</span>
+                  title={<span style={{ color: isActive ? color : undefined }}>{p.roleName}</span>}
+                  description={
+                    <span style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                      <span>{p.role}</span>
                       <VisibilityBadge visibility={p.visibility} />
-                    </div>
-                  </div>
-                  {canDelete && (
+                    </span>
+                  }
+                  actions={canDelete ? (
                     <IconButton
                       variant="text"
                       size="sm"
                       icon="×"
                       label="역할 삭제"
-                      onClick={e => { e.stopPropagation(); setDeleteTarget(p) }}
-                      style={{ flexShrink: 0, opacity: 0.6 }}
+                      onClick={() => setDeleteTarget(p)}
                       title="삭제"
                     />
-                  )}
-                </div>
+                  ) : undefined}
+                />
               )
             })}
           </div>
@@ -395,13 +366,9 @@ export default function AiPromptsPage() {
 
               {/* 팀 공통 역할 경고 */}
               {isActivePublic && (
-                <div style={{
-                  marginBottom: 14, padding: '10px 14px', borderRadius: 8, flexShrink: 0,
-                  background: 'color-mix(in srgb, var(--rsp-color-warning-500) 7%, transparent)', border: '1px solid color-mix(in srgb, var(--rsp-color-warning-500) 27%, transparent)',
-                  fontSize: 12, color: 'var(--c-tag-warn-t)', lineHeight: 1.6,
-                }}>
-                  ⚠️ <strong>팀 공통 역할</strong>입니다. 변경 시 모든 구성원에게 영향을 줍니다.
-                </div>
+                <Callout tone="warning" style={{ marginBottom: 14, flexShrink: 0 }}>
+                  <strong>팀 공통 역할</strong>입니다. 변경 시 모든 구성원에게 영향을 줍니다.
+                </Callout>
               )}
 
               {/* 역할명 입력 */}

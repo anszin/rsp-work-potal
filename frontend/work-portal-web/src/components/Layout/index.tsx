@@ -25,7 +25,7 @@ import {
 import { useAuth } from '../../context/useAuth'
 import { useTheme } from '../../context/useTheme'
 import AiGate from '../ai/AiGate'
-import { Loading } from '../ui'
+import { Button, Loading } from '../ui'
 
 type Icon = ComponentType<{ className?: string }>
 
@@ -167,10 +167,11 @@ function PortalSidebar() {
             {user?.dept && <div style={{ fontSize: 11, color: 'var(--rsp-color-neutral-500)' }}>{user.dept}</div>}
             <div style={{ fontSize: 11, color: 'var(--rsp-color-neutral-700)' }}>{user?.role}</div>
             <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-              <button type="button" style={styles.themeBtn} onClick={toggle} title={theme === 'light' ? '다크 모드' : '라이트 모드'}>
+              <Button variant="outlined" size="sm" className="sidebar-footer-btn" onClick={toggle}
+                title={theme === 'light' ? '다크 모드' : '라이트 모드'} aria-label={theme === 'light' ? '다크 모드' : '라이트 모드'}>
                 {theme === 'light' ? '🌙' : '☀️'}
-              </button>
-              <button type="button" style={styles.logoutBtn} onClick={handleLogout}>로그아웃</button>
+              </Button>
+              <Button variant="outlined" size="sm" className="sidebar-footer-btn" style={{ flex: 1 }} onClick={handleLogout}>로그아웃</Button>
             </div>
           </>
         )}
@@ -234,6 +235,4 @@ const styles: Record<string, React.CSSProperties> = {
   logoCollapsed: { padding: '20px 0', borderBottom: '1px solid var(--rsp-color-neutral-800)', alignItems: 'center' },
   userSection: { padding: '16px 20px', borderTop: '1px solid var(--rsp-color-neutral-800)', gap: 4 },
   userSectionCollapsed: { padding: '8px 0', borderTop: '1px solid var(--rsp-color-neutral-800)' },
-  themeBtn: { background: 'transparent', border: '1px solid var(--rsp-color-neutral-700)', borderRadius: 4, padding: '5px 8px', cursor: 'pointer', fontSize: 14 },
-  logoutBtn: { flex: 1, background: 'transparent', border: '1px solid var(--rsp-color-neutral-700)', color: 'var(--rsp-color-neutral-500)', borderRadius: 4, padding: '6px 12px', cursor: 'pointer', fontSize: 13 },
 }

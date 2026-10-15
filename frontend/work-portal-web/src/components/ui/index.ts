@@ -11,6 +11,12 @@ export { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableC
 export { default as Tag } from './Tag'
 export type { TagTone } from './Tag'
 export { default as Panel } from './Panel'
+export { default as Callout } from './Callout'
+export type { CalloutTone } from './Callout'
+export { default as ChipGroup } from './ChipGroup'
+export { default as ListItem } from './ListItem'
+// 펼침/접힘, 팝오버: SDK 그대로 사용
+export { Collapsible, CollapsibleTrigger, CollapsibleContent, Popover, PopoverTrigger, PopoverContent } from '@lotte/rsp-react-design-system/shadcn'
 export { Loading, EmptyState } from './Feedback'
 // 토스트: 화면 어디서든 toast.add({ title, description, type: 'success' | 'error' | 'info' | 'warning' })
 export { toast } from '@lotte/rsp-react-design-system/shadcn'

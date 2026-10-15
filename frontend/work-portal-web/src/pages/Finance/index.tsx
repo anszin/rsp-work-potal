@@ -107,13 +107,13 @@ export default function FinancePage() {
       <Panel style={{ display: 'block', marginBottom: 20, overflowX: 'auto' }}>
         <div style={{ display: 'flex', gap: 4, minWidth: 700 }}>
           {summary.map(s => (
-            <button key={s.month}
+            <Panel key={s.month}
+              role="button" tabIndex={0} aria-pressed={selectedMonth === s.month}
               onClick={() => setSelectedMonth(s.month)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedMonth(s.month) } }}
               style={{
-                flex: 1, padding: '10px 4px', borderRadius: 6, border: '2px solid',
-                borderColor: selectedMonth === s.month ? 'var(--c-action)' : 'var(--c-border)',
-                background: selectedMonth === s.month ? 'var(--c-tag-sys)' : 'var(--c-bg)',
-                cursor: 'pointer', fontSize: 11, textAlign: 'center',
+                flex: 1, padding: '10px 4px', gap: 0, cursor: 'pointer', fontSize: 11, textAlign: 'center',
+                ...(selectedMonth === s.month ? { borderColor: 'var(--c-action)', background: 'var(--c-row-sel)' } : {}),
               }}>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>{MONTHS[s.month - 1]}</div>
               <div style={{ color: 'var(--c-action)' }}>{fmt(s.revenue / 10000)}만</div>
@@ -121,7 +121,7 @@ export default function FinancePage() {
               <div style={{ color: s.profit >= 0 ? 'var(--c-tag-done-t)' : 'var(--c-tag-err-t)', fontWeight: 600 }}>
                 {s.profit >= 0 ? '+' : ''}{fmt(s.profit / 10000)}만
               </div>
-            </button>
+            </Panel>
           ))}
         </div>
       </Panel>
@@ -220,7 +220,7 @@ export default function FinancePage() {
                 </TableCell>
                 <TableCell style={{ whiteSpace: 'nowrap' }}>
                   <Button variant="outlined" size="sm" onClick={() => openEdit(rec)}>수정</Button>
-                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(rec.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' }}>삭제</Button>
+                  <Button variant="danger" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(rec.id) }}>삭제</Button>
                 </TableCell>
               </TableRow>
             ))}

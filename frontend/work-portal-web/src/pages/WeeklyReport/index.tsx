@@ -1,5 +1,4 @@
-import { useState, useRef } from 'react'
-import { createPortal } from 'react-dom'
+import { useState } from 'react'
 import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -8,7 +7,7 @@ import { weeklyApi, WeeklyReport, SaveWeeklyRequest } from '../../api/reports'
 import { getKeyTasks, KeyTask } from '../../api/keyTasks'
 import { workUnitApi, WorkUnit } from '../../api/workUnits'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton, Input, Select, TabBar, Textarea, Tag, Panel, Loading, EmptyState } from '../../components/ui'
+import { Button, IconButton, Input, Select, TabBar, Textarea, Tag, Panel, ListItem, Popover, PopoverTrigger, PopoverContent, Loading, EmptyState } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
 import { buttonVariants, ButtonGroup, ButtonGroupSeparator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@lotte/rsp-react-design-system/shadcn'
 
@@ -202,8 +201,6 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   value: string; onChange: (v: string) => void; keyTasks: KeyTask[]; workUnits: WorkUnit[]
 }) {
   const [open, setOpen] = useState(false)
-  const [popupPos, setPopupPos] = useState<{ top?: number; bottom?: number; left: number; width: number; maxHeight: number }>({ left: 0, width: 400, maxHeight: 320 })
-  const btnRef = useRef<HTMLButtonElement>(null)
 
   const selectedWuId = value.startsWith('wu:') ? parseInt(value.slice(3)) : null
   const selectedWu = selectedWuId != null ? workUnits.find(w => w.id === selectedWuId) : null
@@ -220,25 +217,12 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
     wuByKt.get(wu.keyTaskId)!.push(wu)
   }
 
-  const handleOpen = () => {
-    if (!open && btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect()
-      const width = Math.min(window.innerWidth - r.left - 12, 640)
-      const spaceBelow = window.innerHeight - r.bottom - 8
-      const spaceAbove = r.top - 8
-      if (spaceBelow >= spaceAbove) {
-        setPopupPos({ top: r.bottom + 3, left: r.left, width, maxHeight: Math.max(spaceBelow, 120) })
-      } else {
-        setPopupPos({ bottom: window.innerHeight - r.top + 3, left: r.left, width, maxHeight: Math.max(spaceAbove, 120) })
-      }
-    }
-    setOpen(o => !o)
-  }
+  const pick = (v: string) => { onChange(v); setOpen(false) }
 
   const wuRowStyle = (active: boolean): React.CSSProperties => ({
     padding: '7px 12px 7px 24px', cursor: 'pointer', fontSize: 13,
     display: 'flex', alignItems: 'center', gap: 6,
-    background: active ? 'color-mix(in srgb, var(--c-action) 4%, transparent)' : 'transparent',
+    background: active ? 'var(--c-row-sel)' : 'transparent',
     color: active ? 'var(--c-action)' : 'var(--c-text)',
     fontWeight: active ? 600 : 400,
   })
@@ -250,61 +234,46 @@ function KpiSelect({ value, onChange, keyTasks, workUnits }: {
   }
 
   return (
-    <div style={{ position: 'relative', flexShrink: 0, width: 88 }}>
-      <button ref={btnRef} type="button" onClick={handleOpen}
+    // SDK Popover — React 18: Trigger 자체를 버튼으로 렌더링 (ref 전달 불필요)
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger type="button" data-slot="button"
+        className={buttonVariants({ variant: 'outline', size: 'sm' })}
         style={{
-          width: '100%', padding: '5px 7px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-          border: `1px solid ${isLinked ? 'color-mix(in srgb, var(--c-action) 33%, transparent)' : 'var(--c-border-in)'}`,
-          background: isLinked ? 'color-mix(in srgb, var(--c-action) 9%, transparent)' : 'var(--c-thead)',
-          color: isLinked ? 'var(--c-action)' : 'var(--c-text-muted)',
-          fontWeight: isLinked ? 700 : 400,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2,
-          overflow: 'hidden',
+          width: 88, flexShrink: 0, justifyContent: 'space-between', gap: 2, overflow: 'hidden', fontSize: 12,
+          color: isLinked ? 'var(--c-action)' : 'var(--c-text-muted)', fontWeight: isLinked ? 700 : 400,
         }}>
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, textAlign: 'left' }}>{shortLabel}</span>
         <span style={{ fontSize: 11, opacity: 0.5, flexShrink: 0 }}>▼</span>
-      </button>
-      {open && createPortal(
-        <div>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
-          <div style={{
-            position: 'fixed', top: popupPos.top, bottom: popupPos.bottom, left: popupPos.left, width: popupPos.width, zIndex: 9999,
-            background: 'var(--c-card)', border: '1px solid var(--c-border-in)',
-            borderRadius: 7, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-            maxHeight: popupPos.maxHeight, overflowY: 'auto',
-          }}>
-          {/* 기타 */}
-          <div onClick={() => { onChange(''); setOpen(false) }}
-            style={{ ...wuRowStyle(!value), paddingLeft: 12, borderBottom: '1px solid var(--c-border-in)' }}>
-            <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 8, background: 'var(--c-thead)', color: 'var(--c-text-muted)', fontWeight: 600 }}>기타</span>
-          </div>
-          {/* 중점과제 그룹헤더 → 단위업무 항목 */}
-          {keyTasks.map(kt => {
-            const wus = wuByKt.get(kt.id) ?? []
-            if (wus.length === 0) return null
-            return (
-              <div key={kt.id}>
-                <div style={groupHeaderStyle}>
-                  {kt.kpi && (
-                    <span style={{ fontSize: 11, padding: '1px 5px', borderRadius: 8, background: 'color-mix(in srgb, var(--c-action) 8%, transparent)', color: 'var(--c-action)', fontWeight: 700 }}>{kt.kpi}</span>
-                  )}
-                  <span>{kt.taskName}</span>
-                </div>
-                {wus.map(wu => (
-                  <div key={wu.id} onClick={() => { onChange(`wu:${wu.id}`); setOpen(false) }}
-                    style={wuRowStyle(value === `wu:${wu.id}`)}>
-                    <span style={{ fontSize: 11, opacity: 0.35, marginRight: 2 }}>└</span>
-                    <span>{wu.title}</span>
-                  </div>
-                ))}
+      </PopoverTrigger>
+      <PopoverContent align="start"
+        style={{ width: 'min(640px, calc(100vw - 24px))', maxHeight: 360, overflowY: 'auto', padding: 0, gap: 0 }}>
+        {/* 기타 */}
+        <div onClick={() => pick('')}
+          style={{ ...wuRowStyle(!value), paddingLeft: 12, borderBottom: '1px solid var(--c-border-in)' }}>
+          <Tag tone="neutral">기타</Tag>
+        </div>
+        {/* 중점과제 그룹헤더 → 단위업무 항목 */}
+        {keyTasks.map(kt => {
+          const wus = wuByKt.get(kt.id) ?? []
+          if (wus.length === 0) return null
+          return (
+            <div key={kt.id}>
+              <div style={groupHeaderStyle}>
+                {kt.kpi && <Tag tone="info">{kt.kpi}</Tag>}
+                <span>{kt.taskName}</span>
               </div>
-            )
-          })}
-          </div>
-        </div>,
-        document.body
-      )}
-    </div>
+              {wus.map(wu => (
+                <div key={wu.id} onClick={() => pick(`wu:${wu.id}`)}
+                  style={wuRowStyle(value === `wu:${wu.id}`)}>
+                  <span style={{ fontSize: 11, opacity: 0.35, marginRight: 2 }}>└</span>
+                  <span>{wu.title}</span>
+                </div>
+              ))}
+            </div>
+          )
+        })}
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -378,9 +347,9 @@ function WorkSectionForm({ label, sectionColor, items, onChange, keyTasks = [], 
         </Button>
       </div>
       {items.length === 0 ? (
-        <div onClick={add} style={{ fontSize: 12, color: 'var(--c-text-muted)', padding: '7px 12px', background: 'var(--c-bg)', borderRadius: 6, border: '1px dashed var(--c-border)', textAlign: 'center', cursor: 'pointer', userSelect: 'none' }}>
+        <Button variant="outlined" size="sm" onClick={add} style={{ width: '100%' }}>
           + 클릭하여 추가
-        </div>
+        </Button>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
@@ -435,7 +404,7 @@ function WeekCompareView({ report }: { report: WeeklyReport }) {
   const visible = sections.filter(s => s.tw.length || s.nw.length)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--c-border)' }}>
+    <Panel style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, padding: 0, overflow: 'hidden' }}>
       {/* 헤더 행 */}
       <div style={{ padding: '8px 14px', background: `color-mix(in srgb, ${TW} 8%, transparent)`, borderBottom: `1px solid color-mix(in srgb, ${TW} 13%, transparent)`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: TW }}>금주</span>
@@ -458,7 +427,7 @@ function WeekCompareView({ report }: { report: WeeklyReport }) {
           <div key={`${label}-nwi`} style={{ padding: '8px 14px', background: `color-mix(in srgb, ${NW} 1%, transparent)`, paddingBottom: isLast ? 14 : 8 }}>{renderItems(nw)}</div>,
         ]
       })}
-    </div>
+    </Panel>
   )
 }
 
@@ -478,7 +447,7 @@ function WeekCompareForm({ form, setForm, keyTasks, workUnits }: {
     { tw: 'thisWeekEtc',      nw: 'nextWeekEtc',      label: '기타사항' },
   ]
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--c-border)' }}>
+    <Panel style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, padding: 0, overflow: 'hidden' }}>
       {/* 헤더 행 */}
       <div style={{ padding: '8px 14px', background: `color-mix(in srgb, ${TW} 8%, transparent)`, borderBottom: `1px solid color-mix(in srgb, ${TW} 13%, transparent)`, borderRight: '1px solid var(--c-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: TW, flexShrink: 0 }}>금주</span>
@@ -504,7 +473,7 @@ function WeekCompareForm({ form, setForm, keyTasks, workUnits }: {
           </div>,
         ]
       })}
-    </div>
+    </Panel>
   )
 }
 
@@ -531,7 +500,7 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
         {canEdit && (
           <div style={{ display: 'flex', gap: 8 }}>
             <Button variant="outlined" onClick={onEdit}>수정</Button>
-            <Button variant="outlined" onClick={onDelete} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-bg)' }}>삭제</Button>
+            <Button variant="danger" onClick={onDelete}>삭제</Button>
           </div>
         )}
       </div>
@@ -768,11 +737,11 @@ function PrintSectionRows({ items }: { items: WorkItem[] }) {
       {items.map((item, i) => (
         <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'flex-start' }}>
           {item.keyTaskId && (
-            <span style={{ flexShrink: 0, fontSize: 11, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 1, background: '#1976d220', color: '#1976d2', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ flexShrink: 0, fontSize: 11, padding: '1px 5px', borderRadius: 8, fontWeight: 700, marginTop: 1, background: 'color-mix(in srgb, var(--rsp-color-secondary-500) 12%, transparent)', color: 'var(--rsp-color-secondary-500)', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               📌 {item.keyTaskName}
             </span>
           )}
-          <span style={{ fontSize: 11, lineHeight: 1.5, color: '#333' }}>{item.content}</span>
+          <span style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--rsp-color-neutral-900)' }}>{item.content}</span>
         </div>
       ))}
     </>
@@ -911,11 +880,11 @@ export default function WeeklyReportPage() {
       {printOpen && (() => {
         const printItems = myReports.filter(r => r.weekStart === thisWeekStart)
         return (
-          <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 9999, overflowY: 'auto', padding: '24px 32px' }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'var(--rsp-color-neutral-0)', color: 'var(--rsp-color-neutral-900)', zIndex: 9999, overflowY: 'auto', padding: '24px 32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>주간 업무 보고</h2>
-                <div style={{ fontSize: 13, color: '#555', marginTop: 3 }}>{fmtWeek(thisWeekStart, printItems[0]?.weekEnd ?? thisWeekStart)} · {printItems.length}명 제출</div>
+                <div style={{ fontSize: 13, color: 'var(--rsp-color-neutral-600)', marginTop: 3 }}>{fmtWeek(thisWeekStart, printItems[0]?.weekEnd ?? thisWeekStart)} · {printItems.length}명 제출</div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <Button variant="filled" onClick={() => window.print()}>🖨 인쇄 / PDF</Button>
@@ -923,30 +892,30 @@ export default function WeeklyReportPage() {
               </div>
             </div>
             {printItems.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#999', paddingTop: 60, fontSize: 14 }}>이번 주 등록된 보고서가 없습니다.</div>
+              <div style={{ textAlign: 'center', color: 'var(--rsp-color-neutral-400)', paddingTop: 60, fontSize: 14 }}>이번 주 등록된 보고서가 없습니다.</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 {printItems.map(report => {
                   const tw = { work: parseItems(report.thisWeekWork), proposal: parseItems(report.thisWeekProposal), etc: parseItems(report.thisWeekEtc) }
                   const nw = { work: parseItems(report.nextWeekWork), proposal: parseItems(report.nextWeekProposal), etc: parseItems(report.nextWeekEtc) }
                   return (
-                    <div key={report.id} style={{ pageBreakInside: 'avoid', border: '1px solid #ddd', borderRadius: 10, overflow: 'hidden' }}>
-                      <div style={{ padding: '10px 18px', background: '#1976d2', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={report.id} style={{ pageBreakInside: 'avoid', border: '1px solid var(--rsp-color-neutral-200)', borderRadius: 10, overflow: 'hidden' }}>
+                      <div style={{ padding: '10px 18px', background: 'var(--rsp-color-secondary-500)', color: 'var(--rsp-color-neutral-0)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontWeight: 700, fontSize: 16 }}>{report.author}</span>
                         <span style={{ fontSize: 12, opacity: 0.85 }}>{fmtWeek(report.weekStart, report.weekEnd)}</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                        <div style={{ padding: '14px 18px', borderRight: '1px solid #eee' }}>
-                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1976d2', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #1976d230' }}>금주</div>
-                          {tw.work.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: '#1976d2', marginBottom: 3 }}>수행</div><PrintSectionRows items={tw.work} /></>}
-                          {tw.proposal.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: '#1976d2', margin: '6px 0 3px' }}>제안</div><PrintSectionRows items={tw.proposal} /></>}
-                          {tw.etc.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: '#1976d2', margin: '6px 0 3px' }}>기타</div><PrintSectionRows items={tw.etc} /></>}
+                        <div style={{ padding: '14px 18px', borderRight: '1px solid var(--rsp-color-neutral-100)' }}>
+                          <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--rsp-color-secondary-500)', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid color-mix(in srgb, var(--rsp-color-secondary-500) 19%, transparent)' }}>금주</div>
+                          {tw.work.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: 'var(--rsp-color-secondary-500)', marginBottom: 3 }}>수행</div><PrintSectionRows items={tw.work} /></>}
+                          {tw.proposal.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: 'var(--rsp-color-secondary-500)', margin: '6px 0 3px' }}>제안</div><PrintSectionRows items={tw.proposal} /></>}
+                          {tw.etc.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: 'var(--rsp-color-secondary-500)', margin: '6px 0 3px' }}>기타</div><PrintSectionRows items={tw.etc} /></>}
                         </div>
                         <div style={{ padding: '14px 18px' }}>
-                          <div style={{ fontWeight: 700, fontSize: 12, color: '#4caf50', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid #4caf5030' }}>차주</div>
-                          {nw.work.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: '#4caf50', marginBottom: 3 }}>수행</div><PrintSectionRows items={nw.work} /></>}
-                          {nw.proposal.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: '#4caf50', margin: '6px 0 3px' }}>제안</div><PrintSectionRows items={nw.proposal} /></>}
-                          {nw.etc.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: '#4caf50', margin: '6px 0 3px' }}>기타</div><PrintSectionRows items={nw.etc} /></>}
+                          <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--rsp-color-success-500)', marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid color-mix(in srgb, var(--rsp-color-success-500) 19%, transparent)' }}>차주</div>
+                          {nw.work.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: 'var(--rsp-color-success-500)', marginBottom: 3 }}>수행</div><PrintSectionRows items={nw.work} /></>}
+                          {nw.proposal.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: 'var(--rsp-color-success-500)', margin: '6px 0 3px' }}>제안</div><PrintSectionRows items={nw.proposal} /></>}
+                          {nw.etc.length > 0 && <><div style={{ fontSize: 11, fontWeight: 700, color: 'var(--rsp-color-success-500)', margin: '6px 0 3px' }}>기타</div><PrintSectionRows items={nw.etc} /></>}
                         </div>
                       </div>
                     </div>
@@ -1011,35 +980,39 @@ export default function WeeklyReportPage() {
                     const expanded = expandedWeeks.has(group.weekStart)
                     return (
                       <div key={group.weekStart}>
-                        <div onClick={() => toggleWeek(group.weekStart)}
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 7, cursor: 'pointer', background: isThisWeek ? 'color-mix(in srgb, var(--c-action) 6%, transparent)' : 'var(--c-thead)', marginBottom: expanded ? 4 : 0, userSelect: 'none' }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: isThisWeek ? 'var(--c-action)' : 'var(--c-text-sub)', flex: 1 }}>
+                        <ListItem
+                          selected={isThisWeek}
+                          onClick={() => toggleWeek(group.weekStart)}
+                          style={{ marginBottom: expanded ? 4 : 0, userSelect: 'none' }}
+                          title={<span style={{ color: isThisWeek ? 'var(--c-action)' : 'var(--c-text-sub)' }}>
                             {group.label}
                             {isThisWeek && <span style={{ fontSize: 11, marginLeft: 5, opacity: 0.7 }}>이번 주</span>}
-                          </span>
-                          <Tag color={isThisWeek ? 'var(--c-action)' : 'var(--c-text-muted)'} bg={isThisWeek ? 'color-mix(in srgb, var(--c-action) 15%, transparent)' : 'var(--c-border)'}>
-                            {isManager ? `${group.reports.length}명` : group.reports.length}
-                          </Tag>
-                          <span style={{ fontSize: 11, color: 'var(--c-text-muted)', opacity: 0.6 }}>{expanded ? '▲' : '▼'}</span>
-                        </div>
+                          </span>}
+                          actions={
+                            // 건수·화살표 클릭도 펼침/접힘 동작 유지 (ListItem actions 는 행 클릭 전파 차단)
+                            <span onClick={() => toggleWeek(group.weekStart)} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                              <Tag tone={isThisWeek ? 'info' : 'neutral'}>
+                                {isManager ? `${group.reports.length}명` : group.reports.length}
+                              </Tag>
+                              <span style={{ fontSize: 11, color: 'var(--c-text-muted)', opacity: 0.6 }}>{expanded ? '▲' : '▼'}</span>
+                            </span>
+                          }
+                        />
                         {expanded && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 4, marginBottom: 6 }}>
                             {group.reports.map(item => {
                               const isMine = item.author === user?.username
                               const isSelected = detail.type === 'view' && detail.report.id === item.id
                               return (
-                                <div key={item.id} onClick={() => setDetail({ type: 'view', report: item })}
-                                  style={{ padding: '8px 12px', borderRadius: 7, cursor: 'pointer', border: `1px solid ${isSelected ? 'var(--c-action)' : 'var(--c-border)'}`, background: isSelected ? 'var(--c-tag-sys)' : 'var(--c-card)' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-                                      {isManager ? item.author : item.title}
-                                    </div>
-                                    {isMine && <Tag color="var(--c-action)" style={{ flexShrink: 0, marginLeft: 4 }}>Me</Tag>}
-                                  </div>
-                                  <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {isManager ? item.title : fmtWeek(item.weekStart, item.weekEnd)}
-                                  </div>
-                                </div>
+                                <ListItem key={item.id}
+                                  selected={isSelected}
+                                  onClick={() => setDetail({ type: 'view', report: item })}
+                                  title={<>
+                                    {isManager ? item.author : item.title}
+                                    {isMine && <Tag tone="info" style={{ flexShrink: 0 }}>Me</Tag>}
+                                  </>}
+                                  description={isManager ? item.title : fmtWeek(item.weekStart, item.weekEnd)}
+                                />
                               )
                             })}
                           </div>
@@ -1053,16 +1026,19 @@ export default function WeeklyReportPage() {
               {!isManager && consolidated.length > 0 && (
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--c-border)' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--c-tag-pri-t)', marginBottom: 6, letterSpacing: '0.04em' }}>통합 보고서</div>
-                  {consolidated.map(c => {
-                    const isSelected = detail.type === 'view' && detail.report.id === c.id
-                    return (
-                      <div key={c.id} onClick={() => setDetail({ type: 'view', report: c })}
-                        style={{ padding: '8px 12px', borderRadius: 7, cursor: 'pointer', border: `1px solid ${isSelected ? 'var(--rsp-color-tertiary-500)' : 'var(--c-border)'}`, background: isSelected ? 'var(--c-tag-pri-bg)' : 'var(--c-card)', marginBottom: 4 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13 }}>{c.title}</div>
-                        <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{weekLabel(c.weekStart)} · {c.author}</div>
-                      </div>
-                    )
-                  })}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {consolidated.map(c => {
+                      const isSelected = detail.type === 'view' && detail.report.id === c.id
+                      return (
+                        <ListItem key={c.id}
+                          selected={isSelected}
+                          onClick={() => setDetail({ type: 'view', report: c })}
+                          title={c.title}
+                          description={`${weekLabel(c.weekStart)} · ${c.author}`}
+                        />
+                      )
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -1093,15 +1069,12 @@ export default function WeeklyReportPage() {
                     const { tw, nw } = countItems(r)
                     const isSelected = detail.type === 'view' && detail.report.id === r.id
                     return (
-                      <div key={r.id} onClick={() => setDetail({ type: 'view', report: r })}
-                        style={{ padding: '9px 12px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${isSelected ? 'var(--c-action)' : 'var(--c-border)'}`, background: isSelected ? 'var(--c-tag-sys)' : 'var(--c-card)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontWeight: 600, fontSize: 13 }}>✅ {r.author}</span>
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3 }}>
-                          금주 {tw}건 · 차주 {nw}건
-                        </div>
-                      </div>
+                      <ListItem key={r.id}
+                        selected={isSelected}
+                        onClick={() => setDetail({ type: 'view', report: r })}
+                        title={`✅ ${r.author}`}
+                        description={`금주 ${tw}건 · 차주 ${nw}건`}
+                      />
                     )
                   })
                 )}
@@ -1110,23 +1083,21 @@ export default function WeeklyReportPage() {
               {/* 통합보고서 영역 */}
               <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--c-border)' }}>
                 {weekConsolidated ? (
-                  <div onClick={() => setDetail({ type: 'view', report: weekConsolidated })}
-                    style={{ padding: '9px 12px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${detail.type === 'view' && detail.report.id === weekConsolidated.id ? 'var(--rsp-color-tertiary-500)' : 'color-mix(in srgb, var(--rsp-color-tertiary-500) 27%, transparent)'}`, background: detail.type === 'view' && detail.report.id === weekConsolidated.id ? 'var(--c-tag-pri-bg)' : 'color-mix(in srgb, var(--rsp-color-tertiary-500) 3%, transparent)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Tag tone="purple">통합</Tag>
-                      <span style={{ fontWeight: 600, fontSize: 13 }}>{weekConsolidated.title}</span>
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3 }}>{weekConsolidated.author} 작성</div>
-                  </div>
+                  <ListItem
+                    selected={detail.type === 'view' && detail.report.id === weekConsolidated.id}
+                    onClick={() => setDetail({ type: 'view', report: weekConsolidated })}
+                    title={<><Tag tone="purple">통합</Tag>{weekConsolidated.title}</>}
+                    description={`${weekConsolidated.author} 작성`}
+                  />
                 ) : (
-                  <button onClick={() => {
+                  <Button variant="outlined" onClick={() => {
                     const label = weekLabel(selectedWeek)
                     const selectedGroup = myReports.find(r => r.weekStart === selectedWeek)
                     setEditorConfig({ weekStart: selectedWeek, weekEnd: selectedGroup?.weekEnd ?? selectedWeek, weekLabel: label })
                   }}
-                    style={{ width: '100%', padding: '9px 12px', border: '1px dashed color-mix(in srgb, var(--rsp-color-tertiary-500) 33%, transparent)', borderRadius: 8, background: 'none', cursor: 'pointer', color: 'var(--c-tag-pri-t)', fontSize: 13, fontWeight: 600, textAlign: 'center' }}>
+                    style={{ width: '100%' }}>
                     📋 통합 보고서 작성
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>

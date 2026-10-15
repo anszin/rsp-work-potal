@@ -4,7 +4,8 @@ import axios from 'axios'
 import { getUsers, createUser, updateUser, deleteUser, resetPassword, getMenuPermissions, updateMenuPermissions, type UserSummary, type UserRole, type MenuPermission } from '../../api/users'
 import { useAuth } from '../../context/useAuth'
 import PageHeader from '../../components/PageHeader'
-import { Button, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Panel, Tag, EmptyState, Checkbox } from '../../components/ui'
+import { Progress } from '@lotte/rsp-react-design-system/shadcn'
+import { Button, Callout, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Panel, Tag, EmptyState, Checkbox } from '../../components/ui'
 
 function apiError(e: unknown): string {
   if (axios.isAxiosError(e) && e.response?.data?.error) return e.response.data.error
@@ -126,10 +127,10 @@ export default function UserManagementPage() {
       {createdInfo && (
         <Modal open onClose={() => setCreatedInfo(null)} title="계정 생성 완료" width={400} closeOnEscape={false} showCloseButton={false}>
             <p style={{ fontSize: 13, marginBottom: 8 }}>이메일로 임시 비밀번호가 발송되었습니다.</p>
-            <div style={s.infoBox}>
+            <Callout tone="success">
               <div>아이디: <strong>{createdInfo.username}</strong></div>
               <div>임시 비밀번호: <strong>{createdInfo.tempPassword}</strong></div>
-            </div>
+            </Callout>
             <Button variant="filled" style={{ marginTop: 16, width: '100%' }} onClick={() => setCreatedInfo(null)}>확인</Button>
         </Modal>
       )}
@@ -155,7 +156,7 @@ export default function UserManagementPage() {
             <h3 style={{ margin: 0, fontSize: 16 }}>역할별 메뉴 접근 권한</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {menuSaved && <span style={{ fontSize: 13, color: 'var(--c-tag-done-t)' }}>저장되었습니다 ✓</span>}
-              <Button variant="filled" style={{ opacity: (!menuDirty || menuMut.isPending) ? 0.6 : 1 }}
+              <Button variant="filled"
                 onClick={saveMenuPerms} disabled={!menuDirty || menuMut.isPending}>
                 {menuMut.isPending ? '저장 중...' : '저장'}
               </Button>
@@ -216,12 +217,12 @@ export default function UserManagementPage() {
                 )}
               </div>
               {(createMut.isPending || updateMut.isPending) && (
-                <div style={s.progressBar}><div style={s.progressFill} /></div>
+                <Progress value={null} aria-label="처리 중" style={{ marginTop: 12 }} />
               )}
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
                 <Button variant="outlined" onClick={() => { setShowForm(false); setEditing(null) }}
                   disabled={createMut.isPending || updateMut.isPending}>취소</Button>
-                <Button variant="filled" style={{ opacity: (createMut.isPending || updateMut.isPending) ? 0.6 : 1 }}
+                <Button variant="filled"
                   onClick={submit} disabled={createMut.isPending || updateMut.isPending}>
                   {createMut.isPending || updateMut.isPending ? '처리 중...' : '저장'}
                 </Button>
@@ -265,11 +266,11 @@ export default function UserManagementPage() {
                     {isAdminOrManager && (
                       <TableCell>
                         <Button variant="outlined" size="sm" onClick={() => openEdit(u)}>수정</Button>
-                        <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-warn-t)' }}
+                        <Button variant="outlined" size="sm"
                           onClick={() => { if (confirm(`${u.username} 비밀번호를 초기화하시겠습니까?`)) resetMut.mutate(u.id) }}>
                           비번초기화
                         </Button>
-                        <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-err-t)' }}
+                        <Button variant="danger" size="sm"
                           onClick={() => { if (confirm(`${u.username} 계정을 삭제하시겠습니까?`)) deleteMut.mutate(u.id) }}>
                           삭제
                         </Button>
@@ -301,7 +302,4 @@ const s: Record<string, React.CSSProperties> = {
   grid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
   th: { textAlign: 'left' as const },
-  progressBar: { height: 3, background: 'var(--c-border)', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
-  progressFill: { height: '100%', background: 'var(--c-action)', borderRadius: 2, animation: 'progress 1.2s ease-in-out infinite', width: '40%' },
-  infoBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 14, display: 'flex', flexDirection: 'column' as const, gap: 6 },
 }

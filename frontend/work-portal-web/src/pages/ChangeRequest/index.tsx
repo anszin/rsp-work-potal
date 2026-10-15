@@ -179,10 +179,10 @@ export default function ChangeRequestPage() {
   const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER'
   const canManage = (systemId: number) => isAdminOrManager || managedSystemIds.includes(systemId)
 
-  const ACTION_MODAL_CONFIG: Partial<Record<RequestStatus, { title: string; btnLabel: string; btnColor: string; required: boolean }>> = {
-    APPROVED:  { title: '승인 처리', btnLabel: '승인 확정', btnColor: 'var(--rsp-color-success-500)', required: false },
-    REJECTED:  { title: '반려 처리', btnLabel: '반려 확정', btnColor: 'var(--rsp-color-error-500)', required: true },
-    COMPLETED: { title: '완료 처리', btnLabel: '완료 확정', btnColor: 'var(--rsp-color-primary-600)', required: false },
+  const ACTION_MODAL_CONFIG: Partial<Record<RequestStatus, { title: string; btnLabel: string; required: boolean }>> = {
+    APPROVED:  { title: '승인 처리', btnLabel: '승인 확정', required: false },
+    REJECTED:  { title: '반려 처리', btnLabel: '반려 확정', required: true },
+    COMPLETED: { title: '완료 처리', btnLabel: '완료 확정', required: false },
   }
 
   const submitActionModal = () => {
@@ -223,7 +223,7 @@ export default function ChangeRequestPage() {
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
                 <Button variant="outlined" onClick={() => setActionModal(null)}>취소</Button>
-                <Button variant="filled" onClick={submitActionModal} style={{ background: cfg.btnColor }}>{cfg.btnLabel}</Button>
+                <Button variant={actionModal.next === 'REJECTED' ? 'danger' : 'filled'} onClick={submitActionModal}>{cfg.btnLabel}</Button>
               </div>
           </Modal>
         )
@@ -306,8 +306,15 @@ export default function ChangeRequestPage() {
                   <span style={{ color: 'var(--c-text-muted)', fontSize: 11 }}>새 파일 선택 시 교체됩니다</span>
                 </div>
               )}
-              <input ref={fileRef} type="file" style={{ ...s.input, marginBottom: 6 }}
+              {/* 네이티브 파일 입력은 숨기고 버튼으로 열기 */}
+              <input ref={fileRef} type="file" hidden
                 onChange={(e) => { setPendingFile(e.target.files?.[0] ?? null) }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <Button variant="outlined" size="sm" onClick={() => fileRef.current?.click()}>파일 선택</Button>
+                <span style={{ fontSize: 12, color: pendingFile ? 'var(--c-text-sub)' : 'var(--c-text-muted)' }}>
+                  {pendingFile?.name ?? '선택된 파일 없음'}
+                </span>
+              </div>
               <div style={{
                 padding: '8px 12px', border: `2px dashed ${pasteHighlight ? 'var(--c-action)' : 'var(--c-border-in)'}`,
                 borderRadius: 6, fontSize: 12, color: pasteHighlight ? 'var(--c-action)' : 'var(--c-text-muted)',
@@ -320,8 +327,8 @@ export default function ChangeRequestPage() {
               {pendingFile && (
                 <div style={{ marginTop: 4, fontSize: 12, color: 'var(--c-text-sub)' }}>
                   선택된 파일: <strong>{pendingFile.name}</strong>
-                  <Button variant="text" size="xs" onClick={() => { setPendingFile(null); if (fileRef.current) fileRef.current.value = '' }}
-                    style={{ marginLeft: 8, color: 'var(--c-tag-err-t)' }}>
+                  <Button variant="danger" size="xs" onClick={() => { setPendingFile(null); if (fileRef.current) fileRef.current.value = '' }}
+                    style={{ marginLeft: 8 }}>
                     ✕ 제거
                   </Button>
                 </div>
@@ -401,10 +408,9 @@ export default function ChangeRequestPage() {
                   <TableCell onClick={e => e.stopPropagation()}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {r.hasAttachment && (
-                        <button onClick={() => downloadAttachment(r.id, r.attachmentOriginalName ?? '파일')}
-                          style={{ fontSize: 12, color: 'var(--c-action)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                        <Button variant="link" size="xs" onClick={() => downloadAttachment(r.id, r.attachmentOriginalName ?? '파일')}>
                           📎 {r.attachmentOriginalName ?? '파일'}
-                        </button>
+                        </Button>
                       )}
                       {r.attachmentLink && (
                         <a href={r.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: 'var(--c-tag-pri-t)' }}>🔗 링크</a>
@@ -420,17 +426,17 @@ export default function ChangeRequestPage() {
                       )}
                       {NEXT_STATUS[r.status]?.map(({ label, next }) => {
                         if (next === 'REQUESTED') return (
-                          <Button key={next} variant="outlined" size="sm" style={actionStyle(next)}
+                          <Button key={next} variant="outlined" size="sm"
                             onClick={() => handleStatus(r, next)}>{label}</Button>
                         )
                         if (canManage(r.systemId)) return (
-                          <Button key={next} variant="outlined" size="sm" style={actionStyle(next)}
+                          <Button key={next} variant={next === 'REJECTED' ? 'danger' : 'outlined'} size="sm"
                             onClick={() => handleStatus(r, next)}>{label}</Button>
                         )
                         return null
                       })}
                       {(r.status === 'DRAFT' || isAdminOrManager) && (
-                        <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-err-t)' }}
+                        <Button variant="danger" size="sm"
                           onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>
                           삭제
                         </Button>
@@ -483,10 +489,9 @@ export default function ChangeRequestPage() {
             <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
               <span style={s.detailLabel}>첨부</span>
               {detail.hasAttachment && (
-                <button onClick={() => downloadAttachment(detail.id, detail.attachmentOriginalName ?? '파일')}
-                  style={{ fontSize: 13, color: 'var(--c-action)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                <Button variant="link" size="xs" onClick={() => downloadAttachment(detail.id, detail.attachmentOriginalName ?? '파일')}>
                   📎 {detail.attachmentOriginalName ?? '파일'} 다운로드
-                </button>
+                </Button>
               )}
               {detail.attachmentLink && (
                 <a href={detail.attachmentLink} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: 'var(--c-tag-pri-t)' }}>🔗 링크 열기</a>
@@ -504,8 +509,8 @@ export default function ChangeRequestPage() {
                     <a key={i.redmineIssueId}
                       href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
                       target="_blank" rel="noreferrer"
-                      style={{ color: 'var(--c-tag-sys-t)', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '3px 10px', borderRadius: 4 }}>
-                      #{i.redmineIssueId} {i.redmineIssueTitle}
+                      style={{ textDecoration: 'none' }}>
+                      <Tag tone="info">#{i.redmineIssueId} {i.redmineIssueTitle}</Tag>
                     </a>
                   ))}
                 </div>
@@ -516,7 +521,7 @@ export default function ChangeRequestPage() {
                   {detail.redmineSyncStatus === 'FAILED' && (
                     <>
                       <Tag tone="danger">일감 등록 실패</Tag>
-                      <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-warn-t)', borderColor: 'var(--c-tag-warn-t)' }}
+                      <Button variant="outlined" size="sm"
                         onClick={() => syncCRMut.mutate(detail.id)} disabled={syncCRMut.isPending}>
                         {syncCRMut.isPending ? '재시도 중...' : '재시도'}
                       </Button>
@@ -554,10 +559,10 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
           <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--c-text)' }}>{requests.length}</div>
         </Panel>
         {byStatus.map(({ status, count }) => (
-          <div key={status} style={{ background: statusBg[status], border: `1px solid color-mix(in srgb, ${statusColors[status]} 27%, transparent)`, borderRadius: 8, padding: '16px 20px' }}>
+          <Panel key={status} style={{ display: 'block', padding: '16px 20px', background: statusBg[status], borderColor: 'transparent' }}>
             <div style={{ fontSize: 11, color: statusColors[status], marginBottom: 6, fontWeight: 600 }}>{statusLabels[status]}</div>
             <div style={{ fontSize: 28, fontWeight: 700, color: statusColors[status] }}>{count}</div>
-          </div>
+          </Panel>
         ))}
       </div>
       <Panel style={{ display: 'block', padding: 20 }}>
@@ -581,22 +586,11 @@ function ChangeRequestDashboard({ requests }: { requests: import('../../api/chan
   )
 }
 
-function actionStyle(status: RequestStatus): React.CSSProperties {
-  if (status === 'APPROVED') return { color: 'var(--c-tag-done-t)', borderColor: 'var(--c-tag-done-t)' }
-  if (status === 'REJECTED') return { color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }
-  if (status === 'COMPLETED') return { color: 'var(--c-tag-teal-t)', borderColor: 'var(--c-tag-teal-t)' }
-  return {}
-}
-
 const s: Record<string, React.CSSProperties> = {
-  btn: { padding: '8px 16px', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
-  btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
-  btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12, marginRight: 4 },
   formTitle: { fontSize: 16, fontWeight: 600, marginBottom: 16 },
   formGrid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center', marginBottom: 16 },
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
-  input: { padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 13, width: '100%', boxSizing: 'border-box' as const, background: 'var(--c-input-bg)', color: 'var(--c-text)' },
   filterRow: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   th: { textAlign: 'left' as const },

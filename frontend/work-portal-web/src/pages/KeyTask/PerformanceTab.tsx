@@ -4,7 +4,8 @@ import { todoApi, type Todo } from '../../api/todos'
 import { workUnitApi, type WorkUnit } from '../../api/workUnits'
 import { getUsers, type UserSummary } from '../../api/users'
 import { type KeyTask } from '../../api/keyTasks'
-import { Button, Tag, Panel, EmptyState } from '../../components/ui'
+import { Tag, Panel, ChipGroup, EmptyState } from '../../components/ui'
+import { Progress } from '@lotte/rsp-react-design-system/shadcn'
 
 const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   DONE:        { bg: 'var(--c-tag-done-bg)',  text: 'var(--c-tag-done-t)',  label: '완료' },
@@ -57,14 +58,12 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
   return (
     <div>
       {/* 담당자 필터 */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-        <Button size="md" variant={selAssignee === 'all' ? 'filled' : 'outlined'} onClick={() => setSelAssignee('all')}>전체</Button>
-        {assignees.map(a => (
-          <Button key={a} size="md" variant={selAssignee === a ? 'filled' : 'outlined'} onClick={() => setSelAssignee(a)}>
-            {nameOf(a)}
-          </Button>
-        ))}
-      </div>
+      <ChipGroup
+        value={selAssignee}
+        onChange={v => setSelAssignee(v)}
+        options={[{ value: 'all', label: '전체' }, ...assignees.map(a => ({ value: a, label: nameOf(a) }))]}
+        style={{ marginBottom: 20 }}
+      />
 
       {displayAssignees.length === 0 && (
         <EmptyState title="이 연도에 연결된 Todo가 없습니다." style={{ padding: '60px 0' }} />
@@ -108,9 +107,8 @@ export default function PerformanceTab({ keyTasks }: { keyTasks: KeyTask[] }) {
                         {kt?.taskName ?? `과제 #${ktId}`}
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 100, height: 6, background: 'var(--c-border)', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ width: `${ktRate}%`, height: '100%', background: 'var(--rsp-color-success-500)', borderRadius: 3, transition: 'width 0.3s' }} />
-                        </div>
+                        <Progress value={ktRate} aria-label="중점과제 완료율"
+                          style={{ width: 100, '--primary': 'var(--rsp-color-success-500)' } as React.CSSProperties} />
                         <span style={{ fontSize: 12, color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
                           {ktDone}/{ktTotal} ({ktRate}%)
                         </span>

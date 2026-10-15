@@ -233,6 +233,14 @@ input, textarea, select, button {
 .sidebar-collapse-btn { color: var(--rsp-color-neutral-500) !important; flex-shrink: 0; }
 .sidebar-collapse-btn:hover { background: var(--rsp-color-neutral-800) !important; color: var(--rsp-color-neutral-50) !important; }
 
+/* 사이드바 하단(테마·로그아웃) 버튼 — SDK outline 버튼을 어두운 사이드바 색으로 */
+.sidebar-footer-btn {
+  background: transparent !important;
+  border-color: var(--rsp-color-neutral-700) !important;
+  color: var(--rsp-color-neutral-400) !important;
+}
+.sidebar-footer-btn:hover { background: var(--rsp-color-neutral-800) !important; color: var(--rsp-color-neutral-50) !important; }
+
 /* 사이드바는 고정 위치 — 포탈 모달(1000) 아래, 일반 콘텐츠 위 */
 .portal-sidebar { z-index: 200; border-right: none !important; }
 
@@ -448,9 +456,40 @@ div:has(> [data-slot="select-content"]) { z-index: 10000; }
    inline boxShadow(hover 등) 지정 시 사라짐 → 안쪽에 그려지는 실제 border 로 대체 */
 [data-portal-card] { border: 1px solid var(--c-border); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
 
+/* Tag 제거(×) 버튼 */
+.portal-tag-remove {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; margin-left: 2px; padding: 0;
+  border: none; background: transparent; color: inherit; opacity: 0.6; cursor: pointer; border-radius: 50%;
+}
+.portal-tag-remove:hover { opacity: 1; background: color-mix(in srgb, currentColor 15%, transparent); }
+.portal-tag-remove svg { width: 12px; height: 12px; }
+
+/* ChipGroup(SDK ToggleGroup) — 12px, 선택 시 칩 색(--chip-color) 틴트 */
+[data-portal-chip] { font-size: 12px; height: 28px; }
+[data-portal-chip][data-pressed] {
+  background: color-mix(in srgb, var(--chip-color) 13%, transparent);
+  color: var(--chip-color);
+  border-color: color-mix(in srgb, var(--chip-color) 40%, transparent);
+}
+
+/* ListItem(SDK Item) — 선택형 목록 행 */
+[data-portal-list-item] { font-size: 13px; }
+[data-portal-list-item][role="button"] { cursor: pointer; }
+[data-portal-list-item][role="button"]:hover { background: var(--c-thead); }
+[data-portal-list-item][data-selected] { background: var(--c-row-sel); border-color: transparent; }
+[data-portal-list-item] [data-slot="item-description"] { font-size: 12px; }
+
+/* SDK Progress — 값이 없는(진행률 미정) 상태는 흐르는 막대로 표시 */
+[data-slot="progress-indicator"][data-indeterminate] { width: 40% !important; animation: progress 1.2s ease-in-out infinite; }
+
+/* Callout(SDK Alert) */
+[data-portal-callout] { font-size: 13px; }
+
 /* SDK 팝업류(툴팁·드롭다운 메뉴·토스트)를 포탈 모달(1000)·위젯(9999) 위로 */
 div:has(> [data-slot="tooltip-content"]),
-div:has(> [data-slot="dropdown-menu-content"]) { z-index: 10000; }
+div:has(> [data-slot="dropdown-menu-content"]),
+div:has(> [data-slot="popover-content"]) { z-index: 10000; }
 [data-slot="toast-viewport"] { z-index: 10001; }
 
 /* SDK Tabs(line) 보정 — 탭 글자 13px, 활성 밑줄은 포탈 강조색 */

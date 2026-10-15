@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
 import client from '../../api/client'
-import { Button, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea, Panel, Tag, Loading, EmptyState } from '../../components/ui'
+import { Button, Callout, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea, Panel, Tag, Loading, EmptyState } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
 
 interface SystemOption { id: number; name: string }
@@ -82,16 +82,12 @@ export default function DailyCheckPage() {
 
       {/* 오늘 날짜 상태 요약 */}
       {dateFilter === today && reports.length > 0 && (
-        <div style={{
-          padding: '10px 16px', borderRadius: 8, marginBottom: 16,
-          background: hasCritical ? 'var(--c-tag-err-bg)' : hasWarning ? 'var(--c-tag-warn-bg)' : 'var(--c-tag-done-bg)',
-          border: `1px solid ${hasCritical ? 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' : hasWarning ? 'color-mix(in srgb, var(--c-tag-warn-t) 40%, transparent)' : 'color-mix(in srgb, var(--c-tag-done-t) 40%, transparent)'}`,
-          fontSize: 14, fontWeight: 600,
-          color: hasCritical ? 'var(--c-tag-err-t)' : hasWarning ? 'var(--c-tag-warn-t)' : 'var(--c-tag-done-t)',
-        }}>
-          {hasCritical ? '위험 시스템이 있습니다' : hasWarning ? '주의가 필요한 시스템이 있습니다' : '모든 시스템 정상'}
-          <span style={{ fontWeight: 400, marginLeft: 8 }}>({reports.length}개 시스템 점검 완료)</span>
-        </div>
+        <Callout
+          tone={hasCritical ? 'danger' : hasWarning ? 'warning' : 'success'}
+          title={hasCritical ? '위험 시스템이 있습니다' : hasWarning ? '주의가 필요한 시스템이 있습니다' : '모든 시스템 정상'}
+          style={{ marginBottom: 16 }}>
+          ({reports.length}개 시스템 점검 완료)
+        </Callout>
       )}
 
       {showForm && (
@@ -166,7 +162,7 @@ export default function DailyCheckPage() {
                 </TableCell>
                 <TableCell style={{ whiteSpace: 'nowrap' }}>
                   <Button variant="outlined" size="sm" onClick={() => openEdit(r)}>수정</Button>
-                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' }}>삭제</Button>
+                  <Button variant="danger" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>삭제</Button>
                 </TableCell>
               </TableRow>
             ))}

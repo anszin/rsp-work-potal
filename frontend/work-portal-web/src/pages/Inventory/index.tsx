@@ -188,7 +188,7 @@ export default function InventoryPage() {
                 <TableCell style={{ fontSize: 12, color: 'var(--c-text-sub)', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.note ?? '-'}</TableCell>
                 <TableCell style={{ whiteSpace: 'nowrap' }}>
                   <Button variant="outlined" size="sm" onClick={() => openEdit(item)}>수정</Button>
-                  <Button variant="outlined" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(item.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'color-mix(in srgb, var(--c-tag-err-t) 40%, transparent)' }}>삭제</Button>
+                  <Button variant="danger" size="sm" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(item.id) }}>삭제</Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -244,10 +244,10 @@ function InventoryDashboard({ items }: { items: import('../../api/inventory').In
         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 16 }}>상태별 현황</div>
         <div className="grid-4col">
           {statuses.map(st => (
-            <div key={st} style={{ background: `color-mix(in srgb, ${statusColors[st]} 7%, transparent)`, border: `1px solid color-mix(in srgb, ${statusColors[st]} 27%, transparent)`, borderRadius: 8, padding: '14px 18px' }}>
+            <Panel key={st} style={{ display: 'block', padding: '14px 18px', background: `color-mix(in srgb, ${statusColors[st]} 7%, transparent)`, borderColor: 'transparent' }}>
               <div style={{ fontSize: 11, color: statusColors[st], fontWeight: 600, marginBottom: 6 }}>{STATUS_LABEL[st]}</div>
               <div style={{ fontSize: 24, fontWeight: 700, color: statusColors[st] }}>{items.filter(i => i.status === st).length}</div>
-            </div>
+            </Panel>
           ))}
         </div>
       </Panel>

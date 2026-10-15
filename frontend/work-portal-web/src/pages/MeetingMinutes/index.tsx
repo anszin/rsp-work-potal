@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { meetingApi, MeetingMinute, SaveMeetingRequest } from '../../api/reports'
-import { Button, Input, Textarea, Loading, EmptyState } from '../../components/ui'
+import { Button, Input, Textarea, ListItem, Panel, Loading, EmptyState } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
 
 const emptyForm = (): SaveMeetingRequest => ({
@@ -75,20 +75,15 @@ export default function MeetingMinutesPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {items.length === 0 ? <EmptyState title="등록된 회의록이 없습니다." />
               : items.map(item => (
-                <div key={item.id}
+                <ListItem key={item.id}
+                  selected={selected?.id === item.id}
                   onClick={() => { setSelected(item); setShowForm(false) }}
-                  style={{
-                    padding: '10px 14px', borderRadius: 8, border: '1px solid',
-                    borderColor: selected?.id === item.id ? 'var(--c-action)' : 'var(--c-border)',
-                    background: selected?.id === item.id ? 'var(--c-tag-sys)' : 'var(--c-card)',
-                    cursor: 'pointer',
-                  }}>
-                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 3 }}>{item.title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--c-text-sub)' }}>
+                  title={item.title}
+                  description={<>
                     {item.meetingDate} · {item.author}
-                  </div>
-                  {item.location && <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 2 }}>{item.location}</div>}
-                </div>
+                    {item.location && <><br />{item.location}</>}
+                  </>}
+                />
               ))}
           </div>
         )}
@@ -150,7 +145,7 @@ export default function MeetingMinutesPage() {
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <Button variant="outlined" onClick={() => openEdit(selected)}>수정</Button>
-                <Button variant="outlined" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(selected.id) }} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-bg)' }}>삭제</Button>
+                <Button variant="danger" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(selected.id) }}>삭제</Button>
               </div>
             </div>
             {selected.attendees && (
@@ -162,13 +157,13 @@ export default function MeetingMinutesPage() {
             {selected.content && (
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>회의 내용</div>
-                <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: 'var(--c-bg)', padding: '14px 16px', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>{selected.content}</div>
+                <Panel style={{ display: 'block', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{selected.content}</Panel>
               </div>
             )}
             {selected.actionItems && (
               <div>
                 <div style={{ fontSize: 12, color: 'var(--c-text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase' }}>액션 아이템</div>
-                <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: 'var(--c-tag-warn-bg)', padding: '14px 16px', borderRadius: 6, border: '1px solid var(--c-tag-warn-bg)' }}>{selected.actionItems}</div>
+                <Panel style={{ display: 'block', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: 'var(--c-tag-warn-bg)', borderColor: 'transparent' }}>{selected.actionItems}</Panel>
               </div>
             )}
           </>

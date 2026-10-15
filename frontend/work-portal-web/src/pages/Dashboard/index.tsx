@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Button, Panel, Tag, EmptyState } from '../../components/ui'
+import { Button, ListItem, Panel, Tag, EmptyState } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
@@ -26,7 +26,9 @@ function StatCard({ label, value, sub, color, onClick }: {
   label: string; value: string | number; sub?: string; color?: string; onClick?: () => void
 }) {
   return (
-    <Panel onClick={onClick} style={{
+    <Panel onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
+      style={{
       display: 'block', cursor: onClick ? 'pointer' : 'default',
       borderLeft: `4px solid ${color || 'var(--c-action)'}`,
     }}>
@@ -205,11 +207,12 @@ export default function DashboardPage() {
                 {systems.map((sys: any) => {
                   const check = todayChecks.find((c: DailyCheckReport) => c.systemId === sys.id)
                   return (
-                    <div key={sys.id} style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '8px 12px', borderRadius: 6,
-                      background: check ? `color-mix(in srgb, ${STATUS_COLOR[check.status]} 7%, transparent)` : 'var(--c-bg)',
-                      border: '1px solid ' + (check ? `color-mix(in srgb, ${STATUS_COLOR[check.status]} 27%, transparent)` : 'var(--c-thead)'),
+                    <Panel key={sys.id} style={{
+                      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '8px 12px',
+                      ...(check
+                        ? { background: `color-mix(in srgb, ${STATUS_COLOR[check.status]} 7%, transparent)`, borderColor: 'transparent' }
+                        : { background: 'var(--c-bg)' }),
                     }}>
                       <div>
                         <div style={{ fontWeight: 500, fontSize: 13 }}>{sys.name}</div>
@@ -220,7 +223,7 @@ export default function DashboardPage() {
                       ) : (
                         <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>미점검</span>
                       )}
-                    </div>
+                    </Panel>
                   )
                 })}
               </div>
@@ -260,7 +263,9 @@ export default function DashboardPage() {
               const trendIcon = thisMonthCount > lastMonthCount ? '↑' : thisMonthCount < lastMonthCount ? '↓' : '━'
               const trendColor = thisMonthCount > lastMonthCount ? 'var(--c-tag-done-t)' : thisMonthCount < lastMonthCount ? 'var(--c-tag-err-t)' : 'var(--c-text-muted)'
               return (
-                <Panel key={sys.id} onClick={() => navigate('/deploys')} style={{
+                <Panel key={sys.id} role="button" tabIndex={0} onClick={() => navigate('/deploys')}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/deploys') } }}
+                  style={{
                   display: 'block', cursor: 'pointer',
                   borderTop: `3px solid ${pendingCount > 0 ? 'var(--rsp-color-tertiary-500)' : 'var(--c-border)'}`,
                 }}>
@@ -338,9 +343,9 @@ export default function DashboardPage() {
                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                 .slice(0, 6)
                 .map(r => (
-                  <div key={r._type + r.id} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '7px 10px', borderRadius: 6, background: 'var(--c-bg)', border: '1px solid var(--c-thead)',
+                  <Panel key={r._type + r.id} style={{
+                    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '7px 10px', background: 'var(--c-bg)',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
                       <Tag tone={r._type === '변경' ? 'info' : 'purple'} style={{ flexShrink: 0 }}>{r._type}</Tag>
@@ -349,7 +354,7 @@ export default function DashboardPage() {
                     <Tag color={REQ_STATUS_COLOR[r.status] || 'var(--c-text-muted)'} style={{ flexShrink: 0, marginLeft: 8 }}>
                       {REQ_STATUS_LABEL[r.status] || r.status}
                     </Tag>
-                  </div>
+                  </Panel>
                 ))}
             </div>
           )}
@@ -369,19 +374,11 @@ export default function DashboardPage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {meetings.slice(0, 5).map((m: any) => (
-                  <div key={m.id} onClick={() => navigate('/reports/meeting')}
-                    style={{
-                      padding: '10px 12px', borderRadius: 6, background: 'var(--c-bg)',
-                      border: '1px solid var(--c-thead)', cursor: 'pointer',
-                    }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ fontWeight: 500, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{m.title}</div>
-                      <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginLeft: 8, flexShrink: 0 }}>{m.meetingDate}</div>
-                    </div>
-                    {m.attendees && (
-                      <div style={{ fontSize: 11, color: 'var(--c-text-muted)', marginTop: 3 }}>참석: {m.attendees}</div>
-                    )}
-                  </div>
+                  <ListItem key={m.id} onClick={() => navigate('/reports/meeting')}
+                    title={m.title}
+                    description={m.attendees ? `참석: ${m.attendees}` : undefined}
+                    actions={<span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{m.meetingDate}</span>}
+                  />
                 ))}
               </div>
             )}
@@ -398,12 +395,14 @@ export default function DashboardPage() {
                 const active = inventory.filter(i => i.type === type && i.status === 'ACTIVE')
                 const total = inventory.filter(i => i.type === type)
                 return (
-                  <div key={type} onClick={() => navigate('/inventory')}
-                    style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: bg, cursor: 'pointer' }}>
+                  <Panel key={type} role="button" tabIndex={0}
+                    onClick={() => navigate('/inventory')}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/inventory') } }}
+                    style={{ flex: 1, padding: '10px 12px', gap: 0, background: bg, borderColor: 'transparent', cursor: 'pointer' }}>
                     <div style={{ fontSize: 11, color, marginBottom: 2 }}>{label}</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color }}>{active.length}<span style={{ fontSize: 12, fontWeight: 400 }}>건 진행</span></div>
                     <div style={{ fontSize: 11, color: `color-mix(in srgb, ${color} 67%, transparent)` }}>전체 {total.length}건</div>
-                  </div>
+                  </Panel>
                 )
               })}
             </div>

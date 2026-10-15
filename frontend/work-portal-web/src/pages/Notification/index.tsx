@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { getUsers, UserSummary } from '../../api/users'
 import { notificationApi } from '../../api/notifications'
 import { useAuth } from '../../context/useAuth'
-import { Button, Textarea, Checkbox, Panel, Tag } from '../../components/ui'
+import { Button, Callout, Textarea, Checkbox, Panel, Tag } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
 
 const TEMPLATES = [
@@ -163,15 +163,14 @@ export default function NotificationPage() {
         </div>
 
         {/* 자동 알림 안내 */}
-        <section style={{ padding: '16px 18px', background: 'var(--c-thead)', borderRadius: 10, border: '1px solid var(--c-border)' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>⏰ 자동 알림 (코드 설정)</div>
-          <div style={{ fontSize: 12, color: 'var(--c-text-muted)', lineHeight: 1.8 }}>
+        <Callout tone="info" title="⏰ 자동 알림 (코드 설정)">
+          <div style={{ lineHeight: 1.8 }}>
             <div>• <strong>매주 금요일 오전 9시</strong> — 주간보고 미제출자에게 웹엑스 DM 자동 발송</div>
-            <div style={{ marginTop: 4, fontSize: 11, color: 'var(--c-text-muted)' }}>
+            <div style={{ marginTop: 4, fontSize: 11 }}>
               스케줄 변경은 백엔드 <code>WeeklyReportReminderScheduler</code>의 cron 표현식을 수정하세요.
             </div>
           </div>
-        </section>
+        </Callout>
       </div>
     </div>
   )

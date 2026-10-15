@@ -9,6 +9,7 @@ import { getKeyTasks } from '../../api/keyTasks'
 import { todoApi, type Todo } from '../../api/todos'
 import { Button, Input, Modal, Select, Textarea, Tag, Panel, Loading, EmptyState } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
+import { Progress } from '@lotte/rsp-react-design-system/shadcn'
 
 const STATUS_ORDER: WorkUnitStatus[] = ['IN_PROGRESS', 'ON_HOLD', 'DONE']
 
@@ -192,7 +193,7 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                       </div>
                       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                         <Button variant="outlined" size="xs" onClick={() => openEdit(wu)}>수정</Button>
-                        <Button variant="outlined" size="xs" style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
+                        <Button variant="danger" size="xs"
                           onClick={() => { if (confirm(`"${wu.title}" 삭제할까요?`)) deleteMut.mutate(wu.id) }}>삭제</Button>
                       </div>
                     </div>
@@ -202,9 +203,9 @@ export default function WorkUnitPage({ initialKeyTaskId, year }: { initialKeyTas
                       onClick={() => total > 0 && toggleExpand(wu.id)}
                       style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--c-border)', cursor: total > 0 ? 'pointer' : 'default' }}
                     >
-                      <div style={{ flex: 1, height: 6, background: 'var(--c-border)', borderRadius: 3, overflow: 'hidden' }}>
-                        {total > 0 && <div style={{ width: `${rate}%`, height: '100%', background: 'var(--rsp-color-success-500)', borderRadius: 3, transition: 'width 0.3s' }} />}
-                      </div>
+                      {/* SDK Progress — 인디케이터 색은 --primary 로 지정 */}
+                      <Progress value={total > 0 ? rate : 0} aria-label="Todo 완료율"
+                        style={{ flex: 1, '--primary': 'var(--rsp-color-success-500)' } as React.CSSProperties} />
                       <span style={{ fontSize: 12, color: 'var(--c-text-muted)', whiteSpace: 'nowrap' }}>
                         {total > 0 ? `완료 ${doneCount}/${total} (${rate}%)` : 'Todo 없음'}
                       </span>

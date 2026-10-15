@@ -8,9 +8,12 @@ import {
   RagSource, ConversationSummary, ConversationMessage, AgentStep,
 } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
-import { Button, IconButton, Tag, Panel, Loading, EmptyState } from '../../components/ui'
+import {
+  Button, IconButton, Tag, Panel, Loading, EmptyState, Textarea, ChipGroup, ListItem, Callout,
+  Collapsible, CollapsibleTrigger, CollapsibleContent,
+} from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@lotte/rsp-react-design-system/shadcn'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, buttonVariants } from '@lotte/rsp-react-design-system/shadcn'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
@@ -73,10 +76,9 @@ function StepRow({ step }: { step: AgentStep }) {
   const canExpand = step.status === 'done' && !!step.summary
 
   return (
-    <div>
-      <div
-        onClick={() => canExpand && setOpen(v => !v)}
-        style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 0', cursor: canExpand ? 'pointer' : 'default', fontSize: 12 }}
+    <Collapsible open={open && canExpand} onOpenChange={o => setOpen(o)} disabled={!canExpand}>
+      <CollapsibleTrigger
+        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 7, padding: '4px 0', cursor: canExpand ? 'pointer' : 'default', fontSize: 12, background: 'none', border: 'none', textAlign: 'left', color: 'inherit' }}
       >
         <span style={{ flexShrink: 0, width: 17, textAlign: 'center', fontSize: 13 }}>{icon}</span>
         <span style={{ flexShrink: 0, fontWeight: 600, color: 'var(--c-text-sub)', minWidth: 72 }}>{label}</span>
@@ -96,13 +98,13 @@ function StepRow({ step }: { step: AgentStep }) {
             <span style={{ color: 'var(--c-tag-err-t)', fontSize: 13 }}>✗</span>
           )}
         </span>
-      </div>
-      {open && step.summary && (
-        <div style={{ margin: '2px 0 4px 24px', padding: '5px 8px', background: 'var(--c-bg)', borderRadius: 6, fontSize: 11, color: 'var(--c-text-sub)', lineHeight: 1.6, borderLeft: '2px solid var(--c-border)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+      </CollapsibleTrigger>
+      {step.summary && (
+        <CollapsibleContent style={{ margin: '2px 0 4px 24px', padding: '5px 8px', background: 'var(--c-bg)', borderRadius: 6, fontSize: 11, color: 'var(--c-text-sub)', lineHeight: 1.6, borderLeft: '2px solid var(--c-border)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
           {step.summary}
-        </div>
+        </CollapsibleContent>
       )}
-    </div>
+    </Collapsible>
   )
 }
 
@@ -117,9 +119,12 @@ function StepTimeline({ steps }: { steps: AgentStep[] }) {
     : `${steps.length}단계 완료`
 
   return (
-    <div style={{ marginBottom: 10, borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden' }}>
-      <button
-        onClick={() => setCollapsed(v => !v)}
+    <Collapsible
+      open={!collapsed}
+      onOpenChange={o => setCollapsed(!o)}
+      style={{ marginBottom: 10, borderRadius: 8, border: '1px solid var(--c-border)', overflow: 'hidden' }}
+    >
+      <CollapsibleTrigger
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px',
           background: 'var(--c-thead)', border: 'none', cursor: 'pointer',
@@ -133,13 +138,11 @@ function StepTimeline({ steps }: { steps: AgentStep[] }) {
         )}
         <span style={{ flex: 1, textAlign: 'left' }}>⚡ 에이전트 실행 — {headerText}</span>
         <span style={{ fontSize: 11, opacity: 0.55 }}>{collapsed ? '펼치기 ▼' : '접기 ▲'}</span>
-      </button>
-      {!collapsed && (
-        <div style={{ padding: '4px 10px 8px', background: 'var(--c-thead)' }}>
-          {steps.map((step, i) => <StepRow key={i} step={step} />)}
-        </div>
-      )}
-    </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent style={{ padding: '4px 10px 8px', background: 'var(--c-thead)' }}>
+        {steps.map((step, i) => <StepRow key={i} step={step} />)}
+      </CollapsibleContent>
+    </Collapsible>
   )
 }
 
@@ -177,9 +180,10 @@ function CodeBlockWrapper({ lang, children }: { lang: string; children: React.Re
     <div style={{ margin: '10px 0', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--rsp-color-neutral-800)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 14px', background: 'var(--rsp-color-neutral-800)' }}>
         <span style={{ fontSize: 11, color: 'var(--rsp-color-neutral-500)', fontFamily: 'monospace' }}>{lang || 'code'}</span>
-        <button onClick={copy} style={{ fontSize: 11, color: copied ? 'var(--rsp-color-success-500)' : 'var(--rsp-color-neutral-400)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px' }}>
+        {/* 코드블록 헤더는 테마와 무관하게 어두운 배경 → 글자색만 고정 프리미티브 유지 */}
+        <Button variant="text" size="xs" onClick={copy} style={{ color: copied ? 'var(--rsp-color-success-500)' : 'var(--rsp-color-neutral-400)' }}>
           {copied ? '✓ 복사됨' : '복사'}
-        </button>
+        </Button>
       </div>
       <pre ref={preRef} style={{ margin: 0, padding: '12px 16px', overflowX: 'auto', background: 'var(--rsp-color-neutral-900)', fontFamily: "'D2Coding', 'Consolas', 'Courier New', monospace", fontSize: 13, lineHeight: 1.5, color: 'var(--rsp-color-neutral-200)', whiteSpace: 'pre' }}>
         {children}
@@ -296,7 +300,8 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
         <Link
           to="/ai/documents"
           onClick={onClose}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 6, fontSize: 13, border: '1px solid var(--c-border)', background: 'var(--c-bg)', color: 'var(--c-text)', textDecoration: 'none', fontWeight: 500 }}
+          className={buttonVariants({ variant: 'outline', size: 'default' })}
+          style={{ width: '100%' }}
         >
           <span>📁</span> 문서 관리
         </Link>
@@ -315,36 +320,28 @@ function ConversationSidebar({ conversations, current, loading, roleMap, open, o
           const color = ri?.color ?? 'var(--c-chart-8)'
           const label = ri?.label ?? conv.role
           return (
-            <div
+            <ListItem
               key={conv.id}
+              selected={selected}
               onClick={() => { onSelect(conv); onClose() }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '9px 10px', cursor: 'pointer',
-                borderLeft: `3px solid ${selected ? color : 'transparent'}`,
-                background: selected ? 'var(--c-bg)' : 'transparent',
-                transition: 'background 0.1s',
-              }}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: selected ? 600 : 400, color: 'var(--c-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {conv.title || '새 대화'}
-                </div>
-                <div style={{ display: 'flex', gap: 5, marginTop: 3, alignItems: 'center' }}>
+              title={conv.title || '새 대화'}
+              description={
+                <span style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                   <Tag color={color}>{label}</Tag>
-                  <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{formatDate(conv.updatedAt)}</span>
-                </div>
-              </div>
-              <IconButton
-                variant="text"
-                size="sm"
-                icon="×"
-                label="대화 삭제"
-                onClick={e => { e.stopPropagation(); onDelete(conv.id) }}
-                style={{ flexShrink: 0, opacity: 0.6 }}
-                title="삭제"
-              />
-            </div>
+                  <span>{formatDate(conv.updatedAt)}</span>
+                </span>
+              }
+              actions={
+                <IconButton
+                  variant="text"
+                  size="sm"
+                  icon="×"
+                  label="대화 삭제"
+                  onClick={() => onDelete(conv.id)}
+                  title="삭제"
+                />
+              }
+            />
           )
         })}
       </div>
@@ -374,7 +371,9 @@ export default function AiChatPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  // SDK Textarea 는 ref 전달 불가 → 감싼 div 에서 textarea 를 찾아 포커스
+  const textareaWrapRef = useRef<HTMLDivElement>(null)
+  const focusTextarea = () => textareaWrapRef.current?.querySelector('textarea')?.focus()
 
   const roleMap: Record<string, RoleItem> = Object.fromEntries(roleList.map(r => [r.value, r]))
   const selectedRole: RoleItem = roleMap[role] ?? { value: role, label: role, color: 'var(--c-chart-8)' }
@@ -542,7 +541,7 @@ export default function AiChatPage() {
       abortRef.current = chat(text, role, memberId, currentConvId, onSources, onToken, onDone, onError)
     }
 
-    textareaRef.current?.focus()
+    textareaWrapRef.current?.querySelector('textarea')?.focus()
   }, [input, loading, role, currentConvId, memberId, agentMode, loadConversations])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -615,24 +614,20 @@ export default function AiChatPage() {
           {(() => {
             const publicRoles = roleList.filter(r => r.visibility !== 'private')
             const privateRoles = roleList.filter(r => r.visibility === 'private')
-            const RoleBtn = (r: RoleItem) => (
-              <button key={r.value} onClick={() => handleRoleChange(r.value)} style={{
-                padding: '6px 14px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
-                border: `1.5px solid ${role === r.value ? r.color : 'var(--c-border)'}`,
-                background: role === r.value ? withAlpha(r.color, 9) : 'var(--c-card)',
-                color: role === r.value ? r.color : 'var(--c-text-muted)',
-                fontWeight: role === r.value ? 600 : 400,
-                transition: 'all 0.15s',
-              }}>
-                {r.label}
-              </button>
+            // 그룹별 역할 칩 (다른 그룹의 역할이 선택돼 있으면 이 그룹은 선택 없음)
+            const RoleChips = (list: RoleItem[]) => (
+              <ChipGroup
+                value={list.some(r => r.value === role) ? role : null}
+                onChange={handleRoleChange}
+                options={list.map(r => ({ value: r.value, label: r.label, color: r.color }))}
+              />
             )
             return (
               <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                 {publicRoles.length > 0 && (
                   <>
                     <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginRight: 2 }}>팀 공통</span>
-                    {publicRoles.map(RoleBtn)}
+                    {RoleChips(publicRoles)}
                   </>
                 )}
                 {publicRoles.length > 0 && privateRoles.length > 0 && (
@@ -641,7 +636,7 @@ export default function AiChatPage() {
                 {privateRoles.length > 0 && (
                   <>
                     <span style={{ fontSize: 11, color: 'var(--c-text-muted)', marginRight: 2 }}>내 역할</span>
-                    {privateRoles.map(RoleBtn)}
+                    {RoleChips(privateRoles)}
                   </>
                 )}
               </div>
@@ -665,9 +660,9 @@ export default function AiChatPage() {
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 6 }}>
                 {SAMPLE_QUESTIONS.map(q => (
-                  <button key={q} onClick={() => { setInput(q); textareaRef.current?.focus() }} style={{ fontSize: 11, padding: '5px 10px', borderRadius: 14, border: '1px solid var(--c-border)', background: 'var(--c-bg)', color: 'var(--c-text-sub)', cursor: 'pointer' }}>
+                  <Button key={q} variant="outlined" size="sm" onClick={() => { setInput(q); focusTextarea() }}>
                     {q}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -736,32 +731,39 @@ export default function AiChatPage() {
         )}
 
         {/* 입력창 */}
-        <div style={{ flexShrink: 0, background: 'var(--c-card)', borderRadius: 10, border: `1px solid ${agentMode ? 'color-mix(in srgb, var(--rsp-color-tertiary-500) 27%, transparent)' : 'var(--c-border)'}`, padding: '10px 14px', marginBottom: 20 }}>
+        <Panel style={{ flexShrink: 0, gap: 8, marginBottom: 20, borderColor: agentMode ? 'color-mix(in srgb, var(--rsp-color-tertiary-500) 27%, transparent)' : undefined }}>
           {agentMode && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '5px 8px', background: 'color-mix(in srgb, var(--rsp-color-tertiary-500) 6%, transparent)', borderRadius: 6, fontSize: 11, color: 'var(--c-tag-pri-t)' }}>
-              <span style={{ display: 'inline-block', width: 8, height: 8, border: '1.5px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 33%, transparent)', borderTopColor: 'var(--rsp-color-tertiary-500)', borderRadius: '50%', animation: loading ? 'ai-spin 0.7s linear infinite' : 'none', flexShrink: 0 }} />
-              여러 단계로 분석합니다 (1~3분 소요)
-            </div>
+            <Callout tone="info">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                {/* 분석 진행 중일 때만 회전 표시 */}
+                {loading && (
+                  <span style={{ display: 'inline-block', width: 8, height: 8, border: '1.5px solid color-mix(in srgb, var(--rsp-color-tertiary-500) 33%, transparent)', borderTopColor: 'var(--rsp-color-tertiary-500)', borderRadius: '50%', animation: 'ai-spin 0.7s linear infinite', flexShrink: 0 }} />
+                )}
+                여러 단계로 분석합니다 (1~3분 소요)
+              </span>
+            </Callout>
           )}
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={agentMode ? `${selectedRole.label} 관련 질문 입력... (에이전트가 코드베이스를 분석합니다)` : `${selectedRole.label} 관련 질문 입력... (Enter 전송 / Shift+Enter 줄바꿈)`}
-              rows={3}
-              style={{ flex: 1, resize: 'none', border: 'none', outline: 'none', background: 'transparent', color: 'var(--c-text)', fontSize: 14, lineHeight: 1.6, padding: 0, fontFamily: 'inherit' }}
-            />
+            <div ref={textareaWrapRef} style={{ flex: 1 }}>
+              {/* 바깥 입력 상자(Panel)가 테두리를 담당하므로 Textarea 자체 테두리는 제거 */}
+              <Textarea
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={agentMode ? `${selectedRole.label} 관련 질문 입력... (에이전트가 코드베이스를 분석합니다)` : `${selectedRole.label} 관련 질문 입력... (Enter 전송 / Shift+Enter 줄바꿈)`}
+                rows={3}
+                style={{ resize: 'none', border: 'none', boxShadow: 'none' }}
+              />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
               {loading ? (
-                <Button variant="outlined" size="sm" onClick={handleStop} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>중지</Button>
+                <Button variant="danger" size="sm" onClick={handleStop}>중지</Button>
               ) : (
                 <Button variant="filled" size="sm" onClick={sendMessage} disabled={!input.trim()}>전송</Button>
               )}
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
     </div>
   )

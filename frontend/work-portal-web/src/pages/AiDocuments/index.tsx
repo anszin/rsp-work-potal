@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect, useCallback, DragEvent } from 'react'
 import { uploadDocument, getDocuments, deleteDocument, AiDocument, DocScope } from '../../api/aiApi'
 import { useAuth } from '../../context/useAuth'
-import { Button, Select, Modal, Tag, Panel, Loading, EmptyState, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
+import {
+  Button, Select, Modal, Tag, Panel, Loading, EmptyState, ChipGroup,
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+} from '../../components/ui'
+import { Progress, buttonVariants } from '@lotte/rsp-react-design-system/shadcn'
 import PageHeader from '../../components/PageHeader'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
@@ -71,7 +75,7 @@ function ConfirmDialog({
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <Button variant="outlined" size="sm" onClick={onCancel}>취소</Button>
-        <Button variant="outlined" size="sm" onClick={onConfirm} style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}>삭제</Button>
+        <Button variant="danger" size="sm" onClick={onConfirm}>삭제</Button>
       </div>
     </Modal>
   )
@@ -227,19 +231,22 @@ export default function AiDocumentsPage() {
         </div>
 
         {/* 드롭존 */}
-        <div
+        <Panel
+          role="button"
+          tabIndex={0}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onClick={() => fileInputRef.current?.click()}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click() } }}
           style={{
+            // 드롭 대상이므로 점선 테두리 유지, 드래그 중 강조
+            display: 'block',
             border: `2px dashed ${dragOver ? 'var(--c-action)' : 'var(--c-border)'}`,
-            borderRadius: 10,
             padding: '28px 20px',
             textAlign: 'center',
             cursor: 'pointer',
             background: dragOver ? 'var(--c-tag-sys)' : 'var(--c-bg)',
-            transition: 'all 0.15s',
           }}
         >
           <div style={{ fontSize: 28, marginBottom: 8 }}>📂</div>
@@ -257,7 +264,7 @@ export default function AiDocumentsPage() {
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
-        </div>
+        </Panel>
 
         {/* 업로드 진행 목록 */}
         {uploads.length > 0 && (
@@ -268,14 +275,7 @@ export default function AiDocumentsPage() {
                   <span style={{ color: 'var(--c-text-sub)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{u.file.name}</span>
                   <span style={{ color: 'var(--c-text-muted)', flexShrink: 0, marginLeft: 8 }}>{u.progress}%</span>
                 </div>
-                <div style={{ height: 4, background: 'var(--c-border)', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%', borderRadius: 2,
-                    background: 'var(--rsp-color-secondary-500)',
-                    width: `${u.progress}%`,
-                    transition: 'width 0.2s',
-                  }} />
-                </div>
+                <Progress value={u.progress} />
               </div>
             ))}
 
@@ -312,21 +312,7 @@ export default function AiDocumentsPage() {
             )}
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-            {ROLES.map(r => (
-              <button
-                key={r.value}
-                onClick={() => setFilterRole(r.value)}
-                style={{
-                  fontSize: 11, padding: '4px 10px', borderRadius: 14, cursor: 'pointer',
-                  border: `1px solid ${filterRole === r.value ? 'var(--c-action)' : 'var(--c-border)'}`,
-                  background: filterRole === r.value ? 'var(--c-tag-sys)' : 'var(--c-bg)',
-                  color: filterRole === r.value ? 'var(--c-action)' : 'var(--c-text-muted)',
-                  fontWeight: filterRole === r.value ? 600 : 400,
-                }}
-              >
-                {r.label}
-              </button>
-            ))}
+            <ChipGroup value={filterRole} onChange={setFilterRole} options={ROLES} />
             <Button variant="outlined" size="xs" onClick={loadDocs}>새로고침</Button>
           </div>
         </div>
@@ -377,18 +363,12 @@ export default function AiDocumentsPage() {
                         <a
                           href={`/api/documents/${doc.id}/download`}
                           download={doc.originalFilename}
-                          style={{
-                            fontSize: 12, padding: '4px 10px', borderRadius: 6,
-                            border: '1px solid var(--c-border)', background: 'none',
-                            color: 'var(--c-text-sub)', cursor: 'pointer',
-                            textDecoration: 'none', display: 'inline-block',
-                          }}
+                          className={buttonVariants({ variant: 'outline', size: 'xs' })}
                         >다운로드</a>
                         <Button
-                          variant="outlined"
+                          variant="danger"
                           size="xs"
                           onClick={() => setDeleteTarget(doc)}
-                          style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
                         >삭제</Button>
                       </div>
                     </TableCell>

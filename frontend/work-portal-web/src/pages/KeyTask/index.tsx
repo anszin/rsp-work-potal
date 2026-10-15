@@ -310,7 +310,7 @@ export default function KeyTaskPage() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {weeks.map(ws => (
-                    <div key={ws} style={{ border: '1px solid var(--c-border)', borderRadius: 8, overflow: 'hidden' }}>
+                    <Panel key={ws} style={{ display: 'block', padding: 0, overflow: 'hidden' }}>
                       <div style={{ padding: '8px 14px', background: 'var(--c-thead)', fontWeight: 700, fontSize: 13, color: 'var(--c-action)' }}>
                         {weekLabelFrom(ws)}
                       </div>
@@ -325,7 +325,7 @@ export default function KeyTaskPage() {
                           </div>
                         ))}
                       </div>
-                    </div>
+                    </Panel>
                   ))}
                 </div>
               )}
@@ -462,10 +462,10 @@ export default function KeyTaskPage() {
                   {visibleQs.map((q, i) => <TableCell key={`reason-${q}`} style={{ ...s.td, ...(i === 0 ? s.sep : {}) }}><pre style={s.cell}>{truncate(t[qKey(q, 'Reason')] as string)}</pre></TableCell>)}
                   <TableCell style={s.td}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      <Button variant="outlined" size="sm" style={{ color: 'var(--c-action)', borderColor: 'var(--c-tag-sys)' }} onClick={() => setProgressTask(t)}>실적</Button>
-                      <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-pri-t)', borderColor: 'var(--c-tag-pri-bg)' }} onClick={() => { setWorkUnitFilterId(t.id); setPageTab('workunits') }}>단위업무</Button>
+                      <Button variant="outlined" size="sm" onClick={() => setProgressTask(t)}>실적</Button>
+                      <Button variant="outlined" size="sm" onClick={() => { setWorkUnitFilterId(t.id); setPageTab('workunits') }}>단위업무</Button>
                       <Button variant="outlined" size="sm" onClick={() => openEdit(t)}>수정</Button>
-                      <Button variant="outlined" size="sm" style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
+                      <Button variant="danger" size="sm"
                         onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(t.id) }}>삭제</Button>
                     </div>
                   </TableCell>
@@ -482,9 +482,6 @@ export default function KeyTaskPage() {
 
 
 const s: Record<string, React.CSSProperties> = {
-  btn: { padding: '8px 16px', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 500 },
-  btnSecondary: { padding: '8px 16px', background: 'var(--c-card)', color: 'var(--c-text-sub)', border: '1px solid var(--c-border-in)', borderRadius: 6, cursor: 'pointer', fontSize: 13 },
-  btnSm: { padding: '3px 10px', background: 'transparent', border: '1px solid var(--c-border-in)', borderRadius: 4, cursor: 'pointer', fontSize: 12 },
   label: { display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--c-text-sub)', marginBottom: 6 },
   mth: { textAlign: 'left', whiteSpace: 'nowrap' },
   mtd: { verticalAlign: 'top' },

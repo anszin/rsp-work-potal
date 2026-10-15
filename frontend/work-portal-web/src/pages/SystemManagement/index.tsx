@@ -7,6 +7,7 @@ import {
   getSystemServers, addSystemServer, deleteSystemServer,
 } from '../../api/systems'
 import PageHeader from '../../components/PageHeader'
+import { Switch } from '@lotte/rsp-react-design-system/shadcn'
 import { Button, Input, Select, Modal, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Panel, Loading, EmptyState } from '../../components/ui'
 
 const emptyForm = () => ({ code: '', name: '', description: '', redmineProjectKey: '', webexRoomId: '', sortOrder: '' })
@@ -208,14 +209,8 @@ export default function SystemManagementPage() {
                   <TableCell style={{ fontWeight: 500 }}>{sys.name}</TableCell>
                   <TableCell style={{ color: 'var(--c-text-sub)' }}>{sys.description ?? '-'}</TableCell>
                   <TableCell>
-                    <span onClick={() => toggleActive(sys)} style={{
-                      padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                      background: sys.active ? 'var(--c-tag-done-bg)' : 'var(--c-thead)',
-                      color: sys.active ? 'var(--c-tag-done-t)' : 'var(--c-text-muted)',
-                      border: `1px solid ${sys.active ? 'var(--c-tag-done-t)' : 'var(--c-border)'}`,
-                    }}>
-                      {sys.active ? '운영중' : '비활성'}
-                    </span>
+                    <Switch size="sm" checked={sys.active} onCheckedChange={() => toggleActive(sys)}
+                      label={<span style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{sys.active ? '운영중' : '비활성'}</span>} />
                   </TableCell>
                   <TableCell style={{ color: 'var(--c-text-muted)' }}>
                     {new Date(sys.createdAt).toLocaleDateString('ko-KR')}
@@ -224,7 +219,7 @@ export default function SystemManagementPage() {
                     <Button variant="outlined" size="sm" onClick={() => { setSubPanel(sys); resetSubForm() }} style={{ color: 'var(--c-tag-teal-t)', borderColor: 'var(--c-tag-teal-t)' }}>하위시스템</Button>
                     <Button variant="outlined" size="sm" onClick={() => setManagerPanel(sys)} style={{ color: 'var(--c-tag-pri-t)', borderColor: 'var(--c-tag-pri-t)' }}>담당자</Button>
                     <Button variant="outlined" size="sm" onClick={() => openEdit(sys)}>수정</Button>
-                    <Button variant="outlined" size="sm" onClick={() => { if (confirm(`[${sys.code}] ${sys.name}을 삭제하시겠습니까?`)) deleteMut.mutate(sys.id) }} style={{ color: 'var(--c-tag-err-t)' }}>삭제</Button>
+                    <Button variant="danger" size="sm" onClick={() => { if (confirm(`[${sys.code}] ${sys.name}을 삭제하시겠습니까?`)) deleteMut.mutate(sys.id) }}>삭제</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -245,7 +240,8 @@ export default function SystemManagementPage() {
             <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--c-text-muted)' }}>프론트엔드, 백엔드, API 등 구성 컴포넌트를 관리합니다.</p>
 
             {showSubForm && (
-              <form onSubmit={handleSubSubmit} style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border-in)', borderRadius: 8, padding: 16, marginBottom: 16 }}>
+              <Panel style={{ display: 'block', background: 'var(--c-bg)', marginBottom: 16 }}>
+              <form onSubmit={handleSubSubmit}>
                 <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px 12px', alignItems: 'center', marginBottom: 10 }}>
                   {!editingSub && (
                     <>
@@ -266,6 +262,7 @@ export default function SystemManagementPage() {
                   <Button type="submit" variant="filled" size="sm">{editingSub ? '수정' : '등록'}</Button>
                 </div>
               </form>
+              </Panel>
             )}
 
             {subSystems.length === 0 ? (
@@ -286,19 +283,13 @@ export default function SystemManagementPage() {
                       <TableCell style={{ fontSize: 12 }}>{sub.name}</TableCell>
                       <TableCell style={{ color: 'var(--c-text-sub)', fontSize: 12 }}>{sub.description ?? '-'}</TableCell>
                       <TableCell>
-                        <span onClick={() => toggleSubActive(sub)} style={{
-                          padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                          background: sub.active ? 'var(--c-tag-done-bg)' : 'var(--c-thead)',
-                          color: sub.active ? 'var(--c-tag-done-t)' : 'var(--c-text-muted)',
-                          border: `1px solid ${sub.active ? 'var(--c-tag-done-t)' : 'var(--c-border)'}`,
-                        }}>
-                          {sub.active ? '활성' : '비활성'}
-                        </span>
+                        <Switch size="sm" checked={sub.active} onCheckedChange={() => toggleSubActive(sub)}
+                          label={<span style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{sub.active ? '활성' : '비활성'}</span>} />
                       </TableCell>
                       <TableCell>
                         <Button variant="outlined" size="sm" onClick={() => { setServerSubPanel(sub); setNewServerName('') }} style={{ color: 'var(--c-tag-warn-t)', borderColor: 'var(--c-tag-warn-t)' }}>서버</Button>
                         <Button variant="outlined" size="sm" onClick={() => openSubEdit(sub)}>수정</Button>
-                        <Button variant="outlined" size="sm" onClick={() => { if (confirm(`[${sub.code}] ${sub.name}을 삭제하시겠습니까?`)) deleteSubMut.mutate({ systemId: subPanel.id, subId: sub.id }) }} style={{ color: 'var(--c-tag-err-t)' }}>삭제</Button>
+                        <Button variant="danger" size="sm" onClick={() => { if (confirm(`[${sub.code}] ${sub.name}을 삭제하시겠습니까?`)) deleteSubMut.mutate({ systemId: subPanel.id, subId: sub.id }) }}>삭제</Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -327,8 +318,7 @@ export default function SystemManagementPage() {
               />
               <Button variant="filled"
                 onClick={() => { if (newServerName.trim()) addServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverName: newServerName.trim() }) }}
-                disabled={!newServerName.trim()}
-                style={{ opacity: newServerName.trim() ? 1 : 0.5 }}>추가</Button>
+                disabled={!newServerName.trim()}>추가</Button>
             </div>
 
             {servers.length === 0 ? (
@@ -339,7 +329,7 @@ export default function SystemManagementPage() {
                   <div key={sv.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--c-bg)', borderRadius: 6, border: '1px solid var(--c-border-in)' }}>
                     <span style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{idx + 1}</span>
                     <span style={{ flex: 1, fontSize: 13 }}>{sv.serverName}</span>
-                    <Button variant="outlined" size="sm" onClick={() => deleteServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverId: sv.id })} style={{ color: 'var(--c-tag-err-t)' }}>삭제</Button>
+                    <Button variant="danger" size="sm" onClick={() => deleteServerMut.mutate({ systemId: subPanel.id, subSystemId: serverSubPanel.id, serverId: sv.id })}>삭제</Button>
                   </div>
                 ))}
               </div>
@@ -365,7 +355,7 @@ export default function SystemManagementPage() {
                   {managers.map(m => (
                     <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--c-bg)', borderRadius: 6, fontSize: 13 }}>
                       <span>{m.username}</span>
-                      <Button variant="outlined" size="sm" onClick={() => removeManagerMut.mutate({ systemId: managerPanel.id, userId: m.userId })} style={{ color: 'var(--c-tag-err-t)' }}>제거</Button>
+                      <Button variant="danger" size="sm" onClick={() => removeManagerMut.mutate({ systemId: managerPanel.id, userId: m.userId })}>제거</Button>
                     </div>
                   ))}
                 </div>
@@ -381,8 +371,7 @@ export default function SystemManagementPage() {
                 </Select>
                 <Button variant="filled"
                   onClick={() => { if (selectedUserId) addManagerMut.mutate({ systemId: managerPanel.id, userId: selectedUserId }) }}
-                  disabled={!selectedUserId}
-                  style={{ opacity: selectedUserId ? 1 : 0.5 }}>추가</Button>
+                  disabled={!selectedUserId}>추가</Button>
               </div>
             )}
 

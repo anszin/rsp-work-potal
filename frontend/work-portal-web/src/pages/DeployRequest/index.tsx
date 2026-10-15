@@ -12,7 +12,7 @@ import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type Re
 import { useAuth } from '../../context/useAuth'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
-import { Button, EmptyState, Input, Loading, Modal, Panel, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tag, Textarea } from '../../components/ui'
+import { Button, Callout, Checkbox, EmptyState, Input, Loading, Modal, Panel, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tag, Textarea } from '../../components/ui'
 import {
   Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext, PaginationEllipsis,
   ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig,
@@ -382,12 +382,11 @@ export default function DeployRequestPage() {
                   {selectedIssues.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
                       {selectedIssues.map(issue => (
-                        <span key={issue.redmineIssueId} style={s.issueBadge}>
-                          <span style={{ color: 'var(--c-action)', fontWeight: 600 }}>#{issue.redmineIssueId}</span>
-                          <span style={{ color: 'var(--c-text)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{issue.redmineIssueTitle}</span>
-                          <button type="button" onClick={() => setSelectedIssues(prev => prev.filter(i => i.redmineIssueId !== issue.redmineIssueId))}
-                            style={{ border: 'none', background: 'none', color: 'var(--c-tag-err-t)', cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
-                        </span>
+                        <Tag key={issue.redmineIssueId} tone="success" title={issue.redmineIssueTitle ?? undefined} removeLabel="일감 선택 해제"
+                          onRemove={() => setSelectedIssues(prev => prev.filter(i => i.redmineIssueId !== issue.redmineIssueId))}>
+                          <span style={{ fontWeight: 600 }}>#{issue.redmineIssueId}</span>
+                          <span style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{issue.redmineIssueTitle}</span>
+                        </Tag>
                       ))}
                     </div>
                   )}
@@ -396,9 +395,7 @@ export default function DeployRequestPage() {
                   </Button>
                 </>
               ) : (
-                <div style={{ padding: '8px 10px', border: '1px solid var(--c-border-in)', borderRadius: 6, fontSize: 12, color: 'var(--c-text-muted)' }}>
-                  시스템에 레드마인 프로젝트가 설정되지 않았습니다
-                </div>
+                <Callout tone="warning">시스템에 레드마인 프로젝트가 설정되지 않았습니다</Callout>
               )}
             </div>
             <label style={s.label}>내용</label>
@@ -499,7 +496,7 @@ export default function DeployRequestPage() {
                             (next === 'REQUESTED' || next === 'COMPLETED') ? (isManagedSystem || isAdmin) :
                             false
                           return canAct && (
-                            <Button key={next} variant="outlined" size="xs" style={actionStyle(next)}
+                            <Button key={next} variant={next === 'REJECTED' ? 'danger' : 'outlined'} size="xs" style={actionStyle(next)}
                               onClick={() => handleStatus(row.id, next)}>
                               {label}
                             </Button>
@@ -512,7 +509,7 @@ export default function DeployRequestPage() {
                           </Button>
                         )}
                         {(row.status === 'DRAFT' || isAdmin) && (
-                          <Button variant="outlined" size="xs" style={{ color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }}
+                          <Button variant="danger" size="xs"
                             onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(row.id) }}>
                             삭제
                           </Button>
@@ -654,15 +651,17 @@ export default function DeployRequestPage() {
                       {idx > 0 && (
                         <div style={{ padding: '0 10px', color: 'var(--c-text-muted)', fontSize: 16, flexShrink: 0 }}>→</div>
                       )}
-                      <div
+                      <Panel
+                        role={isCurrent ? undefined : 'button'}
+                        tabIndex={isCurrent ? undefined : 0}
                         onClick={() => !isCurrent && setDetail(dr)}
+                        onKeyDown={e => { if (!isCurrent && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setDetail(dr) } }}
                         style={{
-                          padding: '8px 14px', borderRadius: 8, flexShrink: 0,
-                          border: `2px solid ${isCurrent ? 'var(--c-action)' : 'var(--c-border-in)'}`,
-                          background: isCurrent ? 'var(--c-thead)' : 'var(--c-bg)',
+                          padding: '8px 14px', gap: 4, flexShrink: 0,
                           cursor: isCurrent ? 'default' : 'pointer',
+                          ...(isCurrent ? { borderColor: 'var(--c-action)', background: 'var(--c-row-sel)' } : {}),
                         }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ fontSize: 12, fontWeight: 700, color: isCurrent ? 'var(--c-text)' : 'var(--c-text-muted)' }}>
                             {dr.deployNo ?? `DR#${dr.id}`}
                           </span>
@@ -675,7 +674,7 @@ export default function DeployRequestPage() {
                           {dr.deployTarget && <span style={{ fontSize: 11, color: 'var(--c-text-muted)' }}>{dr.deployTarget}</span>}
                           <StatusBadge status={dr.status} />
                         </div>
-                      </div>
+                      </Panel>
                     </Fragment>
                   ))}
                 </div>
@@ -687,7 +686,7 @@ export default function DeployRequestPage() {
           {(detail.actionComment || detail.rejectionReason) && (
             <div style={{ marginTop: 14 }}>
               <div style={s.infoSectionTitle}>{detail.status === 'REJECTED' ? '반려 사유' : '첨언'}</div>
-              <pre style={s.contentBox}>{detail.actionComment || detail.rejectionReason}</pre>
+              <Panel style={s.contentPanel}><pre style={s.contentPre}>{detail.actionComment || detail.rejectionReason}</pre></Panel>
             </div>
           )}
 
@@ -695,7 +694,7 @@ export default function DeployRequestPage() {
           {detail.content && (
             <div style={{ marginTop: 14 }}>
               <div style={s.infoSectionTitle}>내용</div>
-              <pre style={s.contentBox}>{detail.content}</pre>
+              <Panel style={s.contentPanel}><pre style={s.contentPre}>{detail.content}</pre></Panel>
             </div>
           )}
 
@@ -709,8 +708,8 @@ export default function DeployRequestPage() {
                     <a key={i.redmineIssueId}
                       href={`http://54.180.246.95:3000/issues/${i.redmineIssueId}`}
                       target="_blank" rel="noreferrer"
-                      style={{ color: 'var(--c-action)', textDecoration: 'none', fontSize: 12, background: 'var(--c-tag-sys)', padding: '3px 10px', borderRadius: 4 }}>
-                      #{i.redmineIssueId} {i.redmineIssueTitle}
+                      style={{ textDecoration: 'none' }}>
+                      <Tag tone="info" style={{ cursor: 'pointer' }}>#{i.redmineIssueId} {i.redmineIssueTitle}</Tag>
                     </a>
                   ))}
                 </div>
@@ -739,11 +738,10 @@ export default function DeployRequestPage() {
               <div style={s.infoSectionTitle}>배포 단계</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
                 {deploySteps.map((step, idx) => (
-                  <div key={step.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 14px', borderRadius: 6,
-                    background: step.status === 'DONE' ? 'var(--c-tag-done-bg)' : 'var(--c-bg)',
-                    border: `1px solid ${step.status === 'DONE' ? 'var(--c-tag-done-bg)' : 'var(--c-border-in)'}`,
+                  <Panel key={step.id} style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 12,
+                    padding: '10px 14px',
+                    ...(step.status === 'DONE' ? { background: 'var(--c-tag-done-bg)', borderColor: 'transparent' } : { background: 'var(--c-bg)' }),
                   }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
@@ -770,7 +768,7 @@ export default function DeployRequestPage() {
                         배포 완료
                       </Button>
                     )}
-                  </div>
+                  </Panel>
                 ))}
               </div>
             </div>
@@ -821,7 +819,7 @@ export default function DeployRequestPage() {
               {pickerAllIssues.length === 0 && pickerLoading ? (
                 <Loading />
               ) : pickerFetchError ? (
-                <div style={{ ...s.modalEmpty, color: 'var(--c-tag-err-t)' }}>오류: {pickerFetchError}</div>
+                <div style={{ padding: 20 }}><Callout tone="danger">오류: {pickerFetchError}</Callout></div>
               ) : filteredIssues.length === 0 ? (
                 <EmptyState title="일감이 없습니다" />
               ) : (
@@ -834,9 +832,8 @@ export default function DeployRequestPage() {
                     return (
                       <div key={issue.id} onClick={() => togglePickerIssue(issue)}
                         style={{ ...s.issueRow, background: checked ? 'var(--c-tag-done-bg)' : undefined }}>
-                        <div style={{ ...s.issueCheck, borderColor: checked ? 'var(--rsp-color-success-500)' : 'var(--c-border-in)', background: checked ? 'var(--rsp-color-success-500)' : 'var(--c-card)' }}>
-                          {checked && <span style={{ color: 'var(--rsp-color-text-on-primary)', fontSize: 11, lineHeight: 1 }}>✓</span>}
-                        </div>
+                        {/* 시각적 상태만 표시 — 클릭은 행(onClick)에서 1회 토글 */}
+                        <Checkbox checked={checked} tabIndex={-1} aria-hidden style={{ pointerEvents: 'none', flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <span style={{ color: 'var(--c-action)', fontWeight: 600, marginRight: 8, fontSize: 13 }}>#{issue.id}</span>
                           <span style={{ fontSize: 13 }}>{issue.subject}</span>
@@ -924,7 +921,6 @@ const SCOPE_TAG: Record<DeployScope, { bg: string; color: string }> = {
 
 function actionStyle(status: RequestStatus): React.CSSProperties {
   if (status === 'APPROVED') return { color: 'var(--c-tag-done-t)', borderColor: 'var(--c-tag-done-t)' }
-  if (status === 'REJECTED') return { color: 'var(--c-tag-err-t)', borderColor: 'var(--c-tag-err-t)' }
   if (status === 'COMPLETED') return { color: 'var(--c-tag-teal-t)', borderColor: 'var(--c-tag-teal-t)' }
   return {}
 }
@@ -970,7 +966,6 @@ const s: Record<string, React.CSSProperties> = {
   formGrid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'start', marginBottom: 16 },
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)', paddingTop: 8 },
-  issueBadge: { display: 'flex', alignItems: 'center', gap: 4, background: 'var(--c-tag-done-bg)', border: '1px solid var(--c-tag-done-bg)', borderRadius: 4, padding: '3px 8px', fontSize: 12 },
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   tableWrap: { display: 'block', padding: 0, overflow: 'hidden', marginBottom: 16 },
@@ -980,14 +975,13 @@ const s: Record<string, React.CSSProperties> = {
   detailLabel: { color: 'var(--c-text-muted)', fontSize: 12, fontWeight: 500 },
   infoSection: { background: 'var(--c-bg)', borderRadius: 8, padding: '14px 16px' },
   infoSectionTitle: { fontSize: 11, fontWeight: 600, color: 'var(--c-text-muted)', textTransform: 'uppercase' as const, letterSpacing: '0.06em', marginBottom: 10 },
-  contentBox: { background: 'var(--c-bg)', border: '1px solid var(--c-border)', borderRadius: 6, padding: '12px 16px', fontSize: 13, whiteSpace: 'pre-wrap' as const, marginTop: 8, fontFamily: 'inherit' },
+  contentPanel: { background: 'var(--c-bg)', padding: '12px 16px', marginTop: 8 },
+  contentPre: { margin: 0, fontSize: 13, whiteSpace: 'pre-wrap' as const, fontFamily: 'inherit' },
   modalFilter: { padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', display: 'flex', gap: 10, alignItems: 'center' },
   tabBtn: { padding: '5px 14px', border: '1px solid var(--c-border-in)', borderRadius: 20, cursor: 'pointer', fontSize: 12, background: 'var(--c-card)', color: 'var(--c-text-sub)' },
   tabBtnActive: { background: 'var(--c-action)', color: 'var(--rsp-color-text-on-primary)', borderColor: 'var(--c-action)' },
   modalBody: { flex: 1, overflowY: 'auto' as const },
-  modalEmpty: { padding: 32, textAlign: 'center' as const, color: 'var(--c-text-muted)', fontSize: 13 },
   issueRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--c-thead)', cursor: 'pointer' },
-  issueCheck: { width: 18, height: 18, borderRadius: 4, border: '2px solid var(--c-border-in)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   modalFooter: { padding: '12px 20px', borderTop: '1px solid var(--c-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
 }
 
@@ -1068,10 +1062,10 @@ function DeployDashboard({ requests }: { requests: import('../../api/deployReque
           <div style={{ fontSize: 28, fontWeight: 700 }}>{filtered.length}</div>
         </Panel>
         {STATUSES.map(s => (
-          <div key={s} style={{ background: STATUS_BG[s], border: `1px solid color-mix(in srgb, ${STATUS_COLORS[s]} 27%, transparent)`, borderRadius: 8, padding: '16px 20px' }}>
+          <Panel key={s} style={{ display: 'block', padding: '16px 20px', background: STATUS_BG[s], borderColor: 'transparent' }}>
             <div style={{ fontSize: 11, color: STATUS_COLORS[s], marginBottom: 6, fontWeight: 600 }}>{STATUS_LABELS[s]}</div>
             <div style={{ fontSize: 28, fontWeight: 700, color: STATUS_COLORS[s] }}>{filtered.filter(r => r.status === s).length}</div>
-          </div>
+          </Panel>
         ))}
       </div>
 

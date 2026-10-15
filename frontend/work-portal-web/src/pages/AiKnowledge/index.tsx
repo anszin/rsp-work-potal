@@ -3,7 +3,7 @@ import {
   getKnowledgeStats, getKnowledgeFiles,
   KnowledgeStats, KnowledgeSource, KnowledgeFile, SourceType,
 } from '../../api/aiApi'
-import { Button, Tag, Panel, Loading, EmptyState, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
+import { Button, Tag, Panel, Loading, EmptyState, Callout, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────
@@ -76,7 +76,9 @@ function FileRows({ repo, sourceType }: FileRowsParams) {
 
   const inner = (() => {
     if (error) return (
-      <div style={{ padding: '10px 14px 10px 48px', fontSize: 12, color: 'var(--c-tag-err-t)' }}>{error}</div>
+      <div style={{ padding: '10px 14px 10px 48px' }}>
+        <Callout tone="danger">{error}</Callout>
+      </div>
     )
     if (!files) return (
       <Loading style={{ padding: '10px 14px 10px 48px', fontSize: 12, justifyContent: 'flex-start' }} />
@@ -234,8 +236,8 @@ export default function AiKnowledgePage() {
         {loading ? (
           <Loading style={{ padding: '48px 20px' }} />
         ) : error ? (
-          <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--c-tag-err-t)', fontSize: 13 }}>
-            {error}
+          <div style={{ padding: '48px 20px' }}>
+            <Callout tone="danger">{error}</Callout>
           </div>
         ) : !stats || stats.sources.length === 0 ? (
           <EmptyState title="색인된 소스가 없습니다" style={{ padding: '48px 20px' }} />

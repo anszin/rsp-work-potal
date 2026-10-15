@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Button as SdkButton } from '@lotte/rsp-react-design-system/shadcn'
 
-export type ButtonVariant = 'filled' | 'outlined' | 'text'
+export type ButtonVariant = 'filled' | 'outlined' | 'text' | 'link' | 'danger'
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,7 +13,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 // 포탈 API → RSP 디자인시스템 SDK(shadcn) variant/size 매핑
-const VARIANT_MAP = { filled: 'default', outlined: 'outline', text: 'ghost' } as const
+// link: 텍스트 링크형 버튼(파일명·외부 링크 등), danger: 삭제·반려 등 파괴적 동작(SDK destructive)
+const VARIANT_MAP = { filled: 'default', outlined: 'outline', text: 'ghost', link: 'link', danger: 'destructive' } as const
 const SIZE_MAP = { xs: 'xs', sm: 'sm', md: 'default', lg: 'lg' } as const
 
 export default function Button({
