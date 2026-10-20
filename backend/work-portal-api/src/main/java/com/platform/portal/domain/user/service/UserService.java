@@ -1,10 +1,14 @@
 package com.platform.portal.domain.user.service;
 
+import com.platform.portal.domain.deploy.repository.DeployRequestRepository;
+import com.platform.portal.domain.request.repository.ChangeRequestRepository;
+import com.platform.portal.domain.system.repository.SystemManagerRepository;
 import com.platform.portal.domain.user.dto.UserDto;
 import com.platform.portal.domain.user.entity.User;
 import com.platform.portal.domain.user.repository.UserRepository;
 import com.platform.portal.service.MailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,7 +20,13 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class UserService {
+
+    // 삭제 차단용 이력 조회 (F-FIX-001 R-006)
+    private final ChangeRequestRepository changeRequestRepository;
+    private final DeployRequestRepository deployRequestRepository;
+    private final SystemManagerRepository systemManagerRepository;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -60,7 +70,7 @@ public class UserService {
 
         if (req.getEmail() != null && !req.getEmail().isBlank()) {
             try { mailService.sendInitialCredentials(req.getEmail(), req.getUsername(), tempPassword); }
-            catch (Exception ignored) {}
+            catch (Exception e) { log.warn("계정 생성 메일 발송 실패 username={} to={}: {}", req.getUsername(), req.getEmail(), e.getMessage()); }
         }
 
         return new UserDto.Summary(user, tempPassword);
@@ -92,6 +102,13 @@ public class UserService {
         User actor = userRepository.findByUsername(actorUsername).orElseThrow();
         if (actor.getRole() == User.Role.MEMBER) throw new AccessDeniedException("권한이 없습니다.");
         if (actor.getId().equals(id)) throw new IllegalArgumentException("본인 계정은 삭제할 수 없습니다.");
+        // 요청·배포·담당자 FK 이력이 있으면 물리 삭제 불가 → 안내 (username 문자열 참조는 이력으로 보지 않음)
+        boolean hasHistory = changeRequestRepository.existsByRequesterId(id)
+                || deployRequestRepository.existsByRequesterIdOrApproverId(id, id)
+                || systemManagerRepository.existsByUserId(id);
+        if (hasHistory) {
+            throw new IllegalArgumentException("요청·배포·담당자 이력이 있는 사용자는 삭제할 수 없습니다. 비활성화하세요.");
+        }
         userRepository.deleteById(id);
     }
 
@@ -108,7 +125,7 @@ public class UserService {
         user.setMustChangePassword(true);
         if (user.getEmail() != null && !user.getEmail().isBlank()) {
             try { mailService.sendInitialCredentials(user.getEmail(), user.getUsername(), tempPassword); }
-            catch (Exception ignored) {}
+            catch (Exception e) { log.warn("비밀번호 초기화 메일 발송 실패 username={} to={}: {}", user.getUsername(), user.getEmail(), e.getMessage()); }
         }
         return new UserDto.Summary(user, tempPassword);
     }

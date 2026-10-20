@@ -173,6 +173,12 @@ public class OperationSystemService {
 
     @Transactional
     public void deleteServer(Long subSystemId, Long serverId) {
-        serverRepository.deleteById(serverId);
+        SystemServer server = serverRepository.findById(serverId)
+                .orElseThrow(() -> new IllegalArgumentException("Server not found: " + serverId));
+        // 지정한 서브시스템 소속인지 검증 (F-FIX-001 R-005)
+        if (!server.getSubSystem().getId().equals(subSystemId)) {
+            throw new IllegalArgumentException("서버가 해당 서브시스템에 속하지 않습니다.");
+        }
+        serverRepository.delete(server);
     }
 }

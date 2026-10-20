@@ -262,8 +262,8 @@ public class ChangeRequestService {
         int year = LocalDate.now().getYear();
         LocalDateTime start = LocalDate.of(year, 1, 1).atStartOfDay();
         LocalDateTime end = LocalDate.of(year + 1, 1, 1).atStartOfDay();
-        long count = changeRequestRepository.countByYear(start, end);
-        return String.format("CR-%d-%03d", year, count + 1);
+        long maxSeq = changeRequestRepository.maxSeqByYear(start, end);
+        return String.format("CR-%d-%03d", year, maxSeq + 1);
     }
 
     private ChangeRequest getOrThrow(Long id) {

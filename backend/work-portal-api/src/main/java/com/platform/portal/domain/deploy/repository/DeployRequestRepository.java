@@ -24,4 +24,6 @@ public interface DeployRequestRepository extends JpaRepository<DeployRequest, Lo
 
     @Query(value = "SELECT COALESCE(MAX(CAST(SUBSTRING(deploy_no, 9) AS INTEGER)), 0) FROM deploy_requests WHERE created_at >= :start AND created_at < :end AND deploy_no IS NOT NULL", nativeQuery = true)
     long maxSeqByYear(LocalDateTime start, LocalDateTime end);
+
+    boolean existsByRequesterIdOrApproverId(Long requesterId, Long approverId);
 }

@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { dailyCheckApi, DailyCheckReport, SaveDailyCheckRequest, CheckStatus } from '../../api/reports'
-import client from '../../api/client'
+import { getActiveSystems } from '../../api/systems'
 import { Button, Callout, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea, Panel, Tag, Loading, EmptyState } from '../../components/ui'
 import PageHeader from '../../components/PageHeader'
-
-interface SystemOption { id: number; name: string }
 
 const STATUS_LABEL: Record<CheckStatus, string> = { NORMAL: '정상', WARNING: '주의', CRITICAL: '위험' }
 const STATUS_COLOR: Record<CheckStatus, string> = { NORMAL: 'var(--c-tag-done-t)', WARNING: 'var(--c-tag-warn-t)', CRITICAL: 'var(--c-tag-err-t)' }
@@ -24,7 +22,7 @@ export default function DailyCheckPage() {
 
   const { data: systems = [] } = useQuery({
     queryKey: ['systems-list'],
-    queryFn: () => client.get<SystemOption[]>('/api/systems').then(r => r.data),
+    queryFn: getActiveSystems,  // 다른 등록 폼과 동일하게 활성 시스템만 (F-FIX-001 R-001)
   })
 
   const { data: reports = [], isLoading } = useQuery({
@@ -100,7 +98,7 @@ export default function DailyCheckPage() {
                 <Select value={form.systemId} onValueChange={v => setForm(f => ({ ...f, systemId: +v }))}
                   style={{ width: '100%' }}>
                   <option value={0}>-- 선택 --</option>
-                  {systems.map((s: SystemOption) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  {systems.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </Select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

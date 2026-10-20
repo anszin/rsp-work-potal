@@ -13,6 +13,8 @@ public interface SystemManagerRepository extends JpaRepository<SystemManager, Lo
 
     boolean existsBySystemIdAndUserId(Long systemId, Long userId);
 
+    boolean existsByUserId(Long userId);
+
     void deleteBySystemIdAndUserId(Long systemId, Long userId);
 
     @Query("SELECT sm.system.id FROM SystemManager sm WHERE sm.user.username = :username")
