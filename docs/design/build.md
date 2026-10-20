@@ -30,7 +30,7 @@
 | 린트 (BE) | 없음 | ☐ 계획됨 | — |
 | CI | **없음** | ☐ 계획됨 | `find` 0건 |
 | 배포 (FE) | Vercel, `git push master` 트리거 (추론). `vercel.json`: `/api/*` → `http://54.180.246.95:36016`, 그 외 SPA | ☑ 검증됨 (설정) / 트리거 미확인 | `vercel.json`, `HANDOVER.md:15` |
-| 배포 (BE) | **수동 파일 전송** (빌드 산출물을 EC2 로 전송 후 재기동). 호스트 nginx 1.14.1 :36016 → Spring :8082 (`SERVER_PORT`). Dockerfile·compose·배포 스크립트 **저장소에 없음** | ☑ 실측 (36016 응답) ☑ 절차 확인 (담당자 답변 2026-10-20) | 운영 호출 2026-10-19, `HANDOVER.md:190` |
+| 배포 (BE) | **수동 파일 전송** — `bootJar` 산출물을 EC2 실행 경로의 **`app.jar` 로 덮어쓰기** → 8082 프로세스 재기동 → 외부에서 로그인 실패 401 로 반영 확인. 다른 파일명으로 전송하면 재기동해도 옛 코드 (2026-10-20 사례). 호스트 nginx 1.14.1 :36016 → Spring :8082. Dockerfile·compose·배포 스크립트 **저장소에 없음** | ☑ 실측 ☑ 절차 확인 (2026-10-20) | 운영 호출, `HANDOVER.md:190` |
 | DB 스키마 | 기동 시 JPA `ddl-auto: update` 자동 반영. 마이그레이션 없음 | ☑ 검증됨 (설정) | `application.yml:15` |
 | 시드 | 기동 시 admin 계정(없으면), 시스템 SYS001·SYS002(0건이면), 메뉴 권한 4역할×12키 | ☑ 검증됨 (코드) | `DataInitializer`, `MenuPermissionService.seedDefaults` |
 
