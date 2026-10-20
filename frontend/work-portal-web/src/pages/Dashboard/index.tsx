@@ -71,31 +71,37 @@ export default function DashboardPage() {
   const { data: summary = [] } = useQuery({
     queryKey: ['finance-summary', currentYear],
     queryFn: () => financeApi.summary(currentYear).then(r => r.data),
+    enabled: can('finance'),   // 권한 없는 카드의 데이터는 조회하지 않음 (F-AUTH-001 Q-002)
   })
 
   const { data: inventory = [] } = useQuery({
     queryKey: ['inventory'],
     queryFn: () => inventoryApi.list().then(r => r.data),
+    enabled: can('inventory'),
   })
 
   const { data: changeRequests = [] } = useQuery({
     queryKey: ['change-requests'],
     queryFn: () => client.get<any[]>('/change-requests').then(r => r.data),
+    enabled: can('change_requests'),
   })
 
   const { data: deployRequests = [] } = useQuery({
     queryKey: ['deploy-requests'],
     queryFn: () => client.get<any[]>('/deploy-requests').then(r => r.data),
+    enabled: can('deploys'),
   })
 
   const { data: todayChecks = [] } = useQuery({
     queryKey: ['daily-checks', today],
     queryFn: () => dailyCheckApi.list(today).then(r => r.data),
+    enabled: can('daily_check'),
   })
 
   const { data: meetings = [] } = useQuery({
     queryKey: ['meeting-minutes'],
     queryFn: () => meetingApi.list().then(r => r.data),
+    enabled: can('meeting_minutes'),
   })
 
   const { data: systems = [] } = useQuery({

@@ -34,9 +34,15 @@ public class MeetingMinuteDto {
         private final String content;
         private final String actionItems;
         private final String author;
+        private final String authorName;   // F-AUTH-001 R-008
         private final LocalDateTime createdAt;
 
         public Response(MeetingMinute m) {
+            this(m, null);
+        }
+
+        public Response(MeetingMinute m, String authorName) {
+            this.authorName = authorName;
             this.id = m.getId();
             this.title = m.getTitle();
             this.meetingDate = m.getMeetingDate();

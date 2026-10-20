@@ -7,6 +7,7 @@ import com.platform.portal.domain.deploy.service.DeployStepService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/deploy-requests")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'MEMBER')")   // EXTERNAL 은 요청자 계정 — 배포 API 전체 차단 (F-AUTH-001 R-006)
 public class DeployRequestController {
 
     private final DeployRequestService service;

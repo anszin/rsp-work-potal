@@ -32,6 +32,7 @@ export interface Todo {
   sourceId: number | null
   workUnitId: number | null
   assignee: string
+  assigneeName?: string | null   // F-AUTH-001 R-008
   createdAt: string
   updatedAt: string | null
   checkItems: CheckItem[]

@@ -59,13 +59,14 @@ public class WeeklyReportController {
     @PutMapping("/{id}")
     public WeeklyReportDto.Response update(
             @PathVariable Long id,
-            @Valid @RequestBody WeeklyReportDto.SaveRequest req) {
-        return service.update(id, req);
+            @Valid @RequestBody WeeklyReportDto.SaveRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        return service.update(id, req, user.getUsername());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        service.delete(id, user.getUsername());
         return ResponseEntity.noContent().build();
     }
 }

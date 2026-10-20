@@ -31,9 +31,15 @@ public class DailyCheckReportDto {
         private final DailyCheckReport.CheckStatus status;
         private final String note;
         private final String reporter;
+        private final String reporterName;   // F-AUTH-001 R-008
         private final LocalDateTime createdAt;
 
         public Response(DailyCheckReport r) {
+            this(r, null);
+        }
+
+        public Response(DailyCheckReport r, String reporterName) {
+            this.reporterName = reporterName;
             this.id = r.getId();
             this.systemId = r.getSystem().getId();
             this.systemName = r.getSystem().getName();

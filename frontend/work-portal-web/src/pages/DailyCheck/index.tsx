@@ -154,7 +154,7 @@ export default function DailyCheckPage() {
                 <TableCell style={{ color: 'var(--c-text-sub)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.note ?? '-'}
                 </TableCell>
-                <TableCell style={{ color: 'var(--c-text-sub)' }}>{r.reporter}</TableCell>
+                <TableCell style={{ color: 'var(--c-text-sub)' }}>{r.reporterName ?? r.reporter}</TableCell>
                 <TableCell style={{ fontSize: 12, color: 'var(--c-text-muted)' }}>
                   {new Date(r.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                 </TableCell>

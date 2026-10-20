@@ -10,6 +10,7 @@ export interface MeetingMinute {
   content: string | null
   actionItems: string | null
   author: string
+  authorName?: string | null   // username → 이름 (F-AUTH-001 R-008). 사용자 없으면 null
   createdAt: string
 }
 
@@ -35,6 +36,7 @@ export interface WeeklyReport {
   nextWeekProposal: string | null
   nextWeekEtc: string | null
   author: string
+  authorName?: string | null
   reportType: 'INDIVIDUAL' | 'CONSOLIDATED'
   createdAt: string
 }
@@ -62,6 +64,7 @@ export interface DailyCheckReport {
   status: CheckStatus
   note: string | null
   reporter: string
+  reporterName?: string | null
   createdAt: string
 }
 

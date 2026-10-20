@@ -41,10 +41,16 @@ public class WeeklyReportDto {
         private final String nextWeekProposal;
         private final String nextWeekEtc;
         private final String author;
+        private final String authorName;   // username → 이름 매핑 (F-AUTH-001 R-008). 사용자 없으면 null
         private final String reportType;
         private final LocalDateTime createdAt;
 
         public Response(WeeklyReport r) {
+            this(r, null);
+        }
+
+        public Response(WeeklyReport r, String authorName) {
+            this.authorName = authorName;
             this.id = r.getId();
             this.title = r.getTitle();
             this.weekStart = r.getWeekStart();

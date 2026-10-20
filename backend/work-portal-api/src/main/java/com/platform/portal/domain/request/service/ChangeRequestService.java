@@ -188,7 +188,7 @@ public class ChangeRequestService {
                     String.format("%s → %s 전환 불가", current, newStatus));
         }
 
-        // REQUESTED(제출)는 요청자 본인만 가능, APPROVED/REJECTED/COMPLETED는 ADMIN 또는 시스템 담당자만 가능
+        // REQUESTED(제출)는 요청자 본인만 가능, APPROVED/REJECTED/COMPLETED는 ADMIN/MANAGER 또는 해당 시스템 담당자(MEMBER)만 가능. EXTERNAL 은 담당자여도 불가 (L1 ④)
         if (newStatus == Status.REQUESTED) {
             if (!cr.getRequester().getUsername().equals(username)) {
                 throw new AccessDeniedException("본인의 요청만 제출할 수 있습니다.");

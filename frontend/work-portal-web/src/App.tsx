@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { useAuth } from './context/useAuth'
@@ -30,8 +30,12 @@ const AiKnowledgePage = lazy(() => import('./pages/AiKnowledge'))
 const UiShowcase = lazy(() => import('./pages/UiShowcase'))
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { token } = useAuth()
-  return token ? <>{children}</> : <Navigate to="/login" replace />
+  const { token, user } = useAuth()
+  const { pathname } = useLocation()
+  if (!token) return <Navigate to="/login" replace />
+  // 비밀번호 변경이 필요한 사용자는 변경 화면 외 진입 차단. 새로고침·URL 직접 입력도 refreshMe 로 복원된 user 로 막힘 (F-AUTH-001 R-007)
+  if (user?.mustChangePassword && pathname !== '/change-password') return <Navigate to="/change-password" replace />
+  return <>{children}</>
 }
 
 export default function App() {

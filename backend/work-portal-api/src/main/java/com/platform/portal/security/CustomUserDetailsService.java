@@ -22,11 +22,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         // active=false 는 disabled → 로그인 시 DisabledException, 토큰 사용 시 JwtAuthFilter 에서 제외 (F-FIX-001 R-004)
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
-                .disabled(!user.isActive())
-                .build();
+        // mustChangePassword 는 JwtAuthFilter 가 일반 API 차단에 사용 (F-AUTH-001 R-007)
+        return new PortalUserDetails(
+                user.getUsername(),
+                user.getPassword(),
+                user.isActive(),
+                Boolean.TRUE.equals(user.getMustChangePassword()),
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        );
     }
 }

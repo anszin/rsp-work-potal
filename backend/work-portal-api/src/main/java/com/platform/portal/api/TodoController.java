@@ -42,12 +42,12 @@ public class TodoController {
         boolean isManager = isManagerOrAdmin(user);
         String assignee = (isManager && req.getAssignee() != null && !req.getAssignee().isBlank())
                 ? req.getAssignee() : null;
-        return service.update(id, req, assignee);
+        return service.update(id, req, assignee, user.getUsername());
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    public void delete(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        service.delete(id, user.getUsername());
     }
 
     private boolean isManagerOrAdmin(UserDetails user) {

@@ -42,13 +42,14 @@ public class DailyCheckReportController {
     @PutMapping("/{id}")
     public DailyCheckReportDto.Response update(
             @PathVariable Long id,
-            @Valid @RequestBody DailyCheckReportDto.SaveRequest req) {
-        return service.update(id, req);
+            @Valid @RequestBody DailyCheckReportDto.SaveRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        return service.update(id, req, user.getUsername());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        service.delete(id, user.getUsername());
         return ResponseEntity.noContent().build();
     }
 }

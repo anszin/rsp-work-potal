@@ -494,7 +494,7 @@ function ReportDetail({ report, canEdit, onEdit, onDelete }: {
             <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{report.title}</h2>
           </div>
           <div style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>
-            {fmtWeek(report.weekStart, report.weekEnd)}{' · '}<strong>{report.author}</strong>
+            {fmtWeek(report.weekStart, report.weekEnd)}{' · '}<strong>{report.authorName ?? report.author}</strong>
           </div>
         </div>
         {canEdit && (
@@ -676,7 +676,7 @@ function ConsolidatedEditor({ weekLbl, individualReports, existing, pastConsolid
               <Panel key={report.id} style={{ display: 'block', padding: 0, marginBottom: 8, overflow: 'hidden' }}>
                 <div style={{ padding: '8px 12px', background: 'var(--c-thead)', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
                   onClick={() => toggleExpand(report.author)}>
-                  <span style={{ flex: 1, fontWeight: 700, fontSize: 13 }}>{report.author}</span>
+                  <span style={{ flex: 1, fontWeight: 700, fontSize: 13 }}>{report.authorName ?? report.author}</span>
                   {addedCount > 0 && (
                     <Tag tone="purple">{addedCount}/{reportItemCount} 추가됨</Tag>
                   )}
@@ -901,7 +901,7 @@ export default function WeeklyReportPage() {
                   return (
                     <div key={report.id} style={{ pageBreakInside: 'avoid', border: '1px solid var(--rsp-color-neutral-200)', borderRadius: 10, overflow: 'hidden' }}>
                       <div style={{ padding: '10px 18px', background: 'var(--rsp-color-secondary-500)', color: 'var(--rsp-color-neutral-0)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 700, fontSize: 16 }}>{report.author}</span>
+                        <span style={{ fontWeight: 700, fontSize: 16 }}>{report.authorName ?? report.author}</span>
                         <span style={{ fontSize: 12, opacity: 0.85 }}>{fmtWeek(report.weekStart, report.weekEnd)}</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
@@ -1008,7 +1008,7 @@ export default function WeeklyReportPage() {
                                   selected={isSelected}
                                   onClick={() => setDetail({ type: 'view', report: item })}
                                   title={<>
-                                    {isManager ? item.author : item.title}
+                                    {isManager ? (item.authorName ?? item.author) : item.title}
                                     {isMine && <Tag tone="info" style={{ flexShrink: 0 }}>Me</Tag>}
                                   </>}
                                   description={isManager ? item.title : fmtWeek(item.weekStart, item.weekEnd)}
@@ -1034,7 +1034,7 @@ export default function WeeklyReportPage() {
                           selected={isSelected}
                           onClick={() => setDetail({ type: 'view', report: c })}
                           title={c.title}
-                          description={`${weekLabel(c.weekStart)} · ${c.author}`}
+                          description={`${weekLabel(c.weekStart)} · ${c.authorName ?? c.author}`}
                         />
                       )
                     })}
@@ -1072,7 +1072,7 @@ export default function WeeklyReportPage() {
                       <ListItem key={r.id}
                         selected={isSelected}
                         onClick={() => setDetail({ type: 'view', report: r })}
-                        title={`✅ ${r.author}`}
+                        title={`✅ ${r.authorName ?? r.author}`}
                         description={`금주 ${tw}건 · 차주 ${nw}건`}
                       />
                     )
@@ -1087,7 +1087,7 @@ export default function WeeklyReportPage() {
                     selected={detail.type === 'view' && detail.report.id === weekConsolidated.id}
                     onClick={() => setDetail({ type: 'view', report: weekConsolidated })}
                     title={<><Tag tone="purple">통합</Tag>{weekConsolidated.title}</>}
-                    description={`${weekConsolidated.author} 작성`}
+                    description={`${weekConsolidated.authorName ?? weekConsolidated.author} 작성`}
                   />
                 ) : (
                   <Button variant="outlined" onClick={() => {

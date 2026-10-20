@@ -32,6 +32,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             // 비활성 사용자의 토큰은 인증하지 않음 → 익명 처리 (F-FIX-001 R-004)
             if (userDetails.isEnabled()) {
+                // 비밀번호 변경이 필요한 사용자는 변경 관련 경로 외 차단 (F-AUTH-001 R-007)
+                if (userDetails instanceof PortalUserDetails p && p.isMustChangePassword()
+                        && !isAllowedBeforePasswordChange(request)) {
+                    writePasswordChangeRequired(response);
+                    return;
+                }
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -39,6 +45,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    /** 변경 전 허용: 인증 경로, 비밀번호 변경, 메뉴 권한 조회(refreshMe 가 호출) */
+    private boolean isAllowedBeforePasswordChange(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+        if (path.startsWith("/api/auth/")) return true;
+        if ("POST".equals(method) && "/api/users/change-password".equals(path)) return true;
+        if ("GET".equals(method) && "/api/menu-permissions".equals(path)) return true;
+        return false;
+    }
+
+    private void writePasswordChangeRequired(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"error\":\"비밀번호 변경이 필요합니다.\",\"code\":\"PASSWORD_CHANGE_REQUIRED\"}");
     }
 
     private String resolveToken(HttpServletRequest request) {

@@ -18,6 +18,7 @@ import com.platform.portal.service.RedmineService;
 import com.platform.portal.service.WebexService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,23 +137,25 @@ public class DeployRequestService {
         User actor = userRepository.findByUsername(approverUsername)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + approverUsername));
         boolean isAdminOrManager = actor.getRole() == User.Role.ADMIN || actor.getRole() == User.Role.MANAGER;
-        boolean isSystemManager = systemManagerRepository.findSystemIdsByUsername(approverUsername)
-                .contains(dr.getSystem().getId());
+        // 시스템 담당자 판정은 MEMBER 에 한함 — EXTERNAL 은 요청자 계정 (F-AUTH-001 R-005, L1 ④). 변경요청과 동일 규칙
+        boolean isSystemManager = actor.getRole() == User.Role.MEMBER
+                && systemManagerRepository.existsBySystemIdAndUserId(dr.getSystem().getId(), actor.getId());
 
+        // 권한 거부는 AccessDeniedException → 403 (이전엔 IllegalStateException → 500)
         if (newStatus == Status.APPROVED || newStatus == Status.REJECTED) {
             boolean isRelease = dr.getDeployType() == DeployRequest.DeployType.RELEASE;
             if (isRelease) {
                 if (!isAdminOrManager) {
-                    throw new IllegalStateException("릴리즈 배포 승인/반려는 매니저 이상만 가능합니다.");
+                    throw new AccessDeniedException("릴리즈 배포 승인/반려는 매니저 이상만 가능합니다.");
                 }
             } else {
                 if (!isAdminOrManager && !isSystemManager) {
-                    throw new IllegalStateException("승인/반려는 매니저 이상 또는 시스템 담당자만 가능합니다.");
+                    throw new AccessDeniedException("승인/반려는 매니저 이상 또는 시스템 담당자만 가능합니다.");
                 }
             }
         } else if (newStatus == Status.REQUESTED || newStatus == Status.COMPLETED) {
             if (!isSystemManager && !isAdminOrManager) {
-                throw new IllegalStateException("해당 시스템의 담당자만 처리할 수 있습니다.");
+                throw new AccessDeniedException("해당 시스템의 담당자만 처리할 수 있습니다.");
             }
         }
 

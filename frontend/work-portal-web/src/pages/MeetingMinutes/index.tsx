@@ -80,7 +80,7 @@ export default function MeetingMinutesPage() {
                   onClick={() => { setSelected(item); setShowForm(false) }}
                   title={item.title}
                   description={<>
-                    {item.meetingDate} · {item.author}
+                    {item.meetingDate} · {item.authorName ?? item.author}
                     {item.location && <><br />{item.location}</>}
                   </>}
                 />
@@ -140,7 +140,7 @@ export default function MeetingMinutesPage() {
                 <div style={{ fontSize: 13, color: 'var(--c-text-sub)' }}>
                   {selected.meetingDate}
                   {selected.location && ` · ${selected.location}`}
-                  {' · '}{selected.author}
+                  {' · '}{selected.authorName ?? selected.author}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>

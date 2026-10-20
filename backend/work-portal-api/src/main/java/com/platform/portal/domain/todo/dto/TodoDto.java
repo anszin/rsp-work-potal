@@ -50,6 +50,7 @@ public class TodoDto {
         private final Long sourceId;
         private final Long workUnitId;
         private final String assignee;
+        private final String assigneeName;   // F-AUTH-001 R-008
         private final LocalDateTime createdAt;
         private final LocalDateTime updatedAt;
         private final List<CheckItem> checkItems;
@@ -59,6 +60,11 @@ public class TodoDto {
         private final List<WorkLog> workLogs;
 
         public Response(Todo t) {
+            this(t, null);
+        }
+
+        public Response(Todo t, String assigneeName) {
+            this.assigneeName = assigneeName;
             this.id = t.getId();
             this.title = t.getTitle();
             this.description = t.getDescription();
