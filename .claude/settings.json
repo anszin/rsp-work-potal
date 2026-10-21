@@ -1,0 +1,15 @@
+{
+  "extraKnownMarketplaces": {
+    "rsp-tools": {
+      "source": {
+        "source": "git",
+        "url": "http://210.93.169.131:7805/rsp/rsp-ai-dlc.git",
+        "ref": "main"
+      },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": {
+    "rsp-dlc@rsp-tools": true
+  }
+}

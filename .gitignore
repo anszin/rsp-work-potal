@@ -26,7 +26,8 @@ Thumbs.db
 *.env
 *.env.local
 application-prod.yml
-.claude/
+.claude/*
+!.claude/settings.json
 
 # Excel/Office 잠금 파일
 ~$*
