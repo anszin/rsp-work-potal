@@ -71,6 +71,11 @@
 
     { "id": "F-FIX-001", "category": "공통(횡단)", "sub": "결함 수정", "name": "현행 결함 일괄 수정 (6건)", "desc": "현행분석서 12절 결함 #1 일일점검 경로, #4 채번, #5 메일 실패 로그, #19 비활성 차단, #20 서버 삭제 검사, #22 사용자 삭제 안내. BE 첫 테스트 7케이스 도입", "priority": "상", "difficulty": "하", "owner": "안성진", "status": "완료", "progress": 1, "due": "2026-10-20", "done": "2026-10-20", "note": "L3 F-FIX-001, REQ-2026-001. 운영 배포·검증 완료 (app.jar 교체 함정 기록)" }
   ],
+  "board": {
+    "weekly": [],
+    "undecided": [],
+    "blockers": []
+  },
   "changes": [
     { "date": "2026-10-21", "version": "1.0", "type": "신규", "targetId": "-", "content": "기능목록서 최초 작성 — L1 14개 영역(A-06 분할 반영) + 공통(횡단) 1개를 대분류로, 현행분석서 7·8절과 L3 2건, HANDOVER 다음 작업 후보에서 기능 38행 도출", "reason": "현행 분석·L1 10절 ①~⑧ 결정 완료, PM 보고용 목록 필요", "requester": "안성진", "author": "AI (rsp-mgmt-funclist)", "approver": "안성진", "note": "담당자·난이도·일정은 문서에 근거가 있는 L3 2건만 채움" }
   ]
