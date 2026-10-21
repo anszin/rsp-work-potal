@@ -26,8 +26,8 @@ public class WeeklyReportController {
     }
 
     @GetMapping("/{id}")
-    public WeeklyReportDto.Response get(@PathVariable Long id) {
-        return service.findById(id);
+    public WeeklyReportDto.Response get(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        return service.findById(id, user.getUsername());
     }
 
     @GetMapping("/by-week")

@@ -142,6 +142,42 @@ L1에서 확정한 권한·식별 모델을 코드에 적용한다. ① 보고�
 | **범위** | ☑ 이번 차수 (BE + FE 표시) |
 | **검증** | `ReportAuthorNameTest` 2케이스 + FE `tsc` + 수동 |
 
+### R-009 개인 주간보고 단건 조회 소유자 검사 (리뷰 보완)
+
+| 항목 | 내용 |
+|---|---|
+| **출처** | 2026-10-20 코드 리뷰 #1. L1 ① 의 읽기 범위 일관성 |
+| **요건 내용** | `GET /api/weekly-reports/{id}` 개인 보고서는 작성자 본인 또는 ADMIN/MANAGER만. 통합 보고서는 현행대로 전원 조회 가능 |
+| **현행 동작** | `WeeklyReportService.findById` 검사 없음 → 목록(`findAll`)은 MEMBER 에게 본인 것만 주면서 id 로 직접 조회하면 남의 개인 보고서가 읽힘. 기존부터 있던 구멍. FE 는 `weeklyApi.get` 미사용이라 화면 영향 없음 |
+| **처리 규칙** | `reportType == INDIVIDUAL && !author.equals(actor) && !isAdminOrManager` → 403 |
+| **인수 조건** | **Given** A 의 개인 보고서 **When** B 가 `GET /{id}` **Then** 403 / **When** A 또는 MANAGER **Then** 200 / **Given** 통합 보고서 **When** MEMBER **Then** 200 |
+| **범위** | ☑ 이번 차수 |
+| **검증** | `WeeklyReportReadTest` 3케이스 |
+
+### R-010 세션 중 비밀번호 초기화 시 자동 이동 (리뷰 보완)
+
+| 항목 | 내용 |
+|---|---|
+| **출처** | 코드 리뷰 #2 |
+| **요건 내용** | 로그인 중 관리자가 비밀번호를 초기화해 서버 플래그가 바뀌면, 다음 API 호출의 403 `PASSWORD_CHANGE_REQUIRED` 를 받아 `/change-password` 로 이동 |
+| **현행 동작** | axios 인터셉터는 401 만 처리 (`FE/api/client.ts`). `PrivateRoute` 는 로그인 시점의 `user.mustChangePassword=false` 를 그대로 봄 → 새로고침 전까지 정체불명 오류 |
+| **처리 규칙** | 응답 인터셉터: `status 403 && data.code === 'PASSWORD_CHANGE_REQUIRED' && pathname !== '/change-password'` → `window.location.assign('/change-password')` (전체 리로드로 `refreshMe` 재실행 → 가드가 유지) |
+| **인수 조건** | **Given** 로그인 세션, 관리자가 초기화 **When** 아무 화면 조작 **Then** `/change-password` 로 이동 (수동) |
+| **범위** | ☑ 이번 차수 |
+| **검증** | FE 테스트 도구 없음 → `tsc` + 수동 |
+
+### R-011 새로고침 직후 가드 대기 (리뷰 보완)
+
+| 항목 | 내용 |
+|---|---|
+| **출처** | 코드 리뷰 #3 |
+| **요건 내용** | 토큰은 있고 `user` 가 아직 로드되지 않은 동안은 보호 화면을 렌더하지 않고 로딩 표시 |
+| **현행 동작** | `PrivateRoute` 가 `user == null` 이면 자식을 렌더 → Dashboard 등 쿼리가 먼저 나가 `mustChangePassword` 사용자는 403 을 받고 콘솔 에러, 이후 리다이렉트 |
+| **처리 규칙** | `token && !user` → `<Loading/>`. `refreshMe` 실패 시 토큰 제거 → `/login` (현행 유지) |
+| **인수 조건** | **Given** `mustChangePassword=true` 사용자 **When** `/` 새로고침 **Then** 403 요청 0건, 바로 `/change-password` (수동, Network 탭) |
+| **범위** | ☑ 이번 차수 |
+| **검증** | `tsc` + 수동 |
+
 ---
 
 ## 4. 비기능 요건
@@ -237,4 +273,5 @@ L1에서 확정한 권한·식별 모델을 코드에 적용한다. ① 보고�
 | 2026-10-20 | Green — 전체 테스트 29/29 (F-FIX-001 7 + F-AUTH-001 22), `tsc --noEmit` 통과 | 1차 실행 28/29 → 테스트 단언 오류(`[null]` 언래핑) 수정 후 29/29 |
 | 2026-10-20 | 구현 중 결정 | R-008: 통합 보고서 항목(`WorkItem.author`)은 본문 JSON 에 직렬화되는 데이터라 이름 매핑 **제외**, username 유지 (L1 ② — 이름 스냅샷을 콘텐츠에 저장하지 않음). 표시 교체는 주간보고 7곳·회의록 2곳·일일점검 1곳 |
 | 2026-10-20 | 배포 | ☑ FE Vercel 자동 (push `10fc8ad`). ☑ BE jar 수동 — **1차 실패**: 전송한 jar 가 실행 경로의 `app.jar` 를 덮어쓰지 않아 재기동해도 8월 20일자 코드가 그대로 서빙됨 (`weekly-reports` 응답에 `authorName` 없음, 로그인 실패 500 으로 확인). `app.jar` 교체 후 재기동 → 외부 실측 로그인 실패 **401** 로 반영 확인 (13:10) |
-| | 수동 검증 (R-007 FE 가드, R-008 표시) | ☐ 미실시 — 안성진 |
+| 2026-10-21 | 보완 R-009~011 (코드 리뷰 3건) | Red: `WeeklyReportReadTest` 3케이스 중 1 실패(403 기대, 200). 수정: BE `findById(id, actor)` + 컨트롤러, FE `client.ts` 403 코드 처리, `PrivateRoute` 로딩 대기. Green: **32/32**, `tsc` 통과 |
+| | 수동 검증 (R-007 FE 가드, R-008 표시, R-010 세션 중 초기화, R-011 새로고침 시 403 0건) | ☐ 미실시 — 안성진 |

@@ -33,8 +33,10 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { token, user } = useAuth()
   const { pathname } = useLocation()
   if (!token) return <Navigate to="/login" replace />
+  // 새로고침 직후 user 가 로드되기 전에는 보호 화면을 그리지 않음 — 쿼리가 먼저 나가 403 을 받는 것을 방지 (R-011)
+  if (!user) return <Loading style={{ minHeight: '60vh' }} />
   // 비밀번호 변경이 필요한 사용자는 변경 화면 외 진입 차단. 새로고침·URL 직접 입력도 refreshMe 로 복원된 user 로 막힘 (F-AUTH-001 R-007)
-  if (user?.mustChangePassword && pathname !== '/change-password') return <Navigate to="/change-password" replace />
+  if (user.mustChangePassword && pathname !== '/change-password') return <Navigate to="/change-password" replace />
   return <>{children}</>
 }
 

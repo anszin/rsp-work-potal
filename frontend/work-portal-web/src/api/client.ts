@@ -19,6 +19,13 @@ client.interceptors.response.use(
       const event = new CustomEvent('auth:unauthorized')
       window.dispatchEvent(event)
     }
+    // 세션 중 관리자가 비밀번호를 초기화하면 서버가 403 + code 로 알림 → 변경 화면으로 (F-AUTH-001 R-010)
+    // 전체 리로드로 refreshMe 가 다시 돌아 PrivateRoute 가드가 유지된다
+    if (error.response?.status === 403
+        && error.response?.data?.code === 'PASSWORD_CHANGE_REQUIRED'
+        && window.location.pathname !== '/change-password') {
+      window.location.assign('/change-password')
+    }
     return Promise.reject(error)
   }
 )

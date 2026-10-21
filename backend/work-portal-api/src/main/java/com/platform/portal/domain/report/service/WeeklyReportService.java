@@ -28,8 +28,13 @@ public class WeeklyReportService {
         return toResponses(repository.findByAuthorAndReportTypeOrderByWeekStartDescCreatedAtDesc(username, WeeklyReport.ReportType.INDIVIDUAL));
     }
 
-    public WeeklyReportDto.Response findById(Long id) {
+    public WeeklyReportDto.Response findById(Long id, String actorUsername) {
         WeeklyReport r = getOrThrow(id);
+        // 개인 보고서 단건 조회도 목록과 같은 범위: 작성자 본인 또는 ADMIN/MANAGER (R-009). 통합 보고서는 전원
+        if (r.getReportType() == WeeklyReport.ReportType.INDIVIDUAL
+                && !actorUsername.equals(r.getAuthor()) && !userLookup.isAdminOrManager(actorUsername)) {
+            throw new AccessDeniedException("본인 보고서만 조회할 수 있습니다.");
+        }
         return new WeeklyReportDto.Response(r, userLookup.nameOf(r.getAuthor()));
     }
 
