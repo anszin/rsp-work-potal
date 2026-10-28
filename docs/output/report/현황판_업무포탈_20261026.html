@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>플랫폼팀 업무 포탈 현황판 2026-10-26</title>
+<!--
+  rsp-pmo-progress board 템플릿.
+  고정 부분(구조·스타일·렌더링 스크립트)은 이 파일, 변하는 부분은 아래 #board-data JSON 하나.
+  build-board.js 가 title 의 TITLE 자리와 #board-data 의 DATA_JSON 자리(이중 중괄호 표기) 만 치환한다. 외부 리소스 없음(사내망·오프라인에서 열림).
+-->
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #1c1f24; --muted: #5f6672; --line: #e3e6eb;
+    --accent: #2457d6; --accent-ink: #ffffff;
+    --m-l1: #c92a2a; --m-asis: #868e96; --m-l2: #e8a000; --m-l3: #1c7ed6; --m-done: #2b8a3e;
+    --p0: #c92a2a; --p1: #e8a000; --p2: #868e96;
+    --radius: 10px; --shadow: 0 1px 2px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a; --card: #1d2026; --ink: #e8eaed; --muted: #9aa3ae; --line: #2c313a;
+      --accent: #6b9bff; --accent-ink: #0d1117;
+      --m-l1: #ff6b6b; --m-asis: #adb5bd; --m-l2: #ffc940; --m-l3: #74c0fc; --m-done: #69db7c;
+      --p0: #ff6b6b; --p1: #ffc940; --p2: #adb5bd; --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a; --card: #1d2026; --ink: #e8eaed; --muted: #9aa3ae; --line: #2c313a;
+    --accent: #6b9bff; --accent-ink: #0d1117;
+    --m-l1: #ff6b6b; --m-asis: #adb5bd; --m-l2: #ffc940; --m-l3: #74c0fc; --m-done: #69db7c;
+    --p0: #ff6b6b; --p1: #ffc940; --p2: #adb5bd; --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font: 14px/1.5 -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", Roboto, sans-serif; padding: 24px 16px 64px; }
+  main { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 32px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  h2 small { color: var(--muted); font-weight: normal; font-size: 12px; margin-left: 8px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 18px 0 4px; }
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; box-shadow: var(--shadow); border-top: 3px solid var(--line); }
+  .tile .k { font-size: 12px; color: var(--muted); }
+  .tile .v { font-size: 26px; font-weight: 700; line-height: 1.1; margin-top: 4px; }
+  .tile .d { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .tile[data-m="L1"] { border-top-color: var(--m-l1); } .tile[data-m="현행"] { border-top-color: var(--m-asis); }
+  .tile[data-m="L2"] { border-top-color: var(--m-l2); } .tile[data-m="L3"] { border-top-color: var(--m-l3); }
+  .bar { display: flex; height: 10px; border-radius: 6px; overflow: hidden; background: var(--line); margin: 12px 0 4px; }
+  .bar span { display: block; height: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .card .note { padding: 10px 14px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
+  .rule { margin: 10px 0 22px; font-size: 13px; color: var(--muted); }
+  .rule a { color: inherit; }
+  details.card summary { padding: 10px 14px; cursor: pointer; font-size: 13px; color: var(--muted); list-style: none; }
+  details.card summary::before { content: '▸ '; }
+  details.card[open] summary::before { content: '▾ '; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; color: var(--muted); font-size: 12px; white-space: nowrap; background: color-mix(in srgb, var(--card) 85%, var(--bg)); position: sticky; top: 0; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.n, th.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.c, th.c { text-align: center; }
+  tr.total td { font-weight: 700; border-top: 2px solid var(--line); }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
+  .m-L1 { color: var(--m-l1); border-color: var(--m-l1); } .m-현행 { color: var(--m-asis); border-color: var(--m-asis); }
+  .m-L2 { color: var(--m-l2); border-color: var(--m-l2); } .m-L3 { color: var(--m-l3); border-color: var(--m-l3); }
+  .p-P0 { color: var(--p0); } .p-P1 { color: var(--p1); } .p-P2 { color: var(--p2); }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); align-items: center; }
+  .toolbar select, .toolbar input { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+  .toolbar .count { margin-left: auto; color: var(--muted); font-size: 12px; }
+  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+  .empty { padding: 16px 14px; color: var(--muted); font-size: 13px; }
+  .check { list-style: none; padding: 0 14px; margin: 0; }
+  .check li { padding: 8px 0; border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: flex-start; }
+  .check li:last-child { border-bottom: 0; }
+  .check input { margin-top: 3px; }
+  .check label.done { color: var(--muted); text-decoration: line-through; }
+  .muted { color: var(--muted); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 12px; background: color-mix(in srgb, var(--card) 70%, var(--bg)); padding: 1px 5px; border-radius: 4px; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 12px; }
+  .tabs { display: flex; gap: 4px; margin: 18px 0 0; border-bottom: 2px solid var(--line); }
+  .tabs button { font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; border: 0; background: none; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .tabs button:hover { color: var(--ink); }
+  .tab { display: none; } .tab.on { display: block; }
+  .s-완료 { color: var(--m-done); border-color: var(--m-done); } .s-테스트 { color: var(--m-l3); border-color: var(--m-l3); } .s-개발중 { color: var(--m-l2); border-color: var(--m-l2); }
+  .s-설계중 { color: var(--m-l2); border-color: var(--m-l2); } .s-미착수 { color: var(--m-l1); border-color: var(--m-l1); } .s-보류 { color: var(--m-asis); border-color: var(--m-asis); }
+  .rate { display: inline-flex; align-items: center; gap: 8px; min-width: 120px; }
+  .rate i { flex: 1; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; display: block; }
+  .rate i b { display: block; height: 100%; background: var(--m-done); }
+  .rate span { font-variant-numeric: tabular-nums; min-width: 38px; text-align: right; }
+  .diff li { padding: 4px 0; } .diff code { margin-right: 4px; }
+  @media print { .tab { display: block !important; } .tabs { display: none; } }
+  @media (max-width: 720px) { body { padding: 16px 12px 48px; } .tile .v { font-size: 22px; } th, td { padding: 6px 8px; } }
+  @media print { body { padding: 0; background: #fff; } .toolbar, .noprint { display: none; } .card { box-shadow: none; break-inside: avoid; } h2 { break-after: avoid; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <noscript>이 페이지는 스크립트로 표를 그립니다. 스크립트가 꺼져 있으면 아래 JSON 원문을 보세요.</noscript>
+</main>
+<footer id="foot"></footer>
+
+<script id="board-data" type="application/json">{"progress":{"byStatus":{"테스트":1,"완료":31,"미착수":2,"보류":4},"weighted":0.881578947368421,"areas":[{"id":"A-01","name":"인증·사용자","total":5,"done":4,"inProgress":1,"notStarted":0,"onHold":0,"rate":0.9800000000000001},{"id":"A-02","name":"운영시스템 마스터","total":3,"done":3,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"A-03","name":"변경 요청","total":3,"done":3,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"A-04","name":"배포 요청","total":5,"done":5,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"A-05","name":"인벤토리","total":1,"done":1,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"A-06-1","name":"회의록","total":1,"done":1,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"A-06-2","name":"주간보고","total":4,"done":3,"inProgress":0,"notStarted":1,"onHold":0,"rate":0.75},{"id":"A-06-3","name":"일일점검","total":2,"done":1,"inProgress":0,"notStarted":1,"onHold":0,"rate":0.5},{"id":"A-07","name":"손익","total":1,"done":1,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"A-08","name":"과제·업무단위·To-Do","total":4,"done":4,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"A-09","name":"메뉴 권한","total":1,"done":1,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"A-10","name":"알림·외부 연동","total":3,"done":2,"inProgress":0,"notStarted":0,"onHold":1,"rate":0.6666666666666666},{"id":"A-11","name":"AI 기능","total":3,"done":0,"inProgress":0,"notStarted":0,"onHold":3,"rate":0.5333333333333333},{"id":"A-12","name":"대시보드","total":1,"done":1,"inProgress":0,"notStarted":0,"onHold":0,"rate":1},{"id":"-","name":"공통(횡단)","total":1,"done":1,"inProgress":0,"notStarted":0,"onHold":0,"rate":1}],"attention":{"inProgress":[{"id":"F-AUTH-001","name":"권한·식별 모델 적용","category":"인증·사용자","status":"테스트","owner":"안성진","due":"2026-10-21","note":"L3 F-AUTH-001. R-001~011 구현·운영 배포 완료(2026-10-21), 수동 검증 5건 미실시","progress":0.9}],"notStarted":[{"id":"F-WR-004","name":"주간보고 ↔ To-Do 연동","category":"주간보고","status":"미착수","owner":"","due":"","note":"HANDOVER 다음 작업 후보 2. 설계 메모만 있고 L2·L3 없음 → 첫 L2(A-06-2) 작성 대상","progress":0},{"id":"F-DC-002","name":"일일점검 자동화","category":"일일점검","status":"미착수","owner":"","due":"","note":"요건 문장만 존재. L2 없음","progress":0}],"onHold":[{"id":"F-INTG-003","name":"레드마인 일감 관리 포탈 UI 대체","category":"알림·외부 연동","status":"보류","owner":"","due":"","note":"2026-10-14 사용자 보류. 결정 시 L1 1.3 Out of Scope(Redmine 대체 안 함) 개정 필요","progress":0},{"id":"F-AI-001","name":"AI 어시스턴트 채팅·에이전트","category":"AI 기능","status":"보류","owner":"","due":"","note":"사내망 전용·운영 미노출 (VITE_AI_ENABLED 미설정, L1 ③). 화면 /ai (770줄)","progress":0.8},{"id":"F-AI-002","name":"RAG 문서·지식베이스·프롬프트 화면","category":"AI 기능","status":"보류","owner":"","due":"","note":"운영 미노출. /ai/documents, /ai/knowledge, /ai/prompts","progress":0.8},{"id":"F-AI-003","name":"AI 운영 노출(프록시 분기 + 인증)","category":"AI 기능","status":"보류","owner":"","due":"","note":"착수 트리거: RAG 민감 자료 적재 또는 운영 노출 요구. AI 서버 L1 (⑧)","progress":0}]},"diff":{"prevDate":"2026-10-21","prevVersion":"1.0","added":[],"changed":[],"removed":[]}},"meta":{"projectName":"플랫폼팀 업무 포탈","shortName":"업무포탈","version":"1.1","date":"2026-10-26"},"author":"안성진","generated":"2026-10-28 00:03","source":"기능구현현황_업무포탈.data.json","functions":[{"id":"F-AUTH-001","name":"권한·식별 모델 적용","category":"인증·사용자","areaId":"A-01","p":"P0","mat":"L3","status":"테스트","owner":"안성진","note":"L3 F-AUTH-001. R-001~011 구현·운영 배포 완료(2026-10-21), 수동 검증 5건 미실시","l3Link":"../4.개발요건정의서(L3)/F-AUTH-001_권한식별모델적용.md","l3Label":"F-AUTH-001_권한식별모델적용"},{"id":"F-AUTH-002","name":"JWT 로그인","category":"인증·사용자","areaId":"A-01","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중 (현행분석 2026-10-16 기준). 화면 /login","l3Link":null,"l3Label":null},{"id":"F-AUTH-003","name":"비밀번호 변경·강제 변경","category":"인증·사용자","areaId":"A-01","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. 강제 로직은 F-AUTH-001 R-007·R-010","l3Link":null,"l3Label":null},{"id":"F-AUTH-004","name":"사용자 관리","category":"인증·사용자","areaId":"A-01","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /admin/users. EXTERNAL=요청자 계정 (L1 ④)","l3Link":null,"l3Label":null},{"id":"F-AUTH-005","name":"협력사 계정 발급 위임","category":"인증·사용자","areaId":"A-01","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. L1 ④ 결정으로 유지","l3Link":null,"l3Label":null},{"id":"F-CR-001","name":"변경 요청 등록·첨부","category":"변경 요청","areaId":"A-03","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /requests. EXTERNAL 은 등록·조회·본인 제출만","l3Link":null,"l3Label":null},{"id":"F-CR-002","name":"변경 요청 상태 전환(승인·완료)","category":"변경 요청","areaId":"A-03","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. 고정 테스트 F-FIX-001 에서 도입","l3Link":null,"l3Label":null},{"id":"F-CR-003","name":"Redmine 일감 연결","category":"변경 요청","areaId":"A-03","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. 호출 정책은 변경 요청 영역 소관 (L1 ⑦)","l3Link":null,"l3Label":null},{"id":"F-DR-001","name":"배포 요청 등록·일감 선택","category":"배포 요청","areaId":"A-04","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /deploys (1,294줄). EXTERNAL 은 메뉴·API 모두 불가","l3Link":null,"l3Label":null},{"id":"F-DR-002","name":"배포 요청 승인·상태 전환","category":"배포 요청","areaId":"A-04","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. F-AUTH-001 R-005·R-006 반영","l3Link":null,"l3Label":null},{"id":"F-DR-003","name":"서버별 배포 단계 완료","category":"배포 요청","areaId":"A-04","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. F-AUTH-001 R-004","l3Link":null,"l3Label":null},{"id":"F-DR-004","name":"Redmine 버전 생성·일감 반영","category":"배포 요청","areaId":"A-04","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중","l3Link":null,"l3Label":null},{"id":"F-DR-005","name":"배포 Webex 알림","category":"배포 요청","areaId":"A-04","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중","l3Link":null,"l3Label":null},{"id":"F-FIX-001","name":"현행 결함 일괄 수정 (6건)","category":"공통(횡단)","areaId":null,"p":"P0","mat":"L3","status":"완료","owner":"안성진","note":"L3 F-FIX-001, REQ-2026-001. 운영 배포·검증 완료 (app.jar 교체 함정 기록)","l3Link":"../4.개발요건정의서(L3)/F-FIX-001_현행결함일괄수정.md","l3Label":"F-FIX-001_현행결함일괄수정"},{"id":"F-SYS-001","name":"운영시스템·서브시스템 관리","category":"운영시스템 마스터","areaId":"A-02","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /admin/systems, API /api/systems 18개","l3Link":null,"l3Label":null},{"id":"F-SYS-002","name":"서버 관리","category":"운영시스템 마스터","areaId":"A-02","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중","l3Link":null,"l3Label":null},{"id":"F-SYS-003","name":"시스템 담당자 관리","category":"운영시스템 마스터","areaId":"A-02","p":"P0","mat":"현행","status":"완료","owner":"","note":"운영 중","l3Link":null,"l3Label":null},{"id":"F-DASH-001","name":"종합 대시보드","category":"대시보드","areaId":"A-12","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 / (415줄)","l3Link":null,"l3Label":null},{"id":"F-DC-001","name":"운영시스템 일일점검 보고","category":"일일점검","areaId":"A-06-3","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /reports/daily","l3Link":null,"l3Label":null},{"id":"F-DC-002","name":"일일점검 자동화","category":"일일점검","areaId":"A-06-3","p":"P1","mat":"L1","status":"미착수","owner":"","note":"요건 문장만 존재. L2 없음","l3Link":null,"l3Label":null},{"id":"F-FIN-001","name":"월별 매출·지출 관리","category":"손익","areaId":"A-07","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /finance","l3Link":null,"l3Label":null},{"id":"F-INTG-001","name":"Webex 공지 발송","category":"알림·외부 연동","areaId":"A-10","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /admin/notifications","l3Link":null,"l3Label":null},{"id":"F-INTG-002","name":"Redmine·Webex·메일 클라이언트","category":"알림·외부 연동","areaId":"A-10","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 기존 문제: API 키 쿼리스트링, trust-all TLS, 메일 실패 로그 없음(#5 수정)","l3Link":null,"l3Label":null},{"id":"F-INV-001","name":"수주·제안 아이템 관리","category":"인벤토리","areaId":"A-05","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /inventory","l3Link":null,"l3Label":null},{"id":"F-MENU-001","name":"역할별 메뉴 권한","category":"메뉴 권한","areaId":"A-09","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 조회 실패 시 전부 노출은 보류(#16)","l3Link":null,"l3Label":null},{"id":"F-MM-001","name":"회의록 작성·공유","category":"회의록","areaId":"A-06-1","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /reports/meeting","l3Link":null,"l3Label":null},{"id":"F-TASK-001","name":"연간 중점과제 관리","category":"과제·업무단위·To-Do","areaId":"A-08","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /key-tasks","l3Link":null,"l3Label":null},{"id":"F-TASK-002","name":"업무단위 관리","category":"과제·업무단위·To-Do","areaId":"A-08","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중","l3Link":null,"l3Label":null},{"id":"F-TASK-003","name":"To-Do 칸반","category":"과제·업무단위·To-Do","areaId":"A-08","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /todos (721줄). sourceId 는 L1 ⑥ 결정으로 폐기(분류 태그만 유지)","l3Link":null,"l3Label":null},{"id":"F-TASK-004","name":"과제 실적 집계 탭","category":"과제·업무단위·To-Do","areaId":"A-08","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. PerformanceTab","l3Link":null,"l3Label":null},{"id":"F-WR-001","name":"개인 주간보고","category":"주간보고","areaId":"A-06-2","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 화면 /reports/weekly (1,141줄). F-AUTH-001 R-001·R-009","l3Link":null,"l3Label":null},{"id":"F-WR-002","name":"통합 주간보고","category":"주간보고","areaId":"A-06-2","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. 인쇄 화면은 SDK 미적용 잔여","l3Link":null,"l3Label":null},{"id":"F-WR-003","name":"주간보고 미제출 리마인더","category":"주간보고","areaId":"A-06-2","p":"P1","mat":"현행","status":"완료","owner":"","note":"운영 중. WeeklyReportReminderScheduler","l3Link":null,"l3Label":null},{"id":"F-WR-004","name":"주간보고 ↔ To-Do 연동","category":"주간보고","areaId":"A-06-2","p":"P1","mat":"L1","status":"미착수","owner":"","note":"HANDOVER 다음 작업 후보 2. 설계 메모만 있고 L2·L3 없음 → 첫 L2(A-06-2) 작성 대상","l3Link":null,"l3Label":null},{"id":"F-AI-001","name":"AI 어시스턴트 채팅·에이전트","category":"AI 기능","areaId":"A-11","p":"P2","mat":"L1","status":"보류","owner":"","note":"사내망 전용·운영 미노출 (VITE_AI_ENABLED 미설정, L1 ③). 화면 /ai (770줄)","l3Link":null,"l3Label":null},{"id":"F-AI-002","name":"RAG 문서·지식베이스·프롬프트 화면","category":"AI 기능","areaId":"A-11","p":"P2","mat":"L1","status":"보류","owner":"","note":"운영 미노출. /ai/documents, /ai/knowledge, /ai/prompts","l3Link":null,"l3Label":null},{"id":"F-AI-003","name":"AI 운영 노출(프록시 분기 + 인증)","category":"AI 기능","areaId":"A-11","p":"P2","mat":"L1","status":"보류","owner":"","note":"착수 트리거: RAG 민감 자료 적재 또는 운영 노출 요구. AI 서버 L1 (⑧)","l3Link":null,"l3Label":null},{"id":"F-INTG-003","name":"레드마인 일감 관리 포탈 UI 대체","category":"알림·외부 연동","areaId":"A-10","p":"P2","mat":"L1","status":"보류","owner":"","note":"2026-10-14 사용자 보류. 결정 시 L1 1.3 Out of Scope(Redmine 대체 안 함) 개정 필요","l3Link":null,"l3Label":null}],"areas":[{"id":"A-01","name":"인증·사용자","p":"P0","mat":"현행","l3plus":1,"total":5,"owners":"안성진","note":"현행 4"},{"id":"A-02","name":"운영시스템 마스터","p":"P0","mat":"현행","l3plus":0,"total":3,"owners":"","note":"현행 3"},{"id":"A-03","name":"변경 요청","p":"P0","mat":"현행","l3plus":0,"total":3,"owners":"","note":"현행 3"},{"id":"A-04","name":"배포 요청","p":"P0","mat":"현행","l3plus":0,"total":5,"owners":"","note":"현행 5"},{"id":"A-05","name":"인벤토리","p":"P1","mat":"현행","l3plus":0,"total":1,"owners":"","note":"현행 1"},{"id":"A-06-1","name":"회의록","p":"P1","mat":"현행","l3plus":0,"total":1,"owners":"","note":"현행 1"},{"id":"A-06-2","name":"주간보고","p":"P1","mat":"L1","l3plus":0,"total":4,"owners":"","note":"현행 3, 미상세 1"},{"id":"A-06-3","name":"일일점검","p":"P1","mat":"L1","l3plus":0,"total":2,"owners":"","note":"현행 1, 미상세 1"},{"id":"A-07","name":"손익","p":"P1","mat":"현행","l3plus":0,"total":1,"owners":"","note":"현행 1"},{"id":"A-08","name":"과제·업무단위·To-Do","p":"P1","mat":"현행","l3plus":0,"total":4,"owners":"","note":"현행 4"},{"id":"A-09","name":"메뉴 권한","p":"P1","mat":"현행","l3plus":0,"total":1,"owners":"","note":"현행 1"},{"id":"A-10","name":"알림·외부 연동","p":"P1","mat":"L1","l3plus":0,"total":3,"owners":"","note":"현행 2, 미상세 1, 보류 1"},{"id":"A-11","name":"AI 기능","p":"P2","mat":"L1","l3plus":0,"total":3,"owners":"","note":"미상세 3, 보류 3"},{"id":"A-12","name":"대시보드","p":"P1","mat":"현행","l3plus":0,"total":1,"owners":"","note":"현행 1"},{"id":"-","name":"공통(횡단)","p":"P0","mat":"L3","l3plus":1,"total":1,"owners":"안성진","note":""}],"undecided":[{"item":"⑨ 스키마 관리","source":"L1 10절","impact":"전체","when":"다음 스키마 변경 전","owner":"","status":"☐ 대기"},{"item":"⑩ nginx.conf 용도 (12절 #21)","source":"L1 10절","impact":"배포","when":"설계 단계","owner":"","status":"☐ 대기"}],"weekly":[],"blockers":[],"history":[{"date":"2026-10-21","version":"1.0","type":"신규","targetId":"-","content":"기능목록서 최초 작성 — L1 14개 영역(A-06 분할 반영) + 공통(횡단) 1개를 대분류로, 현행분석서 7·8절과 L3 2건, HANDOVER 다음 작업 후보에서 기능 38행 도출","reason":"현행 분석·L1 10절 ①~⑧ 결정 완료, PM 보고용 목록 필요","requester":"안성진","author":"AI (rsp-mgmt-funclist)","approver":"안성진","note":"담당자·난이도·일정은 문서에 근거가 있는 L3 2건만 채움"},{"date":"2026-10-26","version":"1.1","type":"수정","targetId":"-","content":"현황판 재생성 — 용어 개명(요건 성숙도 → 요건 상세화 단계), 1절 정의 표를 부록으로 내리고 절 번호 당김(1~7), 머리 부제 제거, 상세화 단계에서 DONE 제거(L1/현행/L2/L3). 기능 행 변경 없음","reason":"rsp-ai-dlc 984b8f8·fa2110f·a694abf·9e167d6 반영","requester":"안성진","author":"","approver":"","note":"2026-10-21 이후 L1·L3·요건요청서 상태 변화 없음(2026-10-26 확인)"}],"l1Found":true}</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById('board-data').textContent);
+  const M = ['L1', '현행', 'L2', 'L3'];
+  const MC = { 'L1': 'var(--m-l1)', '현행': 'var(--m-asis)', 'L2': 'var(--m-l2)', 'L3': 'var(--m-l3)' };
+  const MD = { 'L1': '영역/기능 식별만', '현행': '운영 중, 요건 문서 없음', 'L2': '기능 목록 확정', 'L3': '인수 조건 확정' };
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const badge = (m) => `<span class="badge m-${m}">${m}</span>`;
+  const prio = (p) => `<b class="p-${p}">${p}</b>`;
+  const cnt = (list, m) => list.filter((r) => r.mat === m).length;
+  const rows = D.functions;
+  const h = [];
+
+  // 머리
+  h.push(`<h1>${esc(D.meta.projectName)} — 현황판</h1>`);
+  h.push(`<div class="meta"><span>기준일 <b>${esc(D.meta.date)}</b></span><span>문서버전 <b>${esc(D.meta.version)}</b></span><span>작성자 <b>${esc(D.author)}</b></span><span>원천 <code>${esc(D.source)}</code></span><span>생성 <b>${esc(D.generated)}</b></span></div>`);
+  h.push(`<div class="tabs noprint" role="tablist"><button role="tab" data-tab="maturity" aria-selected="true">요건 상세화</button><button role="tab" data-tab="progress" aria-selected="false">구현 진척</button></div>`);
+  h.push('<section class="tab on" id="tab-maturity">');
+
+  // 타일 + 막대
+  h.push('<div class="tiles">');
+  h.push(`<div class="tile"><div class="k">전체 기능</div><div class="v">${rows.length}</div><div class="d">영역 ${D.areas.length}개</div></div>`);
+  for (const m of M) h.push(`<div class="tile" data-m="${m}"><div class="k">${m}</div><div class="v">${cnt(rows, m)}</div><div class="d">${MD[m]}</div></div>`);
+  h.push('</div>');
+  h.push('<div class="bar">' + M.map((m) => `<span style="width:${rows.length ? cnt(rows, m) / rows.length * 100 : 0}%;background:${MC[m]}" title="${m} ${cnt(rows, m)}"></span>`).join('') + '</div>');
+  h.push('<div class="legend">' + M.map((m) => `<span><i style="background:${MC[m]}"></i>${m} ${cnt(rows, m)}</span>`).join('') + '</div>');
+
+  // 규칙 한 줄 (단계 정의 표는 부록으로)
+  h.push('<div class="rule"><b>L3 부터 개발 착수 가능.</b> 현행 기능은 변경 시 해당 영역 L2 를 역산한 뒤 L3 로 올립니다. 단계 정의는 <a href="#def">부록</a>.</div>');
+
+  // 1. 전체 현황
+  h.push('<h2>1. 전체 현황<small>우선순위 × 상세화 단계</small></h2><div class="card"><table><thead><tr><th>우선순위</th><th class="n">전체</th>' + M.map((m) => `<th class="n">${m}</th>`).join('') + '</tr></thead><tbody>');
+  for (const p of ['P0', 'P1', 'P2']) {
+    const list = rows.filter((r) => r.p === p);
+    h.push(`<tr><td>${prio(p)}</td><td class="n">${list.length}</td>` + M.map((m) => `<td class="n">${cnt(list, m) || '<span class="muted">·</span>'}</td>`).join('') + '</tr>');
+  }
+  h.push(`<tr class="total"><td>합계</td><td class="n">${rows.length}</td>` + M.map((m) => `<td class="n">${cnt(rows, m)}</td>`).join('') + '</tr>');
+  h.push('</tbody></table><div class="note">우선순위는 기능구현현황의 긴급·상 → P0, 중 → P1, 하 → P2.</div></div>');
+
+  // 2. 영역별
+  h.push('<h2>2. 영역별 현황</h2><div class="card"><table><thead><tr><th>영역 ID</th><th>영역 명</th><th class="c">우선순위</th><th class="c">상세화 단계</th><th class="n">L3 / 전체</th><th>담당</th><th>비고</th></tr></thead><tbody>');
+  for (const a of D.areas) h.push(`<tr><td>${esc(a.id)}</td><td>${esc(a.name)}</td><td class="c">${prio(a.p)}</td><td class="c">${badge(a.mat)}</td><td class="n">${a.l3plus}/${a.total}</td><td>${esc(a.owners)}</td><td class="muted">${esc(a.note)}</td></tr>`);
+  h.push('</tbody></table><div class="note">영역 상세화 단계: 미상세(L1) 기능이 있으면 L1 / 전부 L3 → L3 / L2 문서 있음 → L2 / 그 외(현행·L3 혼합, L2 없음) → 현행. 구현 완료 여부는 구현 진척 탭의 상태로 봅니다. "미상세"는 운영 중도 아니고 요건 문서도 없는 기능.</div></div>');
+
+  // 3. 기능별 (필터)
+  const areaOpts = D.areas.map((a) => `<option value="${esc(a.name)}">${esc(a.id !== '-' ? a.id + ' ' : '')}${esc(a.name)}</option>`).join('');
+  h.push(`<h2>3. 기능별 현황<small>P0 우선</small></h2><div class="card"><div class="toolbar noprint">
+    <select id="f-area"><option value="">모든 영역</option>${areaOpts}</select>
+    <select id="f-mat"><option value="">모든 단계</option>${M.map((m) => `<option>${m}</option>`).join('')}</select>
+    <select id="f-p"><option value="">모든 우선순위</option><option>P0</option><option>P1</option><option>P2</option></select>
+    <input id="f-q" type="search" placeholder="ID·기능명·상태 검색">
+    <span class="count" id="f-count"></span></div>
+    <table><thead><tr><th>기능 ID</th><th>기능 명</th><th>영역</th><th class="c">P</th><th class="c">상세화 단계</th><th>개발 요건서</th><th>담당</th><th>상태</th></tr></thead><tbody id="f-body"></tbody></table></div>`);
+
+  // 4. 이번 주 상세화 대상
+  h.push('<h2>4. 이번 주 상세화 대상<small>원천 data.json → board.weekly</small></h2><div class="card">');
+  if (D.weekly.length) {
+    h.push('<table><thead><tr><th>기능 ID</th><th>기능 명</th><th class="c">현재</th><th class="c">목표</th><th>담당</th><th class="c">현업 확인</th></tr></thead><tbody>');
+    for (const w of D.weekly) h.push(`<tr><td>${esc(w.id)}</td><td>${esc(w.name)}</td><td class="c">${badge(w.current)}</td><td class="c">${badge(w.target)}</td><td>${esc(w.owner)}</td><td class="c">${w.confirmed ? '☑' : '☐'}</td></tr>`);
+    h.push('</tbody></table>');
+  } else h.push('<div class="empty">등록된 상세화 대상이 없습니다. 다음 주 개발 착수 예정 기능을 data.json <code>board.weekly</code>에 적으면 여기 나타납니다.</div>');
+  h.push('</div>');
+
+  // 5. 미결정
+  h.push('<h2>5. 미결정 사항<small>L1 10절 자동 + board.undecided</small></h2><div class="card">');
+  if (D.undecided.length) {
+    h.push('<table><thead><tr><th>항목</th><th>출처</th><th>영향 범위</th><th>결정 필요 시점</th><th>담당</th><th>상태</th></tr></thead><tbody>');
+    for (const u of D.undecided) h.push(`<tr><td>${esc(u.item)}</td><td>${esc(u.source)}</td><td>${esc(u.impact)}</td><td>${esc(u.when)}</td><td>${esc(u.owner)}</td><td>${esc(u.status || '☐ 대기')}</td></tr>`);
+    h.push('</tbody></table>');
+  } else h.push('<div class="empty">미결정 사항이 없습니다.</div>');
+  h.push('</div>');
+
+  // 6. 블로커
+  h.push('<h2>6. 블로커<small>board.blockers</small></h2><div class="card">');
+  if (D.blockers.length) {
+    h.push('<table><thead><tr><th>기능/영역</th><th>막힌 사유</th><th>필요 조치</th><th>담당</th><th>요청일</th></tr></thead><tbody>');
+    for (const b of D.blockers) h.push(`<tr><td>${esc(b.target)}</td><td>${esc(b.reason)}</td><td>${esc(b.action)}</td><td>${esc(b.owner)}</td><td>${esc(b.requested)}</td></tr>`);
+    h.push('</tbody></table>');
+  } else h.push('<div class="empty">블로커가 없습니다.</div>');
+  h.push('</div>');
+
+  // 7. 갱신 이력
+  h.push('<h2>7. 갱신 이력<small>data.json changes</small></h2><div class="card">');
+  if (D.history.length) {
+    h.push('<table><thead><tr><th>일자</th><th>버전</th><th>구분</th><th>내용</th><th>작성자</th></tr></thead><tbody>');
+    for (const c of [...D.history].reverse()) h.push(`<tr><td>${esc(c.date)}</td><td>${esc(c.version)}</td><td>${esc(c.type)}</td><td>${c.targetId && c.targetId !== '-' ? `<code>${esc(c.targetId)}</code> ` : ''}${esc(c.content)}</td><td>${esc(c.author)}</td></tr>`);
+    h.push('</tbody></table>');
+  } else h.push('<div class="empty">변경 이력이 없습니다.</div>');
+  h.push('</div>');
+
+  // 부록 체크리스트 (브라우저 저장)
+  const CHECK = ['다음 주 개발 대상 기능이 L3로 올라와 있는가', '미결정 사항 중 결정 시점이 임박한 것이 있는가', '블로커가 3일 이상 해소되지 않은 것이 있는가', 'P0 기능 중 L2에 머물러 있는 것이 있는가', '변경 요청이 들어온 현행 기능의 영역 L2가 역산돼 있는가'];
+  h.push('<h2>부록 — 주간 점검<small>체크 상태는 이 브라우저에만 저장</small></h2><div class="card"><ul class="check">');
+  CHECK.forEach((t, i) => h.push(`<li><input type="checkbox" id="ck${i}" data-i="${i}"><label for="ck${i}">${t}</label></li>`));
+  h.push('</ul></div>');
+
+  // 부록 — 상세화 단계 정의 (접힘. 처음 보는 사람용)
+  const DEF = [['L1', '영역/기능이 식별됨', '기능 영역 정의서', '✗'], ['현행', '운영 중이나 요건 문서(L2·L3) 없음 — 인수 시스템', '현행분석서 + 코드', '변경 시 L2 역산 후'], ['L2', '기능 목록 + 데이터 개요 확정', '영역별 요건서', '✗'], ['L3', '처리 규칙 + 인수 조건 확정', '개발 요건 정의서', '✓']];
+  h.push('<h2 id="def">부록 — 상세화 단계 정의<small>처음 보는 사람용. 펼쳐서 봅니다</small></h2><details class="card"><summary>단계 정의와 상승 조건 펼치기</summary>');
+  h.push('<table><thead><tr><th>단계</th><th>의미</th><th>산출물</th><th class="c">개발 착수</th></tr></thead><tbody>');
+  for (const [m, a, b, c] of DEF) h.push(`<tr><td>${badge(m)}</td><td>${a}</td><td>${b}</td><td class="c">${c}</td></tr>`);
+  h.push('</tbody></table>');
+  h.push('<div class="note">"현행" 은 인수 시스템(7.현행분석서로 시작)에만 쓰는 단계입니다. 신규 구축에서는 비워 둡니다.</div>');
+  h.push('<div class="note">상승 조건 — L1/현행 → L2: 영역 L2 완료 판정 전부 충족 · L2 → L3: 개발 요건서 + Blocker 질문 100% + 인수 조건 · 그 뒤 구현·검증은 구현 진척 탭의 상태(개발중 → 테스트 → 완료)로 봅니다</div></details>');
+  h.push('</section>');
+
+  // ── 구현 진척 탭 ──
+  const P = D.progress;
+  const S = ['완료', '테스트', '개발중', '설계중', '미착수', '보류'];
+  const SC = { '완료': 'var(--m-done)', '테스트': 'var(--m-l3)', '개발중': 'var(--m-l2)', '설계중': 'var(--m-l2)', '미착수': 'var(--m-l1)', '보류': 'var(--m-asis)' };
+  const pct = (n) => `${Math.round(n * 100)}%`;
+  const sbadge = (s) => `<span class="badge s-${s}">${s}</span>`;
+  const rate = (n) => `<span class="rate"><i><b style="width:${Math.round(n * 100)}%"></b></i><span>${pct(n)}</span></span>`;
+  const total = rows.length;
+  h.push('<section class="tab" id="tab-progress">');
+  h.push('<div class="tiles">');
+  h.push(`<div class="tile"><div class="k">가중 완료율</div><div class="v">${pct(P.weighted)}</div><div class="d">행별 진척률 평균</div></div>`);
+  h.push(`<div class="tile"><div class="k">전체 기능</div><div class="v">${total}</div><div class="d">영역 ${P.areas.length}개</div></div>`);
+  for (const s of S) h.push(`<div class="tile" style="border-top-color:${SC[s]}"><div class="k">${s}</div><div class="v">${P.byStatus[s] || 0}</div><div class="d">${s === '완료' ? '운영 중 포함' : s === '테스트' ? '배포됨, 검증 전' : s === '보류' ? '결정 대기·미노출' : '&nbsp;'}</div></div>`);
+  h.push('</div>');
+  h.push('<div class="bar">' + S.map((s) => `<span style="width:${total ? (P.byStatus[s] || 0) / total * 100 : 0}%;background:${SC[s]}" title="${s} ${P.byStatus[s] || 0}"></span>`).join('') + '</div>');
+  h.push('<div class="legend">' + S.map((s) => `<span><i style="background:${SC[s]}"></i>${s} ${P.byStatus[s] || 0}</span>`).join('') + '</div>');
+
+  h.push('<h2>영역별 진척</h2><div class="card"><table><thead><tr><th>영역 ID</th><th>영역 명</th><th class="n">기능</th><th class="n">완료</th><th class="n">진행중</th><th class="n">미착수</th><th class="n">보류</th><th>완료율</th></tr></thead><tbody>');
+  for (const a of P.areas) h.push(`<tr><td>${esc(a.id)}</td><td>${esc(a.name)}</td><td class="n">${a.total}</td><td class="n">${a.done}</td><td class="n">${a.inProgress || '<span class="muted">·</span>'}</td><td class="n">${a.notStarted || '<span class="muted">·</span>'}</td><td class="n">${a.onHold || '<span class="muted">·</span>'}</td><td>${rate(a.rate)}</td></tr>`);
+  h.push('</tbody></table><div class="note">진행중 = 테스트·개발중·설계중. 완료율은 상태별 고정값(완료 1 · 테스트 0.9 · 개발중 0.5 · 설계중 0.2 · 미착수 0 · 보류 0)의 평균이며, data.json 에 진척률이 명시된 행은 그 값을 씁니다.</div></div>');
+
+  const attn = (title, list, hint) => {
+    h.push(`<h2>${title}<small>${list.length}건${hint ? ' · ' + hint : ''}</small></h2><div class="card">`);
+    if (!list.length) { h.push(`<div class="empty">해당 없음</div></div>`); return; }
+    h.push('<table><thead><tr><th>기능 ID</th><th>기능 명</th><th>영역</th><th class="c">상태</th><th>담당</th><th>목표</th><th>비고</th></tr></thead><tbody>');
+    for (const f of list) h.push(`<tr><td><code>${esc(f.id)}</code></td><td>${esc(f.name)}</td><td>${esc(f.category)}</td><td class="c">${sbadge(f.status)}</td><td>${esc(f.owner)}</td><td>${esc(f.due)}</td><td class="muted">${esc(f.note)}</td></tr>`);
+    h.push('</tbody></table></div>');
+  };
+  attn('진행 중', P.attention.inProgress, '배포·검증 중인 것');
+  attn('미착수', P.attention.notStarted, '요건만 있고 시작 안 한 것');
+  attn('보류', P.attention.onHold, '결정 대기·운영 미노출');
+
+  h.push('<h2>지난 스냅샷 대비 변경</h2><div class="card">');
+  if (!P.diff) h.push('<div class="empty">비교 대상이 없습니다. 생성 시 <code>--prev</code> 에 이전 data.json(또는 git 리비전)을 주면 추가·상태 변경·삭제가 여기 나타납니다.</div>');
+  else {
+    const dd = P.diff; const n = dd.added.length + dd.changed.length + dd.removed.length;
+    h.push(`<div class="note" style="border-top:0">${esc(dd.prevDate)} v${esc(dd.prevVersion)} → ${esc(D.meta.date)} v${esc(D.meta.version)} · ${n ? n + '건 변경' : '변경 없음'}</div>`);
+    if (n) {
+      h.push('<ul class="diff check">');
+      for (const f of dd.added) h.push(`<li>추가 <code>${esc(f.id)}</code> ${esc(f.name)} ${sbadge(f.status)}</li>`);
+      for (const f of dd.changed) h.push(`<li>상태 <code>${esc(f.id)}</code> ${esc(f.name)} ${sbadge(f.from)} → ${sbadge(f.to)}</li>`);
+      for (const f of dd.removed) h.push(`<li>삭제 <code>${esc(f.id)}</code> ${esc(f.name)}</li>`);
+      h.push('</ul>');
+    }
+  }
+  h.push('</div>');
+  h.push('</section>');
+
+  document.getElementById('app').innerHTML = h.join('');
+
+  // 탭 (URL 해시로 기억)
+  const tabs = document.querySelectorAll('.tabs button');
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach((s) => s.classList.toggle('on', s.id === 'tab-' + name));
+    tabs.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+    if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+  }
+  tabs.forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  showTab(location.hash === '#progress' ? 'progress' : 'maturity');
+  window.addEventListener('beforeprint', () => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+  document.getElementById('foot').textContent = `rsp-pmo-progress board · ${D.generated} · 원천을 고친 뒤 build-board.js 로 다시 생성하세요. 이 파일을 직접 편집하지 않습니다.`;
+
+  // 3절 필터
+  const body = document.getElementById('f-body');
+  const fa = document.getElementById('f-area'), fm = document.getElementById('f-mat'), fp = document.getElementById('f-p'), fq = document.getElementById('f-q'), fc = document.getElementById('f-count');
+  function render() {
+    const q = fq.value.trim().toLowerCase();
+    const list = rows.filter((r) => (!fa.value || r.category === fa.value) && (!fm.value || r.mat === fm.value) && (!fp.value || r.p === fp.value)
+      && (!q || [r.id, r.name, r.status, r.note].join(' ').toLowerCase().includes(q)));
+    body.innerHTML = list.map((r) => `<tr><td><code>${esc(r.id)}</code></td><td>${esc(r.name)}${r.note ? `<div class="muted" style="font-size:12px">${esc(r.note)}</div>` : ''}</td><td>${esc(r.areaId || r.category)}</td><td class="c">${prio(r.p)}</td><td class="c">${badge(r.mat)}</td><td>${r.l3Link ? `<a href="${esc(r.l3Link)}">${esc(r.l3Label)}</a>` : '<span class="muted">-</span>'}</td><td>${esc(r.owner)}</td><td>${esc(r.status)}</td></tr>`).join('')
+      || '<tr><td colspan="8" class="empty">조건에 맞는 기능이 없습니다.</td></tr>';
+    fc.textContent = `${list.length} / ${rows.length}건`;
+  }
+  [fa, fm, fp].forEach((el) => el.addEventListener('change', render));
+  fq.addEventListener('input', render);
+  render();
+
+  // 체크리스트 저장 (파일 날짜별)
+  const key = `rsp-board-check:${D.meta.shortName || D.meta.projectName}:${D.meta.date}`;
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { saved = {}; }
+  document.querySelectorAll('.check input').forEach((cb) => {
+    const i = cb.dataset.i; cb.checked = !!saved[i]; cb.nextElementSibling.classList.toggle('done', cb.checked);
+    cb.addEventListener('change', () => { saved[i] = cb.checked; cb.nextElementSibling.classList.toggle('done', cb.checked); try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* 저장 불가 환경 */ } });
+  });
+})();
+</script>
+</body>
+</html>
