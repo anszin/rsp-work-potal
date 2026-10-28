@@ -833,7 +833,7 @@
   "history": [
     {
       "date": "2026-10-28",
-      "note": "기계 검사 실행 — 높음 3 · 중간 7 · 낮음 22 · 참고 4 · 모듈 work-portal-api(111), work-portal-web(73) · Semgrep 미실행 (semgrep 미설치)"
+      "note": "패턴 검사 실행 — 높음 3 · 중간 7 · 낮음 22 · 참고 4 · 모듈 work-portal-api(111), work-portal-web(73) · Semgrep 미실행 (semgrep 미설치)"
     },
     {
       "date": "2026-10-28",
