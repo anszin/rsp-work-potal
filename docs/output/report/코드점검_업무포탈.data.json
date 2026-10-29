@@ -1,0 +1,1522 @@
+{
+  "meta": {
+    "projectName": "플랫폼팀 업무 포탈",
+    "shortName": "업무포탈",
+    "date": "2026-10-29",
+    "version": "1.0",
+    "src": ".",
+    "modules": [
+      {
+        "name": "work-portal-api",
+        "kind": "be",
+        "path": "backend/work-portal-api",
+        "files": 106
+      },
+      {
+        "name": "work-portal-web",
+        "kind": "fe",
+        "path": "frontend/work-portal-web",
+        "files": 65
+      }
+    ],
+    "tests": "제외",
+    "counts": {
+      "error": 20,
+      "warn": 36,
+      "info": 10
+    }
+  },
+  "findings": [
+    {
+      "id": "C1",
+      "rule": "CODE-01",
+      "sev": "오류",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/request/service/ChangeRequestService.java",
+      "lines": [
+        257
+      ],
+      "msg": "빈 catch — 예외를 조용히 삼킴",
+      "snippets": [
+        "try { fileStorageService.delete(cr.getAttachmentPath()); } catch (IOException ignored) {}"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 6절 \"catch ignored 금지 — 최소 warn 로그\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-01|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/request/service/ChangeRequestService.java|try { fileStorageService.delete(cr.getAttachmentPath()); } catch (IOException ignored) {}"
+    },
+    {
+      "id": "C2",
+      "rule": "CODE-02",
+      "sev": "오류",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/service/DeployRequestService.java",
+      "lines": [
+        104,
+        133,
+        166,
+        198,
+        209
+      ],
+      "msg": "상태·권한 오류를 IllegalStateException 으로 던짐 — GlobalExceptionHandler 가 500 으로 응답",
+      "snippets": [
+        "throw new IllegalStateException(\"DRAFT 상태이거나 완료 건에 대한 매니저 권한이 필요합니다.\");",
+        "throw new IllegalStateException(",
+        "throw new IllegalStateException(\"DRAFT 상태에서만 삭제 가능합니다.\");"
+      ],
+      "cwe": "—",
+      "source": "아키텍처_표준 6절, 코딩컨벤션 \"예외 처리 방식 [결함성]\"",
+      "fix": "rsp-design-arch (DEC-AS-08) → rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-02|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/service/DeployRequestService.java|throw new IllegalStateException(\"DRAFT 상태이거나 완료 건에 대한 매니저 권한이 필요합니다.\");"
+    },
+    {
+      "id": "C3",
+      "rule": "CODE-02",
+      "sev": "오류",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/service/DeployStepService.java",
+      "lines": [
+        44
+      ],
+      "msg": "상태·권한 오류를 IllegalStateException 으로 던짐 — GlobalExceptionHandler 가 500 으로 응답",
+      "snippets": [
+        "throw new IllegalStateException(\"이미 완료된 단계입니다.\");"
+      ],
+      "cwe": "—",
+      "source": "아키텍처_표준 6절, 코딩컨벤션 \"예외 처리 방식 [결함성]\"",
+      "fix": "rsp-design-arch (DEC-AS-08) → rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-02|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/service/DeployStepService.java|throw new IllegalStateException(\"이미 완료된 단계입니다.\");"
+    },
+    {
+      "id": "C4",
+      "rule": "CODE-02",
+      "sev": "오류",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/request/service/ChangeRequestService.java",
+      "lines": [
+        139,
+        187,
+        255
+      ],
+      "msg": "상태·권한 오류를 IllegalStateException 으로 던짐 — GlobalExceptionHandler 가 500 으로 응답",
+      "snippets": [
+        "throw new IllegalStateException(\"DRAFT 상태에서만 수정 가능합니다.\");",
+        "throw new IllegalStateException(",
+        "throw new IllegalStateException(\"DRAFT 상태에서만 삭제 가능합니다.\");"
+      ],
+      "cwe": "—",
+      "source": "아키텍처_표준 6절, 코딩컨벤션 \"예외 처리 방식 [결함성]\"",
+      "fix": "rsp-design-arch (DEC-AS-08) → rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-02|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/request/service/ChangeRequestService.java|throw new IllegalStateException(\"DRAFT 상태에서만 수정 가능합니다.\");"
+    },
+    {
+      "id": "C5",
+      "rule": "CODE-06",
+      "sev": "오류",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/api/AuthController.java",
+      "lines": [
+        27
+      ],
+      "msg": "컨트롤러가 Repository 를 직접 주입 — Service 를 거쳐야 함: UserRepository",
+      "snippets": [],
+      "cwe": "—",
+      "source": "아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-06|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/api/AuthController.java|컨트롤러가 Repository 를 직접 주입 — Service 를 거쳐야 함: UserRepository"
+    },
+    {
+      "id": "C6",
+      "rule": "CODE-06",
+      "sev": "오류",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/api/RedmineController.java",
+      "lines": [
+        20
+      ],
+      "msg": "컨트롤러가 Repository 를 직접 주입 — Service 를 거쳐야 함: OperationSystemRepository",
+      "snippets": [],
+      "cwe": "—",
+      "source": "아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-06|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/api/RedmineController.java|컨트롤러가 Repository 를 직접 주입 — Service 를 거쳐야 함: OperationSystemR"
+    },
+    {
+      "id": "C7",
+      "rule": "CODE-09",
+      "sev": "오류",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/menu/service/MenuPermissionService.java",
+      "lines": [
+        36
+      ],
+      "msg": "@PostConstruct 메서드에 @Transactional — 프록시 미적용으로 트랜잭션이 걸리지 않음",
+      "snippets": [
+        "@PostConstruct"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"트랜잭션 — @PostConstruct 금지\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-09|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/menu/service/MenuPermissionService.java|@PostConstruct"
+    },
+    {
+      "id": "C8",
+      "rule": "CODE-20",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/Dashboard/index.tsx",
+      "lines": [
+        6
+      ],
+      "msg": "페이지가 axios client 를 직접 호출 — api/{domain}.ts 함수로",
+      "snippets": [
+        "import client from '../../api/client'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"API 호출 계층\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-20|work-portal-web|frontend/work-portal-web/src/pages/Dashboard/index.tsx|import client from '../../api/client'"
+    },
+    {
+      "id": "C9",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/ChangeRequest/index.tsx",
+      "lines": [
+        113,
+        118,
+        124,
+        129,
+        134,
+        170,
+        190,
+        440
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onError: (e: unknown) => alert('저장 실패: ' + apiError(e)),",
+        "onError: (e: unknown) => alert('수정 실패: ' + apiError(e)),",
+        "onError: (e: unknown) => alert('상태 변경 실패: ' + apiError(e)),"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/ChangeRequest/index.tsx|onError: (e: unknown) => alert('저장 실패: ' + apiError(e)),"
+    },
+    {
+      "id": "C10",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/DailyCheck/index.tsx",
+      "lines": [
+        58,
+        163
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "if (!form.systemId) return alert('시스템을 선택해주세요.')",
+        "<Button variant=\"danger\" size=\"sm\" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(r.id) }}>삭제</B…"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/DailyCheck/index.tsx|if (!form.systemId) return alert('시스템을 선택해주세요.')"
+    },
+    {
+      "id": "C11",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/DeployRequest/index.tsx",
+      "lines": [
+        195,
+        201,
+        206,
+        211,
+        216,
+        221,
+        257,
+        513
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onError: (e) => alert('완료 처리 실패: ' + apiError(e)),",
+        "onError: (e) => alert('저장 실패: ' + apiError(e)),",
+        "onError: (e) => alert('수정 실패: ' + apiError(e)),"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/DeployRequest/index.tsx|onError: (e) => alert('완료 처리 실패: ' + apiError(e)),"
+    },
+    {
+      "id": "C12",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/Finance/index.tsx",
+      "lines": [
+        57,
+        63,
+        68,
+        223
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onError: (e: unknown) => alert('저장 실패: ' + apiError(e)),",
+        "onError: (e: unknown) => alert('수정 실패: ' + apiError(e)),",
+        "onError: (e: unknown) => alert('삭제 실패: ' + apiError(e)),"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/Finance/index.tsx|onError: (e: unknown) => alert('저장 실패: ' + apiError(e)),"
+    },
+    {
+      "id": "C13",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/Inventory/index.tsx",
+      "lines": [
+        191
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "<Button variant=\"danger\" size=\"sm\" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(item.id) }}>삭제…"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/Inventory/index.tsx|<Button variant=\"danger\" size=\"sm\" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(item.id) }}>삭제…"
+    },
+    {
+      "id": "C14",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/KeyTask/index.tsx",
+      "lines": [
+        121,
+        126,
+        131,
+        158,
+        159,
+        469
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onError: (e) => alert('저장 실패: ' + apiError(e)),",
+        "onError: (e) => alert('수정 실패: ' + apiError(e)),",
+        "onError: (e) => alert('삭제 실패: ' + apiError(e)),"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/KeyTask/index.tsx|onError: (e) => alert('저장 실패: ' + apiError(e)),"
+    },
+    {
+      "id": "C15",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/MeetingMinutes/index.tsx",
+      "lines": [
+        148
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "<Button variant=\"danger\" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(selected.id) }}>삭제</Butt…"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/MeetingMinutes/index.tsx|<Button variant=\"danger\" onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(selected.id) }}>삭제</Butt…"
+    },
+    {
+      "id": "C16",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/SystemManagement/index.tsx",
+      "lines": [
+        76,
+        82,
+        87,
+        93,
+        222,
+        292
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 등록 실패'),",
+        "onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 수정 실패'),",
+        "onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 삭제 실패'),"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/SystemManagement/index.tsx|onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 등록 실패'),"
+    },
+    {
+      "id": "C17",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/Todo/index.tsx",
+      "lines": [
+        589
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onClick={() => { if (confirm(`\"${editing.title}\" 삭제할까요?`)) { deleteMut.mutate(editing.id); closeModal() } }}>"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/Todo/index.tsx|onClick={() => { if (confirm(`\"${editing.title}\" 삭제할까요?`)) { deleteMut.mutate(editing.id); closeModal() } }}>"
+    },
+    {
+      "id": "C18",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/UserManagement/index.tsx",
+      "lines": [
+        55,
+        60,
+        71,
+        82,
+        270,
+        274
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onError: (e: unknown) => alert('생성 실패: ' + apiError(e)),",
+        "onError: (e: unknown) => alert('수정 실패: ' + apiError(e)),",
+        "onError: (e: unknown) => alert('초기화 실패: ' + apiError(e)),"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/UserManagement/index.tsx|onError: (e: unknown) => alert('생성 실패: ' + apiError(e)),"
+    },
+    {
+      "id": "C19",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/WeeklyReport/index.tsx",
+      "lines": [
+        1133
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onDelete={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(detail.report.id) }}"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/WeeklyReport/index.tsx|onDelete={() => { if (confirm('삭제하시겠습니까?')) deleteMut.mutate(detail.report.id) }}"
+    },
+    {
+      "id": "C20",
+      "rule": "CODE-21",
+      "sev": "오류",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/WorkUnit/index.tsx",
+      "lines": [
+        197
+      ],
+      "msg": "alert/confirm 으로 오류·확인 표시 — SDK toast·Modal 로",
+      "snippets": [
+        "onClick={() => { if (confirm(`\"${wu.title}\" 삭제할까요?`)) deleteMut.mutate(wu.id) }}>삭제</Button>"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"피드백\", 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-21|work-portal-web|frontend/work-portal-web/src/pages/WorkUnit/index.tsx|onClick={() => { if (confirm(`\"${wu.title}\" 삭제할까요?`)) deleteMut.mutate(wu.id) }}>삭제</Button>"
+    },
+    {
+      "id": "C21",
+      "rule": "CODE-01",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/converter/CheckItemListConverter.java",
+      "lines": [
+        22,
+        32
+      ],
+      "msg": "catch 가 로그 없이 값만 바꾸고 진행 — 실패가 기록되지 않음",
+      "snippets": [
+        "} catch (Exception e) {"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 6절 \"catch ignored 금지 — 최소 warn 로그\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-01|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/converter/CheckItemListConverter.java|} catch (Exception e) {"
+    },
+    {
+      "id": "C22",
+      "rule": "CODE-01",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/converter/StringListConverter.java",
+      "lines": [
+        21,
+        31
+      ],
+      "msg": "catch 가 로그 없이 값만 바꾸고 진행 — 실패가 기록되지 않음",
+      "snippets": [
+        "} catch (Exception e) {"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 6절 \"catch ignored 금지 — 최소 warn 로그\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-01|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/converter/StringListConverter.java|} catch (Exception e) {"
+    },
+    {
+      "id": "C23",
+      "rule": "CODE-01",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/converter/TodoLinkListConverter.java",
+      "lines": [
+        22,
+        32
+      ],
+      "msg": "catch 가 로그 없이 값만 바꾸고 진행 — 실패가 기록되지 않음",
+      "snippets": [
+        "} catch (Exception e) {"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 6절 \"catch ignored 금지 — 최소 warn 로그\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-01|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/converter/TodoLinkListConverter.java|} catch (Exception e) {"
+    },
+    {
+      "id": "C24",
+      "rule": "CODE-01",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/converter/WorkLogListConverter.java",
+      "lines": [
+        22,
+        32
+      ],
+      "msg": "catch 가 로그 없이 값만 바꾸고 진행 — 실패가 기록되지 않음",
+      "snippets": [
+        "} catch (Exception e) {"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 6절 \"catch ignored 금지 — 최소 warn 로그\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-01|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/converter/WorkLogListConverter.java|} catch (Exception e) {"
+    },
+    {
+      "id": "C25",
+      "rule": "CODE-01",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/security/JwtTokenProvider.java",
+      "lines": [
+        49
+      ],
+      "msg": "catch 가 로그 없이 값만 바꾸고 진행 — 실패가 기록되지 않음",
+      "snippets": [
+        "} catch (JwtException | IllegalArgumentException e) {"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 6절 \"catch ignored 금지 — 최소 warn 로그\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-01|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/security/JwtTokenProvider.java|} catch (JwtException | IllegalArgumentException e) {"
+    },
+    {
+      "id": "C26",
+      "rule": "CODE-04",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/service/MailService.java",
+      "lines": [],
+      "msg": "외부 연동·스케줄러 클래스인데 로그 호출이 없음 — 호출·실패가 추적되지 않음",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"로깅 규칙\", 아키텍처_표준 \"외부 연동 실패\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-04|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/service/MailService.java|외부 연동·스케줄러 클래스인데 로그 호출이 없음 — 호출·실패가 추적되지 않음"
+    },
+    {
+      "id": "C27",
+      "rule": "CODE-05",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/service/DeployRequestService.java",
+      "lines": [
+        127
+      ],
+      "msg": "상태 전환 메서드에 로그 없음: changeStatus",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"로깅 규칙 — 상태 전환\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-05|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/service/DeployRequestService.java|상태 전환 메서드에 로그 없음: changeStatus"
+    },
+    {
+      "id": "C28",
+      "rule": "CODE-05",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/service/DeployStepService.java",
+      "lines": [
+        37
+      ],
+      "msg": "상태 전환 메서드에 로그 없음: complete",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"로깅 규칙 — 상태 전환\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-05|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/service/DeployStepService.java|상태 전환 메서드에 로그 없음: complete"
+    },
+    {
+      "id": "C29",
+      "rule": "CODE-05",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/request/service/ChangeRequestService.java",
+      "lines": [
+        181
+      ],
+      "msg": "상태 전환 메서드에 로그 없음: changeStatus",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"로깅 규칙 — 상태 전환\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-05|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/request/service/ChangeRequestService.java|상태 전환 메서드에 로그 없음: changeStatus"
+    },
+    {
+      "id": "C30",
+      "rule": "CODE-08",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/menu/service/MenuPermissionService.java",
+      "lines": [],
+      "msg": "Repository 를 쓰는 서비스인데 클래스 @Transactional(readOnly = true) 가 없음",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"트랜잭션\", 아키텍처_표준 \"트랜잭션 경계\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-08|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/menu/service/MenuPermissionService.java|Repository 를 쓰는 서비스인데 클래스 @Transactional(readOnly = true) 가 "
+    },
+    {
+      "id": "C31",
+      "rule": "CODE-08",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/workunit/service/WorkUnitService.java",
+      "lines": [],
+      "msg": "Repository 를 쓰는 서비스인데 클래스 @Transactional(readOnly = true) 가 없음",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"트랜잭션\", 아키텍처_표준 \"트랜잭션 경계\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-08|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/workunit/service/WorkUnitService.java|Repository 를 쓰는 서비스인데 클래스 @Transactional(readOnly = true) 가 "
+    },
+    {
+      "id": "C32",
+      "rule": "CODE-11",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/entity/DeployRequestIssue.java",
+      "lines": [],
+      "msg": "@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"엔티티\", 아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-11|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/entity/DeployRequestIssue.java|@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수"
+    },
+    {
+      "id": "C33",
+      "rule": "CODE-11",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/entity/DeployStep.java",
+      "lines": [],
+      "msg": "@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"엔티티\", 아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-11|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/deploy/entity/DeployStep.java|@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수"
+    },
+    {
+      "id": "C34",
+      "rule": "CODE-11",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/menu/entity/MenuPermission.java",
+      "lines": [],
+      "msg": "@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"엔티티\", 아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-11|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/menu/entity/MenuPermission.java|@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수"
+    },
+    {
+      "id": "C35",
+      "rule": "CODE-11",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/request/entity/ChangeRequestIssue.java",
+      "lines": [],
+      "msg": "@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"엔티티\", 아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-11|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/request/entity/ChangeRequestIssue.java|@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수"
+    },
+    {
+      "id": "C36",
+      "rule": "CODE-11",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/system/entity/SystemManager.java",
+      "lines": [],
+      "msg": "@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"엔티티\", 아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-11|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/system/entity/SystemManager.java|@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수"
+    },
+    {
+      "id": "C37",
+      "rule": "CODE-11",
+      "sev": "경고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/system/entity/SystemServer.java",
+      "lines": [],
+      "msg": "@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"엔티티\", 아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-11|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/system/entity/SystemServer.java|@Entity 에 createdAt 필드 없음 — @CreatedDate createdAt 필수"
+    },
+    {
+      "id": "C38",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/components/Layout/index.tsx",
+      "lines": [
+        24
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "} from '@lotte/rsp-react-design-system/shadcn'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/components/Layout/index.tsx|} from '@lotte/rsp-react-design-system/shadcn'"
+    },
+    {
+      "id": "C39",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/AiChat/index.tsx",
+      "lines": [
+        16
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "import { Sheet, SheetContent, SheetHeader, SheetTitle, buttonVariants } from '@lotte/rsp-react-design-system/…"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/AiChat/index.tsx|import { Sheet, SheetContent, SheetHeader, SheetTitle, buttonVariants } from '@lotte/rsp-react-design-system/…"
+    },
+    {
+      "id": "C40",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/AiDocuments/index.tsx",
+      "lines": [
+        8
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "import { Progress, buttonVariants } from '@lotte/rsp-react-design-system/shadcn'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/AiDocuments/index.tsx|import { Progress, buttonVariants } from '@lotte/rsp-react-design-system/shadcn'"
+    },
+    {
+      "id": "C41",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/DeployRequest/index.tsx",
+      "lines": [
+        19
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "} from '@lotte/rsp-react-design-system/shadcn'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/DeployRequest/index.tsx|} from '@lotte/rsp-react-design-system/shadcn'"
+    },
+    {
+      "id": "C42",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/KeyTask/PerformanceTab.tsx",
+      "lines": [
+        8
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "import { Progress } from '@lotte/rsp-react-design-system/shadcn'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/KeyTask/PerformanceTab.tsx|import { Progress } from '@lotte/rsp-react-design-system/shadcn'"
+    },
+    {
+      "id": "C43",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/SystemManagement/index.tsx",
+      "lines": [
+        10
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "import { Switch } from '@lotte/rsp-react-design-system/shadcn'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/SystemManagement/index.tsx|import { Switch } from '@lotte/rsp-react-design-system/shadcn'"
+    },
+    {
+      "id": "C44",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/Todo/index.tsx",
+      "lines": [
+        10
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "import { Progress } from '@lotte/rsp-react-design-system/shadcn'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/Todo/index.tsx|import { Progress } from '@lotte/rsp-react-design-system/shadcn'"
+    },
+    {
+      "id": "C45",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/UserManagement/index.tsx",
+      "lines": [
+        7
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "import { Progress } from '@lotte/rsp-react-design-system/shadcn'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/UserManagement/index.tsx|import { Progress } from '@lotte/rsp-react-design-system/shadcn'"
+    },
+    {
+      "id": "C46",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/WeeklyReport/index.tsx",
+      "lines": [
+        12
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "import { buttonVariants, ButtonGroup, ButtonGroupSeparator, DropdownMenu, DropdownMenuTrigger, DropdownMenuCo…"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/WeeklyReport/index.tsx|import { buttonVariants, ButtonGroup, ButtonGroupSeparator, DropdownMenu, DropdownMenuTrigger, DropdownMenuCo…"
+    },
+    {
+      "id": "C47",
+      "rule": "CODE-22",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/WorkUnit/index.tsx",
+      "lines": [
+        12
+      ],
+      "msg": "SDK 직접 import — components/ui/ 래퍼 경유",
+      "snippets": [
+        "import { Progress } from '@lotte/rsp-react-design-system/shadcn'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링\", DEC-AS-06",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-22|work-portal-web|frontend/work-portal-web/src/pages/WorkUnit/index.tsx|import { Progress } from '@lotte/rsp-react-design-system/shadcn'"
+    },
+    {
+      "id": "C48",
+      "rule": "CODE-23",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/api/workUnits.ts",
+      "lines": [
+        21,
+        22,
+        23
+      ],
+      "msg": "hex 색 리터럴 — CSS 변수(--c-*, --rsp-color-*) 사용",
+      "snippets": [
+        "IN_PROGRESS: '#3182ce',",
+        "ON_HOLD:     '#c05621',",
+        "DONE:        '#38a169',"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"스타일링 — hex 직접 금지 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-23|work-portal-web|frontend/work-portal-web/src/api/workUnits.ts|IN_PROGRESS: '#3182ce',"
+    },
+    {
+      "id": "C49",
+      "rule": "CODE-24",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/AiChat/index.tsx",
+      "lines": [
+        198,
+        220
+      ],
+      "msg": "any 사용",
+      "snippets": [
+        "pre({ children }: any) {",
+        "code({ className, children, ...props }: any) {"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"타입 — any 0 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-24|work-portal-web|frontend/work-portal-web/src/pages/AiChat/index.tsx|pre({ children }: any) {"
+    },
+    {
+      "id": "C50",
+      "rule": "CODE-24",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/Dashboard/index.tsx",
+      "lines": [
+        187,
+        213,
+        257,
+        258,
+        382
+      ],
+      "msg": "any 사용",
+      "snippets": [
+        "const total = summary.reduce((s, d) => s + (d as any)[key], 0)",
+        "{systems.map((sys: any) => {",
+        "const sysDeploys: any[] = deployRequests.filter((r: any) => r.systemId === sys.id)"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"타입 — any 0 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-24|work-portal-web|frontend/work-portal-web/src/pages/Dashboard/index.tsx|const total = summary.reduce((s, d) => s + (d as any)[key], 0)"
+    },
+    {
+      "id": "C51",
+      "rule": "CODE-24",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/SystemManagement/index.tsx",
+      "lines": [
+        76,
+        82,
+        87,
+        93
+      ],
+      "msg": "any 사용",
+      "snippets": [
+        "onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 등록 실패'),",
+        "onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 수정 실패'),",
+        "onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 삭제 실패'),"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"타입 — any 0 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-24|work-portal-web|frontend/work-portal-web/src/pages/SystemManagement/index.tsx|onError: (e: any) => alert(e.response?.data?.error ?? '하위시스템 등록 실패'),"
+    },
+    {
+      "id": "C52",
+      "rule": "CODE-25",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web",
+      "lines": [],
+      "msg": "300줄 초과 페이지 12개: DeployRequest/index.tsx(1295), WeeklyReport/index.tsx(1142), AiChat/index.tsx(771), Todo/index.tsx(722), ChangeRequest/index.tsx(601), KeyTask/index.tsx(493), AiPrompts/index.tsx(432), Dashboard/index.tsx(422), SystemManagement/index.tsx(394), AiDocuments/index.tsx(385), UserManagement/index.tsx(306), WorkUnit/index.tsx(301)",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"컴포넌트 파일 구조 [제안]\"",
+      "fix": "rsp-dev-spec (리팩터링)",
+      "note": "",
+      "fp": "CODE-25|work-portal-web|frontend/work-portal-web|300줄 초과 페이지 12개: DeployRequest/index.tsx(1295), WeeklyReport"
+    },
+    {
+      "id": "C53",
+      "rule": "CODE-27",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/AiChat/index.tsx",
+      "lines": [],
+      "msg": "api/ 를 useEffect 로 호출 — 서버 상태는 react-query(useQuery/useMutation)로",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"상태 관리 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-27|work-portal-web|frontend/work-portal-web/src/pages/AiChat/index.tsx|api/ 를 useEffect 로 호출 — 서버 상태는 react-query(useQuery/useMutat"
+    },
+    {
+      "id": "C54",
+      "rule": "CODE-27",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/AiDocuments/index.tsx",
+      "lines": [],
+      "msg": "api/ 를 useEffect 로 호출 — 서버 상태는 react-query(useQuery/useMutation)로",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"상태 관리 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-27|work-portal-web|frontend/work-portal-web/src/pages/AiDocuments/index.tsx|api/ 를 useEffect 로 호출 — 서버 상태는 react-query(useQuery/useMutat"
+    },
+    {
+      "id": "C55",
+      "rule": "CODE-27",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/AiKnowledge/index.tsx",
+      "lines": [],
+      "msg": "api/ 를 useEffect 로 호출 — 서버 상태는 react-query(useQuery/useMutation)로",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"상태 관리 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-27|work-portal-web|frontend/work-portal-web/src/pages/AiKnowledge/index.tsx|api/ 를 useEffect 로 호출 — 서버 상태는 react-query(useQuery/useMutat"
+    },
+    {
+      "id": "C56",
+      "rule": "CODE-27",
+      "sev": "경고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/AiPrompts/index.tsx",
+      "lines": [],
+      "msg": "api/ 를 useEffect 로 호출 — 서버 상태는 react-query(useQuery/useMutation)로",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"상태 관리 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-27|work-portal-web|frontend/work-portal-web/src/pages/AiPrompts/index.tsx|api/ 를 useEffect 로 호출 — 서버 상태는 react-query(useQuery/useMutat"
+    },
+    {
+      "id": "C57",
+      "rule": "CODE-11",
+      "sev": "참고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/entity/Todo.java",
+      "lines": [
+        51
+      ],
+      "msg": "FK 없는 Long 참조 (기존 건은 L1 ⑥ 정리 대상, 신규는 금지): workUnitId",
+      "snippets": [
+        "private Long workUnitId;"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"엔티티\", 아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-11|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/entity/Todo.java|private Long workUnitId;"
+    },
+    {
+      "id": "C58",
+      "rule": "CODE-11",
+      "sev": "참고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/workunit/entity/WorkUnit.java",
+      "lines": [
+        23
+      ],
+      "msg": "FK 없는 Long 참조 (기존 건은 L1 ⑥ 정리 대상, 신규는 금지): keyTaskId",
+      "snippets": [
+        "private Long keyTaskId;"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"엔티티\", 아키텍처_표준 6절",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-11|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/workunit/entity/WorkUnit.java|private Long keyTaskId;"
+    },
+    {
+      "id": "C59",
+      "rule": "CODE-28",
+      "sev": "참고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web",
+      "lines": [],
+      "msg": "페이지 안 역할 비교 7곳 (useAuth 파생값으로 모을 후보): ChangeRequest/index.tsx:179, DeployRequest/index.tsx:269, UserManagement/index.tsx:31, UserManagement/index.tsx:32, UserManagement/index.tsx:293, UserManagement/index.tsx:294 외 1",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"역할 분기 [제안]\"",
+      "fix": "rsp-dev-spec",
+      "note": "",
+      "fp": "CODE-28|work-portal-web|frontend/work-portal-web|페이지 안 역할 비교 7곳 (useAuth 파생값으로 모을 후보): ChangeRequest/index.ts"
+    },
+    {
+      "id": "C60",
+      "rule": "CODE-30",
+      "sev": "참고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/entity/Todo.java",
+      "lines": [
+        37,
+        81
+      ],
+      "msg": "TODO/FIXME 에 이슈 번호 없음",
+      "snippets": [
+        "private Status status = Status.TODO;",
+        "public enum Status { TODO, IN_PROGRESS, HOLD, REVIEW, DONE }"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"TODO/FIXME [제안]\"",
+      "fix": "사람",
+      "note": "",
+      "fp": "CODE-30|work-portal-api|backend/work-portal-api/src/main/java/com/platform/portal/domain/todo/entity/Todo.java|private Status status = Status.TODO;"
+    },
+    {
+      "id": "C61",
+      "rule": "CODE-30",
+      "sev": "참고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/api/todos.ts",
+      "lines": [
+        3
+      ],
+      "msg": "TODO/FIXME 에 이슈 번호 없음",
+      "snippets": [
+        "export type TodoStatus = 'TODO' | 'IN_PROGRESS' | 'HOLD' | 'REVIEW' | 'DONE'"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"TODO/FIXME [제안]\"",
+      "fix": "사람",
+      "note": "",
+      "fp": "CODE-30|work-portal-web|frontend/work-portal-web/src/api/todos.ts|export type TodoStatus = 'TODO' | 'IN_PROGRESS' | 'HOLD' | 'REVIEW' | 'DONE'"
+    },
+    {
+      "id": "C62",
+      "rule": "CODE-30",
+      "sev": "참고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/KeyTask/PerformanceTab.tsx",
+      "lines": [
+        14,
+        17
+      ],
+      "msg": "TODO/FIXME 에 이슈 번호 없음",
+      "snippets": [
+        "TODO:        { bg: 'var(--c-tag-draft-bg)', text: 'var(--c-tag-draft-t)', label: '대기' },",
+        "const STATUS_ORDER = ['DONE', 'IN_PROGRESS', 'REVIEW', 'TODO', 'HOLD'] as const"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"TODO/FIXME [제안]\"",
+      "fix": "사람",
+      "note": "",
+      "fp": "CODE-30|work-portal-web|frontend/work-portal-web/src/pages/KeyTask/PerformanceTab.tsx|TODO:        { bg: 'var(--c-tag-draft-bg)', text: 'var(--c-tag-draft-t)', label: '대기' },"
+    },
+    {
+      "id": "C63",
+      "rule": "CODE-30",
+      "sev": "참고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/Todo/index.tsx",
+      "lines": [
+        13,
+        32
+      ],
+      "msg": "TODO/FIXME 에 이슈 번호 없음",
+      "snippets": [
+        "{ status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },",
+        "status: 'TODO',"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"TODO/FIXME [제안]\"",
+      "fix": "사람",
+      "note": "",
+      "fp": "CODE-30|work-portal-web|frontend/work-portal-web/src/pages/Todo/index.tsx|{ status: 'TODO',        label: '대기',   color: 'var(--c-status-todo)',   guide: '아직 시작하지 않은 업무' },"
+    },
+    {
+      "id": "C64",
+      "rule": "CODE-30",
+      "sev": "참고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web/src/pages/WorkUnit/index.tsx",
+      "lines": [
+        20,
+        23,
+        222
+      ],
+      "msg": "TODO/FIXME 에 이슈 번호 없음",
+      "snippets": [
+        "TODO:        { label: '대기',   bg: 'var(--c-tag-draft-bg)', color: 'var(--c-tag-draft-t)' },",
+        "const TODO_STATUS_ORDER = ['DONE', 'IN_PROGRESS', 'REVIEW', 'TODO', 'HOLD']",
+        "const s = TODO_STATUS[t.status] ?? TODO_STATUS.TODO"
+      ],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"TODO/FIXME [제안]\"",
+      "fix": "사람",
+      "note": "",
+      "fp": "CODE-30|work-portal-web|frontend/work-portal-web/src/pages/WorkUnit/index.tsx|TODO:        { label: '대기',   bg: 'var(--c-tag-draft-bg)', color: 'var(--c-tag-draft-t)' },"
+    },
+    {
+      "id": "C65",
+      "rule": "CODE-31",
+      "sev": "참고",
+      "module": "work-portal-api",
+      "file": "backend/work-portal-api",
+      "lines": [],
+      "msg": "120자 초과 48줄 (13파일)",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"줄 길이 120 [제안]\"",
+      "fix": "—",
+      "note": "",
+      "fp": "CODE-31|work-portal-api|backend/work-portal-api|120자 초과 48줄 (13파일)"
+    },
+    {
+      "id": "C66",
+      "rule": "CODE-31",
+      "sev": "참고",
+      "module": "work-portal-web",
+      "file": "frontend/work-portal-web",
+      "lines": [],
+      "msg": "120자 초과 544줄 (35파일)",
+      "snippets": [],
+      "cwe": "—",
+      "source": "코딩컨벤션 \"줄 길이 120 [제안]\"",
+      "fix": "—",
+      "note": "",
+      "fp": "CODE-31|work-portal-web|frontend/work-portal-web|120자 초과 544줄 (35파일)"
+    }
+  ],
+  "judgements": [
+    {
+      "id": "J1",
+      "rule": "J-01",
+      "sev": "경고",
+      "verdict": "위반",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/request/service/ChangeRequestService.java",
+      "line": 181,
+      "msg": "상태 전환 3곳(ChangeRequestService.changeStatus, DeployRequestService.changeStatus, DeployStepService.complete)에 시작·결과 로그가 없어 누가 언제 상태를 바꿨는지 로그로 추적 불가. 외부 연동(Redmine)은 실패를 warn 으로 요청번호와 함께 남김(적합). MailService 자체에는 로그가 없지만 호출부 UserService 가 username·to 와 함께 warn 을 남김(허용, J6)",
+      "evidence": "ChangeRequestService.java:181 changeStatus 본문에 log 호출 0건 ↔ :130 \"log.warn(\"Redmine issue creation failed for CR {}: {}\", cr.getRequestNo()…\" · UserService.java:73 \"log.warn(\"계정 생성 메일 발송 실패 username={} to={}\"",
+      "relatedFindings": [
+        "C27",
+        "C28",
+        "C29"
+      ],
+      "fix": "rsp-dev-spec"
+    },
+    {
+      "id": "J2",
+      "rule": "J-02",
+      "sev": "오류",
+      "verdict": "보류",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/api/GlobalExceptionHandler.java",
+      "line": 45,
+      "msg": "예외 매핑이 설계와 다르지만 설계가 미결정. 조회 실패: orElseThrow() 8곳 → NoSuchElementException → 500, orElseThrow(IllegalArgumentException) 47곳 → 400 (아키텍처_표준 제안 404). 상태 전환 불가: IllegalStateException 9곳 → 500 (제안 409). 권한: AccessDeniedException → 403 (적합). DEC-AS-08 이 \"재결정 — L2\" 로 열려 있어 어느 쪽이 맞는지 판정할 기준이 없음",
+      "evidence": "GlobalExceptionHandler.java:45 \"@ExceptionHandler(Exception.class)\" → 500 · architecture.md DEC-AS-08 \"**재결정** — L2\" · 아키텍처_표준 4절 \"[제안] 404 조회 실패, 409 상태 전환 불가\"",
+      "relatedFindings": [
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "fix": "rsp-design-arch (DEC-AS-08 확정) → rsp-dev-spec"
+    },
+    {
+      "id": "J3",
+      "rule": "J-03",
+      "sev": "오류",
+      "verdict": "위반",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/domain/request/service/ChangeRequestService.java",
+      "line": 257,
+      "msg": "삼킨 예외 중 허용 범위 밖 2종. ① 변경요청 삭제 시 첨부 파일 삭제 IOException 을 로그 없이 무시 → DB 행은 지워지고 파일은 남는데 아무 기록이 없음. ② To-Do JSON 컨버터 4개가 파싱 실패 시 빈 리스트를 조용히 반환 → 저장된 체크항목·링크·작업기록이 화면에서 사라져도 원인을 알 수 없음. 외부 연동(알림·동기화) 삼킴이 아니라 본 처리 데이터에 관한 것이라 \"기록 후 진행\" 예외에 해당하지 않음. JwtTokenProvider.validateToken 의 catch 는 검증 결과를 false 로 돌려주는 패턴이라 허용(J6)",
+      "evidence": "ChangeRequestService.java:257 \"catch (IOException ignored) {}\" · CheckItemListConverter.java:22 catch → \"return new ArrayList<>()\" (로그 없음) · 아키텍처_표준 5절 \"외부 연동 실패 — 본 처리는 진행 … 로그 없는 삼킴 금지\"",
+      "relatedFindings": [
+        "C1",
+        "C21",
+        "C22",
+        "C23",
+        "C24"
+      ],
+      "fix": "rsp-dev-spec"
+    },
+    {
+      "id": "J4",
+      "rule": "J-04",
+      "sev": "오류",
+      "verdict": "위반",
+      "file": "backend/work-portal-api/src/main/java/com/platform/portal/api/AuthController.java",
+      "line": 27,
+      "msg": "레이어 위반 2건(AuthController·RedmineController 의 Repository 직접 주입)과 MenuPermissionService.seedDefaults 의 @PostConstruct+@Transactional 은 현행분석서 11절 \"레이어 예외\"에 이미 기록된 기존 부채. 금지 사항이라 허용하지 않되 이번 변경으로 생긴 것이 아니므로 우선순위 낮음. AuthController.me 는 UserService 에 조회 메서드 하나를 추가하면 해소되고, seedDefaults 는 ApplicationRunner(DataInitializer 와 같은 방식)로 옮기면 됨",
+      "evidence": "AuthController.java:27 \"private final UserRepository userRepository\" · MenuPermissionService.java:36-37 \"@PostConstruct … @Transactional\" · 7.현행분석서 11절 \"레이어 예외 — AuthController·RedmineController 가 Service 없이 Repository 직접 호출\"",
+      "relatedFindings": [
+        "C5",
+        "C6",
+        "C7"
+      ],
+      "fix": "rsp-dev-spec (우선순위 낮음)"
+    },
+    {
+      "id": "J5",
+      "rule": "J-05",
+      "sev": "경고",
+      "verdict": "위반",
+      "file": "frontend/work-portal-web/src/pages",
+      "line": "",
+      "msg": "컨벤션 \"중복\" 행의 항목이 그대로임. FE apiError 함수 5곳 정의, BE ALLOWED_TRANSITIONS 상태 전환표 2곳(ChangeRequest·DeployRequest), isAdminOrManager 판정 8곳(UserLookup.isAdminOrManager 가 있는데 서비스마다 다시 계산). 새 중복은 확인되지 않음",
+      "evidence": "grep \"function apiError|const apiError\" → 5파일 · grep \"ALLOWED_TRANSITIONS =\" → 2파일 · grep \"boolean isAdminOrManager\" → 8곳 ↔ UserLookup.java isAdminOrManager(username) 존재",
+      "relatedFindings": [],
+      "fix": "rsp-dev-spec (리팩터링 — 유형: 개선)"
+    },
+    {
+      "id": "J6",
+      "rule": "J-06",
+      "sev": "",
+      "verdict": "허용",
+      "file": "",
+      "line": "",
+      "msg": "허용 3건: JwtTokenProvider.validateToken 의 catch(검증 실패를 false 로 반환하는 패턴, 호출부 JwtAuthFilter 가 익명 처리) · MailService 로그 없음(호출부 UserService 가 username·to 와 함께 warn) · Layout/index.tsx 의 SDK 직접 import(DEC-AS-06 의 범위는 \"페이지\"이고 Layout 은 모바일 Sheet 를 쓰는 공통 레이아웃). 경고 유지 4건: AI 페이지 4개의 useEffect 호출 — 컨벤션이 \"[관찰 — 예외] → [제안] react-query 로 통일\" 로 적어 허용이 아님",
+      "evidence": "JwtTokenProvider.java:49 \"catch (JwtException | IllegalArgumentException e) { return false; }\" · UserService.java:73,128 log.warn · architecture.md DEC-AS-06 \"페이지는 SDK 직접 import 안 함\" · 코딩컨벤션 3절 \"AI 페이지 useState+useEffect [관찰 — 예외] → [제안] react-query 로 통일\"",
+      "relatedFindings": [
+        "C25",
+        "C26",
+        "C38"
+      ],
+      "fix": "—"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "title": "예외 삼킴 제거 + 상태 전환 로그 — 첨부 삭제 IOException, To-Do JSON 컨버터 4개, changeStatus·complete 3곳",
+      "findings": [
+        "C1",
+        "C21",
+        "C22",
+        "C23",
+        "C24",
+        "C27",
+        "C28",
+        "C29"
+      ],
+      "first": "",
+      "skill": "rsp-dev-spec",
+      "input": "/rsp-dev-spec  REQ 개선 — 삼킨 예외 5곳에 warn 로그·실패 처리, 상태 전환 3곳에 요청번호·사용자·전후 상태 로그 (코드점검 J1·J3)"
+    },
+    {
+      "order": 2,
+      "title": "오류 응답 체계 확정 뒤 IllegalStateException 9곳 → 도메인 예외(409/404)",
+      "findings": [
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "first": "rsp-design-arch: DEC-AS-08 재결정 (404 조회 실패, 409 상태 전환 불가, 메시지 노출 범위 — 보안점검 조치 5번과 같은 결정)",
+      "skill": "rsp-design-arch → rsp-dev-spec",
+      "input": "/rsp-design-arch  오류 응답 체계 DEC-AS-08 재결정하자 — 도메인 예외 + 400/403/404/409 매핑",
+      "note": "보안점검_업무포탈 조치 5번(예외 메시지 노출)과 한 번에 결정"
+    },
+    {
+      "order": 3,
+      "title": "alert/confirm 12페이지 → SDK toast·Modal",
+      "findings": [
+        "C9",
+        "C10",
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C18",
+        "C19",
+        "C20"
+      ],
+      "first": "",
+      "skill": "rsp-dev-spec",
+      "input": "/rsp-dev-spec  REQ 개선 — alert/confirm 호출 43곳을 components/ui Feedback(toast)·Modal 로 교체, 페이지별 단계 적용",
+      "note": "동작 변경 없음. 페이지 단위로 쪼개 여러 볼트로"
+    },
+    {
+      "order": 4,
+      "title": "레이어 위반 2건 + @PostConstruct 트랜잭션",
+      "findings": [
+        "C5",
+        "C6",
+        "C7"
+      ],
+      "first": "",
+      "skill": "rsp-dev-spec",
+      "input": "/rsp-dev-spec  REQ 개선 — AuthController·RedmineController 의 Repository 호출을 Service 로, MenuPermissionService.seedDefaults 를 ApplicationRunner 로 (코드점검 J4)",
+      "note": "기존 부채 — 우선순위 낮음"
+    },
+    {
+      "order": 5,
+      "title": "Dashboard 의 axios client 직접 호출 → api/dashboard.ts",
+      "findings": [
+        "C8"
+      ],
+      "first": "",
+      "skill": "rsp-dev-spec",
+      "input": "/rsp-dev-spec  REQ 개선 — Dashboard 페이지 client 호출을 api 모듈 함수로 이동"
+    },
+    {
+      "order": 6,
+      "title": "BE 컨벤션 정리 — createdAt 없는 엔티티 6개, readOnly 없는 서비스 2개",
+      "findings": [
+        "C32",
+        "C33",
+        "C34",
+        "C35",
+        "C36",
+        "C37",
+        "C30",
+        "C31"
+      ],
+      "first": "createdAt 추가는 스키마 변경 → L1 ⑨ 마이그레이션 도구 결정 뒤",
+      "skill": "rsp-dev-spec",
+      "input": "/rsp-dev-spec  REQ 개선 — MenuPermissionService·WorkUnitService 트랜잭션 경계, 엔티티 6개 createdAt 추가(마이그레이션 포함)"
+    },
+    {
+      "order": 7,
+      "title": "FE 정리 묶음 — SDK 직접 import 9페이지, any 11건, 300줄 초과 12파일 분리, AI 페이지 react-query 전환, hex 색 3곳, 중복(apiError 5곳) 통합",
+      "findings": [
+        "C39",
+        "C40",
+        "C41",
+        "C42",
+        "C43",
+        "C44",
+        "C45",
+        "C46",
+        "C47",
+        "C49",
+        "C50",
+        "C51",
+        "C52",
+        "C53",
+        "C54",
+        "C55",
+        "C56",
+        "C48"
+      ],
+      "first": "컨벤션 [제안] 채택 여부 확인(개발 리드) — 기각되면 해당 규칙 삭제",
+      "skill": "rsp-dev-spec (리팩터링)",
+      "input": "/rsp-dev-spec  REQ 개선 — FE 컨벤션 정리 1차: 페이지 SDK import 를 components/ui 래퍼로, any 제거, apiError 통합 (코드점검 J5)",
+      "note": "파일 분리는 기능 변경과 같은 볼트에서 하지 말 것 — 현행 동작 고정 테스트(FE 0건) 선행"
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-10-29",
+      "note": "패턴 검사 실행 — 오류 20 · 경고 36 · 참고 10 · 모듈 work-portal-api(106), work-portal-web(65)"
+    },
+    {
+      "date": "2026-10-29",
+      "note": "판단 검사 J-01~J-06 기록 — 위반 4 · 허용 1 · 보류 1, 조치 제안 7건 (안성진 검토 전 초안)"
+    }
+  ]
+}
