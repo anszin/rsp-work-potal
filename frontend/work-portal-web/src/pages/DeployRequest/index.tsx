@@ -72,6 +72,7 @@ export default function DeployRequestPage() {
   const [showForm, setShowForm] = useState(false)
   const [detail, setDetail] = useState<DeployRequest | null>(null)
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
+  const [systemFilter, setSystemFilter] = useState<number | 'ALL'>('ALL') // F-DR-006 R-001: 운영시스템 필터 (기억하지 않음)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [form, setForm] = useState<CreateDeployRequest>(emptyForm)
@@ -267,7 +268,9 @@ export default function DeployRequestPage() {
   }
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER'
-  const filtered = statusFilter === 'ALL' ? requests : requests.filter(r => r.status === statusFilter)
+  // F-DR-006 R-002: 시스템 필터를 먼저 걸고 상태와 AND. 자식 요청은 부모와 같은 시스템이라 부모 기준으로 걸러진다
+  const base = systemFilter === 'ALL' ? requests : requests.filter(r => r.systemId === systemFilter)
+  const filtered = statusFilter === 'ALL' ? base : base.filter(r => r.status === statusFilter)
   const topLevelFiltered = filtered.filter(r => !r.parentDrId)
   const childrenOf = (id: number) => requests.filter(r => r.parentDrId === id)
 
@@ -276,7 +279,7 @@ export default function DeployRequestPage() {
   const pagedTopLevel = topLevelFiltered.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   // 필터/페이지 크기 변경 시 1페이지로 리셋
-  useEffect(() => { setPage(1) }, [statusFilter, pageSize])
+  useEffect(() => { setPage(1) }, [statusFilter, systemFilter, pageSize]) // F-DR-006 R-003
 
   // URL ?no= 쿼리파라미터로 특정 배포 건 자동 선택
   const autoSelectDone = useRef(false)
@@ -321,7 +324,16 @@ export default function DeployRequestPage() {
         actions={tab === 'list' && <Button variant="filled" onClick={() => openCreate()}>+ 새 배포 요청</Button>}
       />
 
-      {tab === 'dashboard' && <DeployDashboard requests={requests.filter(r => !r.parentDrId)} />}
+      {/* 운영시스템 필터 — 목록·현황 두 탭 공통 (F-DR-006 R-001). 항목은 활성 시스템만 */}
+      <div style={s.systemFilterRow}>
+        <span style={s.systemFilterLabel}>시스템</span>
+        <Select value={systemFilter} onValueChange={v => setSystemFilter(v === 'ALL' ? 'ALL' : Number(v))} style={{ width: 220 }}>
+          <option value="ALL">전체</option>
+          {systems.map(sys => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
+        </Select>
+      </div>
+
+      {tab === 'dashboard' && <DeployDashboard requests={base.filter(r => !r.parentDrId)} />}{/* F-DR-006 R-004: 선택 시스템 기준 집계 */}
 
       {tab === 'list' && <>
       {/* 등록/수정 폼 */}
@@ -413,7 +425,7 @@ export default function DeployRequestPage() {
       {/* 상태 필터 탭 */}
       <div style={s.filterRow}>
         {STATUS_FILTERS.map(({ label, value }) => {
-          const topLevel = requests.filter(r => !r.parentDrId)
+          const topLevel = base.filter(r => !r.parentDrId) // F-DR-006 R-002: 배지도 선택 시스템 기준
           const count = value === 'ALL' ? topLevel.length : topLevel.filter(r => r.status === value).length
           return (
             <Button key={value} size="md" variant={statusFilter === value ? 'filled' : 'outlined'}
@@ -448,7 +460,7 @@ export default function DeployRequestPage() {
             </TableHeader>
             <TableBody>
               {pagedTopLevel.length === 0 && (
-                <TableRow><TableCell colSpan={11}><EmptyState title="등록된 배포 요청이 없습니다" /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={11}><EmptyState title={systemFilter === 'ALL' ? '등록된 배포 요청이 없습니다' : `${systems.find(x => x.id === systemFilter)?.name ?? ''}의 배포 요청이 없습니다`} /></TableCell></TableRow>
               )}
               {pagedTopLevel.map((r) => {
                 const children = childrenOf(r.id)
@@ -967,6 +979,8 @@ const s: Record<string, React.CSSProperties> = {
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)', paddingTop: 8 },
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
+  systemFilterRow: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 },
+  systemFilterLabel: { fontSize: 13, color: 'var(--c-text-muted)' },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   tableWrap: { display: 'block', padding: 0, overflow: 'hidden', marginBottom: 16 },
   th: { textAlign: 'left' as const },

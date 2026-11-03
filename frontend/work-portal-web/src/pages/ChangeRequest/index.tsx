@@ -53,6 +53,7 @@ export default function ChangeRequestPage() {
   const [pasteHighlight, setPasteHighlight] = useState(false)
   const [detail, setDetail] = useState<ChangeRequest | null>(null)
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
+  const [systemFilter, setSystemFilter] = useState<number | 'ALL'>('ALL') // F-CR-004 R-001: 운영시스템 필터 (기억하지 않음)
 
   useEffect(() => {
     if (!showForm) return
@@ -201,7 +202,9 @@ export default function ChangeRequestPage() {
 
   const isPending = createMut.isPending || updateMut.isPending
 
-  const filtered = statusFilter === 'ALL' ? requests : requests.filter(r => r.status === statusFilter)
+  // F-CR-004 R-002: 시스템 필터를 먼저 걸고 상태와 AND
+  const base = systemFilter === 'ALL' ? requests : requests.filter(r => r.systemId === systemFilter)
+  const filtered = statusFilter === 'ALL' ? base : base.filter(r => r.status === statusFilter)
 
   return (
     <div className="page-wrap">
@@ -236,7 +239,16 @@ export default function ChangeRequestPage() {
         actions={tab === 'list' && <Button variant="filled" onClick={openCreate}>+ 새 요청</Button>}
       />
 
-      {tab === 'dashboard' && <ChangeRequestDashboard requests={requests} />}
+      {/* 운영시스템 필터 — 목록·현황 두 탭 공통 (F-CR-004 R-001). 항목은 활성 시스템만, 역할 무관 */}
+      <div style={s.systemFilterRow}>
+        <span style={s.systemFilterLabel}>시스템</span>
+        <Select value={systemFilter} onValueChange={v => setSystemFilter(v === 'ALL' ? 'ALL' : Number(v))} style={{ width: 220 }}>
+          <option value="ALL">전체</option>
+          {systems.map(sys => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
+        </Select>
+      </div>
+
+      {tab === 'dashboard' && <ChangeRequestDashboard requests={base} />}{/* F-CR-004 R-003: 선택 시스템 기준 집계 */}
 
       {tab === 'list' && <>
       {/* 등록/수정 폼 */}
@@ -350,7 +362,7 @@ export default function ChangeRequestPage() {
       {/* 상태 필터 탭 */}
       <div style={s.filterRow}>
         {STATUS_FILTERS.map(({ label, value }) => {
-          const count = value === 'ALL' ? requests.length : requests.filter(r => r.status === value).length
+          const count = value === 'ALL' ? base.length : base.filter(r => r.status === value).length // F-CR-004 R-002: 배지도 선택 시스템 기준
           return (
             <Button key={value} size="md" variant={statusFilter === value ? 'filled' : 'outlined'}
               onClick={() => setStatusFilter(value)}>
@@ -383,7 +395,7 @@ export default function ChangeRequestPage() {
             </TableHeader>
             <TableBody>
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={10}><EmptyState title="등록된 요청이 없습니다" /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={10}><EmptyState title={systemFilter === 'ALL' ? '등록된 요청이 없습니다' : `${systems.find(x => x.id === systemFilter)?.name ?? ''}의 변경 요청이 없습니다`} /></TableCell></TableRow>
               )}
               {filtered.map((r) => (
                 <TableRow key={r.id} style={{ cursor: 'pointer', background: detail?.id === r.id ? 'var(--c-row-sel)' : undefined }}
@@ -592,6 +604,8 @@ const s: Record<string, React.CSSProperties> = {
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
   filterRow: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
+  systemFilterRow: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 },
+  systemFilterLabel: { fontSize: 13, color: 'var(--c-text-muted)' },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   th: { textAlign: 'left' as const },
   actions: { display: 'flex', alignItems: 'center' },
