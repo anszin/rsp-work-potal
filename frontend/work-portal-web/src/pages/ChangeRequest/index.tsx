@@ -201,6 +201,16 @@ export default function ChangeRequestPage() {
   }
 
   const isPending = createMut.isPending || updateMut.isPending
+  // 운영시스템 필터 — 목록·현황 두 탭 공통, 상태 필터와 한 줄 (F-CR-004 R-001). 항목은 활성 시스템만
+  const systemSelect = (
+    <>
+      <span style={s.filterLabel}>시스템</span>
+      <Select value={systemFilter} onValueChange={v => setSystemFilter(v === 'ALL' ? 'ALL' : Number(v))} style={{ width: 200 }}>
+        <option value="ALL">전체</option>
+        {systems.map(sys => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
+      </Select>
+    </>
+  )
 
   // F-CR-004 R-002: 시스템 필터를 먼저 걸고 상태와 AND
   const base = systemFilter === 'ALL' ? requests : requests.filter(r => r.systemId === systemFilter)
@@ -239,16 +249,10 @@ export default function ChangeRequestPage() {
         actions={tab === 'list' && <Button variant="filled" onClick={openCreate}>+ 새 요청</Button>}
       />
 
-      {/* 운영시스템 필터 — 목록·현황 두 탭 공통 (F-CR-004 R-001). 항목은 활성 시스템만, 역할 무관 */}
-      <div style={s.systemFilterRow}>
-        <span style={s.systemFilterLabel}>시스템</span>
-        <Select value={systemFilter} onValueChange={v => setSystemFilter(v === 'ALL' ? 'ALL' : Number(v))} style={{ width: 220 }}>
-          <option value="ALL">전체</option>
-          {systems.map(sys => <option key={sys.id} value={sys.id}>{sys.name}</option>)}
-        </Select>
-      </div>
-
-      {tab === 'dashboard' && <ChangeRequestDashboard requests={base} />}{/* F-CR-004 R-003: 선택 시스템 기준 집계 */}
+      {tab === 'dashboard' && <>
+        <div style={s.filterRow}>{systemSelect}</div>
+        <ChangeRequestDashboard requests={base} />{/* F-CR-004 R-003: 선택 시스템 기준 집계 */}
+      </>}
 
       {tab === 'list' && <>
       {/* 등록/수정 폼 */}
@@ -359,8 +363,10 @@ export default function ChangeRequestPage() {
         </Panel>
       )}
 
-      {/* 상태 필터 탭 */}
+      {/* 필터 행 — 시스템 Select + 상태 버튼 한 줄 */}
       <div style={s.filterRow}>
+        {systemSelect}
+        <span style={s.filterDivider} />
         {STATUS_FILTERS.map(({ label, value }) => {
           const count = value === 'ALL' ? base.length : base.filter(r => r.status === value).length // F-CR-004 R-002: 배지도 선택 시스템 기준
           return (
@@ -603,9 +609,9 @@ const s: Record<string, React.CSSProperties> = {
   formGrid: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center', marginBottom: 16 },
   formActions: { display: 'flex', gap: 8, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--c-text-sub)' },
-  filterRow: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
-  systemFilterRow: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 },
-  systemFilterLabel: { fontSize: 13, color: 'var(--c-text-muted)' },
+  filterRow: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' as const },
+  filterLabel: { fontSize: 13, color: 'var(--c-text-muted)' },
+  filterDivider: { width: 1, height: 20, background: 'var(--c-border)', margin: '0 4px' },
   badge: { background: 'color-mix(in srgb, var(--rsp-color-text-on-primary) 25%, transparent)', borderRadius: 10, padding: '0 5px', fontSize: 11 },
   th: { textAlign: 'left' as const },
   actions: { display: 'flex', alignItems: 'center' },
