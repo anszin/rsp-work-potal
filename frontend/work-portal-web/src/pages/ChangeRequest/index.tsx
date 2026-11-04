@@ -9,6 +9,7 @@ import {
 import { getActiveSystems, getManagedSystemIds, getActiveSubSystems, getSystemManagers, type SystemManager } from '../../api/systems'
 import { fetchRedmineTrackers, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
+import { useSystemFilter } from '../../hooks/useSystemFilter'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
 import { Button, Input, Modal, Select, TabBar, Tag, Panel, Loading, EmptyState, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '../../components/ui'
@@ -53,7 +54,6 @@ export default function ChangeRequestPage() {
   const [pasteHighlight, setPasteHighlight] = useState(false)
   const [detail, setDetail] = useState<ChangeRequest | null>(null)
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
-  const [systemFilter, setSystemFilter] = useState<number | 'ALL'>('ALL') // F-CR-004 R-001: 운영시스템 필터 (기억하지 않음)
 
   useEffect(() => {
     if (!showForm) return
@@ -82,7 +82,7 @@ export default function ChangeRequestPage() {
     queryKey: ['change-requests'],
     queryFn: () => getChangeRequests(),
   })
-  const { data: systems = [] } = useQuery({
+  const { data: systems = [], isSuccess: systemsLoaded } = useQuery({
     queryKey: ['systems', 'active'],
     queryFn: getActiveSystems,
   })
@@ -91,9 +91,14 @@ export default function ChangeRequestPage() {
     queryFn: () => getActiveSubSystems(form.systemId),
     enabled: showForm && form.systemId > 0,
   })
-  const { data: managedSystemIds = [] } = useQuery({
+  const { data: managedSystemIds = [], isFetched: managedFetched } = useQuery({
     queryKey: ['systems', 'managed'],
     queryFn: getManagedSystemIds,
+  })
+  // F-CR-004 R-001 (1.1): 운영시스템 필터 — 초기값 저장값→담당 1개→전체, 선택은 사용자·화면별 기억 (REQ-2026-004)
+  const [systemFilter, setSystemFilter] = useSystemFilter({
+    screen: 'cr', username: user?.username, activeIds: systems.map(sys => sys.id), managedIds: managedSystemIds,
+    loaded: systemsLoaded && managedFetched, // 담당 조회 실패도 '로드됨'으로 보고 저장값→전체
   })
   const { data: trackerConfigs = [] } = useQuery<RedmineTrackerConfig[]>({
     queryKey: ['redmine-trackers'],

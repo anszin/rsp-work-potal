@@ -10,6 +10,7 @@ import {
 import { getActiveSystems, getActiveSubSystems, getManagedSystemIds } from '../../api/systems'
 import { fetchRedmineIssuesAll, fetchRedmineTrackers, type RedmineIssue, type RedmineTrackerConfig } from '../../api/redmine'
 import { useAuth } from '../../context/useAuth'
+import { useSystemFilter } from '../../hooks/useSystemFilter'
 import StatusBadge from '../../components/StatusBadge'
 import PageHeader from '../../components/PageHeader'
 import { Button, Callout, Checkbox, EmptyState, Input, Loading, Modal, Panel, Select, TabBar, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tag, Textarea } from '../../components/ui'
@@ -72,7 +73,6 @@ export default function DeployRequestPage() {
   const [showForm, setShowForm] = useState(false)
   const [detail, setDetail] = useState<DeployRequest | null>(null)
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'ALL'>('ALL')
-  const [systemFilter, setSystemFilter] = useState<number | 'ALL'>('ALL') // F-DR-006 R-001: 운영시스템 필터 (기억하지 않음)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [form, setForm] = useState<CreateDeployRequest>(emptyForm)
@@ -97,8 +97,13 @@ export default function DeployRequestPage() {
     queryKey: ['deploy-requests'],
     queryFn: () => getDeployRequests(),
   })
-  const { data: systems = [] } = useQuery({ queryKey: ['systems', 'active'], queryFn: getActiveSystems })
-  const { data: managedSystemIds = [] } = useQuery({ queryKey: ['systems', 'managed'], queryFn: getManagedSystemIds })
+  const { data: systems = [], isSuccess: systemsLoaded } = useQuery({ queryKey: ['systems', 'active'], queryFn: getActiveSystems })
+  const { data: managedSystemIds = [], isFetched: managedFetched } = useQuery({ queryKey: ['systems', 'managed'], queryFn: getManagedSystemIds })
+  // F-DR-006 R-001 (1.1): 운영시스템 필터 — 초기값 저장값→담당 1개→전체, 선택은 사용자·화면별 기억 (REQ-2026-004)
+  const [systemFilter, setSystemFilter] = useSystemFilter({
+    screen: 'dr', username: user?.username, activeIds: systems.map(sys => sys.id), managedIds: managedSystemIds,
+    loaded: systemsLoaded && managedFetched, // 담당 조회 실패도 '로드됨'으로 보고 저장값→전체
+  })
   const selectedSystem = systems.find(s => s.id === form.systemId)
 
   const { data: subSystems = [] } = useQuery({
